@@ -1,0 +1,12 @@
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/momentohq/client-types-php"
+        }
+    ],
+    "require": {
+        "momentohq/client-types-php": "dev-main"
+    }
+}
+
