@@ -1,4 +1,14 @@
 {
+    "name": "momento/client-sdk-php",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Momento\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": { "Momento\\Tests\\": "tests/" }
+    },
     "repositories": [
         {
             "type": "vcs",
@@ -6,7 +16,16 @@
         }
     ],
     "require": {
+        "php": ">=7.4",
         "momentohq/client-types-php": "dev-main"
+    },
+    "require-dev": {
+        "composer/composer" : "^2.4.1",
+        "phpunit/phpunit": "^9.5.23"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
     }
 }
-
