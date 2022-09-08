@@ -3,21 +3,21 @@
     "type": "library",
     "autoload": {
         "psr-4": {
-            "Momento\\": "src/"
+            "Momento\\": "src/",
+            "Cache_client\\": "types/Cache_client/",
+            "Control_client\\": "types/Control_client/",
+            "Auth\\": "types/Auth/",
+            "GPBMetadata\\": "types/GPBMetadata"
         }
     },
     "autoload-dev": {
         "psr-4": { "Momento\\Tests\\": "tests/" }
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/momentohq/client-types-php"
-        }
-    ],
     "require": {
         "php": ">=7.4",
-        "momentohq/client-types-php": "dev-main"
+        "google/protobuf": "^3.21",
+        "grpc/grpc": "^1.42",
+        "ext-grpc": "*"
     },
     "require-dev": {
         "composer/composer" : "^2.4.1",
