@@ -4,6 +4,7 @@ namespace Momento\Cache;
 
 use Control_client\_CreateCacheRequest;
 use Control_client\_CreateCacheResponse;
+use Grpc\UnaryCall;
 
 class _ScsControlClient
 {
@@ -15,12 +16,10 @@ class _ScsControlClient
         $this->controlGrpcManager = new _ControlGrpcManager($authToken, $endpoint);
     }
 
-    public function createCache(string $cacheName) : _CreateCacheResponse {
+    public function createCache(string $cacheName) : UnaryCall {
         $request = new _CreateCacheRequest();
         $request->setCacheName($cacheName);
-        $response = $this->controlGrpcManager->client->CreateCache($request, [], ["timeout"=>1000000]);
-        var_dump($response);
-        return new _CreateCacheResponse();
+        return $this->controlGrpcManager->client->CreateCache($request, [], ["timeout"=>10000000]);
     }
 
 }

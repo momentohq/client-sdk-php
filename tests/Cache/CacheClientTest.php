@@ -8,12 +8,9 @@ use PHPUnit\Framework\TestCase;
  */
 class CacheClientTest extends TestCase
 {
-
-    public static string $TEST_AUTH_TOKEN = "";
-
     public function testCanUseBucketEndpoint()
     {
-        $c = new CacheClient(self::$TEST_AUTH_TOKEN, 100);
+        $c = new CacheClient(getenv("MOMENTO_AUTH_TOKEN"), 100);
         $this->assertSame(
             'Hello',
             $c->foo()

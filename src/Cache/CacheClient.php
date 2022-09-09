@@ -27,13 +27,17 @@ class CacheClient
 
     function foo() : string
     {
-        $this->createCache();
+        $this->createCache("YESSSSSSSS");
         return 'Hello';
     }
 
-    function createCache() : void
+    function createCache(string $cacheName) : void
     {
-        $response = $this->controlClient->createCache("phptest");
-        print $response->serializeToJsonString();
+        $call = $this->controlClient->createCache($cacheName);
+        [$response, $status] = $call->wait();
+        print "Response:\n";
+        print_r($response);
+        print "Status:\n";
+        print_r($status);
     }
 }
