@@ -1,15 +1,14 @@
 <?php
-
 namespace Momento\Cache;
 
+use Cache_client\ScsClient;
 use Grpc\Channel;
 use Grpc\ChannelCredentials;
-use Control_client\ScsControlClient;
 
+class _DataGrpcManager
+{
 
-class _ControlGrpcManager {
-
-    public ScsControlClient $client;
+    public ScsClient $client;
 
     public function __construct(string $authToken, string $endpoint)
     {
@@ -22,7 +21,6 @@ class _ControlGrpcManager {
         ];
 
         $channel = new Channel($endpoint, ["credentials"=>ChannelCredentials::createSsl()]);
-        $this->client = new ScsControlClient($endpoint, $options, $channel);
+        $this->client = new ScsClient($endpoint, $options, $channel);
     }
-
 }

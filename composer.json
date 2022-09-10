@@ -8,7 +8,10 @@
             "Control_client\\": "types/Control_client/",
             "Auth\\": "types/Auth/",
             "GPBMetadata\\": "types/GPBMetadata"
-        }
+        },
+        "files": [
+            "src/Utilities/_DataValidation.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": { "Momento\\Tests\\": "tests/" }

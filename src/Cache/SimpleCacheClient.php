@@ -1,0 +1,53 @@
+<?php
+
+namespace Momento\Cache;
+
+class SimpleCacheClient
+{
+
+    private _ScsControlClient $controlClient;
+    private _ScsDataClient $dataClient;
+    /**
+     * @param string $authToken: momento JWT
+     * @param int $defaultTtlSeconds: Default Time to Live for the item in Cache
+     */
+    function __construct(string $authToken, int $defaultTtlSeconds, int $dataClientOperationTimeoutMs=0)
+    {
+        $payload = $this->parseAuthToken($authToken);
+        $this->controlClient = new _ScsControlClient($authToken, $payload["cp"]);
+        $this->dataClient = new _ScsDataClient(
+            $authToken, $payload["c"], $defaultTtlSeconds, $dataClientOperationTimeoutMs
+        );
+    }
+
+    private function parseAuthToken(string $authToken) : array {
+        list($header, $payload, $signature) = explode (".", $authToken);
+        return json_decode(base64_decode($payload), true);
+    }
+
+    public function createCache(string $cacheName) : array
+    {
+        // TODO: error handling
+        return $this->controlClient->createCache($cacheName);
+    }
+
+    public function listCaches(?string $nextToken=null) : array
+    {
+        return $this->controlClient->listCaches($nextToken);
+    }
+
+    public function deleteCache(string $cacheName) : array
+    {
+        // TODO: error handling
+        return $this->controlClient->deleteCache($cacheName);
+    }
+
+    public function set(string $cacheName, string $key, string $value, int $ttlSeconds=0) : array
+    {
+        return $this->dataClient->set($cacheName, $key, $value, $ttlSeconds);
+    }
+
+    public function get(string $cacheName, string $key) : array {
+        return $this->dataClient->get($cacheName, $key);
+    }
+}
