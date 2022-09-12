@@ -23,7 +23,7 @@ traditional caching solutions.
 
 ## Using Momento
 
-Run `composer update` from the root of the repository to install the necessary prerequisites.
+Run `composer install` from the root of the repository to install the necessary prerequisites.
 
 Then check out full working code in `example.php` at the root of this repository!
 
