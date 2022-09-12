@@ -5,6 +5,9 @@ use Cache_client\_GetRequest;
 use Cache_client\_SetRequest;
 use Cache_client\_SetResponse;
 
+use Momento\Cache\CacheOperationTypes\CacheGetResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetResponse;
+use Momento\Utilities\_ErrorConverter;
 use function Momento\Utilities\validateTtl;
 use function Momento\Utilities\validateCacheName;
 
@@ -26,27 +29,45 @@ class _ScsDataClient
         $this->endpoint = $endpoint;
     }
 
-    public function set(string $cacheName, string $key, string $value, int $ttlSeconds=null) : array
-    {
-        $itemTtlSeconds = $ttlSeconds ? $ttlSeconds : $this->defaultTtlSeconds;
-        validateTtl($itemTtlSeconds);
-        $setRequest = new _SetRequest();
-        $setRequest->setCacheKey($key);
-        $setRequest->setCacheBody($value);
-        $setRequest->setTtlMilliseconds($itemTtlSeconds * 1000);
-        $call = $this->grpcManager->client->Set($setRequest, ["cache"=>[$cacheName]]);
-        [$response, $status] = $call->wait();
-        return [$response, $status];
+    // TODO: DRY this out. It's a duplicate of the one in _ScsControlClient
+    private function checkCallStatus(object $status) : void {
+        if ($status->code !== 0) {
+            throw _ErrorConverter::convert($status->code, $status->details);
+        }
     }
 
-    public function get(string $cacheName, string $key) : array
+    public function set(string $cacheName, string $key, string $value, int $ttlSeconds=null) : CacheSetResponse
     {
         validateCacheName($cacheName);
-        $getRequest = new _GetRequest();
-        $getRequest->setCacheKey($key);
-        $call = $this->grpcManager->client->Get($getRequest, ["cache"=>[$cacheName]]);
-        [$response, $status] = $call->wait();
-        return [$response, $status];
+        try {
+            $itemTtlSeconds = $ttlSeconds ? $ttlSeconds : $this->defaultTtlSeconds;
+            validateTtl($itemTtlSeconds);
+            $setRequest = new _SetRequest();
+            $setRequest->setCacheKey($key);
+            $setRequest->setCacheBody($value);
+            $setRequest->setTtlMilliseconds($itemTtlSeconds * 1000);
+            $call = $this->grpcManager->client->Set($setRequest, ["cache" => [$cacheName]]);
+            [$response, $status] = $call->wait();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+        $this->checkCallStatus($status);
+        return new CacheSetResponse($response, $key, $value);
+    }
+
+    public function get(string $cacheName, string $key) : CacheGetResponse
+    {
+        validateCacheName($cacheName);
+        try {
+            $getRequest = new _GetRequest();
+            $getRequest->setCacheKey($key);
+            $call = $this->grpcManager->client->Get($getRequest, ["cache" => [$cacheName]]);
+            [$response, $status] = $call->wait();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+        $this->checkCallStatus($status);
+        return new CacheGetResponse($response);
     }
 
 }

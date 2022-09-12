@@ -25,13 +25,13 @@ class SimpleCacheClient
         return json_decode(base64_decode($payload), true);
     }
 
-    public function createCache(string $cacheName) : array
+    public function createCache(string $cacheName) : CacheOperationTypes\CreateCacheResponse
     {
         // TODO: error handling
         return $this->controlClient->createCache($cacheName);
     }
 
-    public function listCaches(?string $nextToken=null) : array
+    public function listCaches(?string $nextToken=null) : CacheOperationTypes\ListCachesResponse
     {
         return $this->controlClient->listCaches($nextToken);
     }
@@ -42,12 +42,13 @@ class SimpleCacheClient
         return $this->controlClient->deleteCache($cacheName);
     }
 
-    public function set(string $cacheName, string $key, string $value, int $ttlSeconds=0) : array
+    public function set(string $cacheName, string $key, string $value, int $ttlSeconds=0) : CacheOperationTypes\CacheSetResponse
     {
         return $this->dataClient->set($cacheName, $key, $value, $ttlSeconds);
     }
 
-    public function get(string $cacheName, string $key) : array {
+    public function get(string $cacheName, string $key) : CacheOperationTypes\CacheGetResponse
+    {
         return $this->dataClient->get($cacheName, $key);
     }
 }

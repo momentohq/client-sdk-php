@@ -11,6 +11,9 @@
         },
         "files": [
             "src/Utilities/_DataValidation.php"
+        ],
+        "classmap": [
+            "src/Cache/CacheOperationTypes/CacheOperationTypes.php"
         ]
     },
     "autoload-dev": {
