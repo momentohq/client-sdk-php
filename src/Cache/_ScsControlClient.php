@@ -43,7 +43,7 @@ class _ScsControlClient
         return new CreateCacheResponse($response);
     }
 
-    public function deleteCache(string $cacheName) : array
+    public function deleteCache(string $cacheName) : DeleteCacheResponse
     {
         validateCacheName($cacheName);
         try {

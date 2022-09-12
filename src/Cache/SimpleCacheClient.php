@@ -36,7 +36,7 @@ class SimpleCacheClient
         return $this->controlClient->listCaches($nextToken);
     }
 
-    public function deleteCache(string $cacheName) : array
+    public function deleteCache(string $cacheName) : CacheOperationTypes\DeleteCacheResponse
     {
         // TODO: error handling
         return $this->controlClient->deleteCache($cacheName);

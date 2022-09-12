@@ -1,6 +1,9 @@
 <?php
 namespace Momento\Tests\Cache;
 
+use Momento\Cache\CacheOperationTypes\CacheGetResponse;
+use Momento\Cache\CacheOperationTypes\CacheGetStatus;
+use Momento\Cache\Errors\AlreadyExistsError;
 use RuntimeException;
 use Momento\Cache\SimpleCacheClient;
 use PHPUnit\Framework\TestCase;
@@ -32,7 +35,9 @@ class CacheClientTest extends TestCase
         $this->client = new SimpleCacheClient($AUTH_TOKEN, $this->DEFAULT_TTL_SECONDS);
 
         // Ensure test cache exists
-        $this->client->createCache($this->TEST_CACHE_NAME);
+        try {
+            $this->client->createCache($this->TEST_CACHE_NAME);
+        } catch (AlreadyExistsError $e) {}
     }
 
     public function testCreateSetGetDelete() {
@@ -40,18 +45,13 @@ class CacheClientTest extends TestCase
         $key = uniqid();
         $value = uniqid();
         $this->client->createCache($cacheName);
-        list($response, $status) = $this->client->set($cacheName, $key, $value);
-        // TODO: not sure this is correct . . .
-        $this->assertEquals(0, $status->code);
-        list($response, $status) = $this->client->get($cacheName, $key);
-        $this->assertEquals($response->getCacheBody(), $value);
-        list($get_for_key_in_other_cache, $status) = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->client->set($cacheName, $key, $value);
+        $response = $this->client->get($cacheName, $key);
+        $this->assertEquals($response->value(), $value);
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
         // TODO: Ok, this is most certainly not right ;-)
-        $this->assertEquals("Item not found", $get_for_key_in_other_cache->getMessage());
-        list($response, $status) = $this->client->deleteCache($cacheName);
-        $this->assertEquals(0, $status->code);
-        list($response, $status) = $this->client->deleteCache("This is not actually the name of a cache");
-        $this->assertEquals(5, $status->code);
+        $this->assertEquals('MISS', $response->status());
+        $this->client->deleteCache($cacheName);
     }
 
 
