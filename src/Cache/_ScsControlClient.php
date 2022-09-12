@@ -33,7 +33,7 @@ class _ScsControlClient
         try {
             $request = new _CreateCacheRequest();
             $request->setCacheName($cacheName);
-            $call = $this->grpcManager->client->CreateCache($request, [], ["timeout" => 10000000]);
+            $call = $this->grpcManager->client->CreateCache($request);
             [$response, $status] = $call->wait();
         } catch (\Exception $e) {
             // TODO: error converter and exception-less handling
@@ -49,7 +49,7 @@ class _ScsControlClient
         try {
             $request = new _DeleteCacheRequest();
             $request->setCacheName($cacheName);
-            $call = $this->grpcManager->client->DeleteCache($request, [], ["timeout"=>10000000]);
+            $call = $this->grpcManager->client->DeleteCache($request);
             [$response, $status] = $call->wait();
         } catch (\Exception $e) {
             // TODO: error converter and exception-less handling
@@ -64,7 +64,7 @@ class _ScsControlClient
         try {
             $request = new _ListCachesRequest();
             $request->setNextToken($nextToken ? $nextToken : "");
-            $call = $this->grpcManager->client->ListCaches($request, [], ["timeout"=>10000000]);
+            $call = $this->grpcManager->client->ListCaches($request);
             [$response, $status] = $call->wait();
         } catch (\Exception $e) {
             // TODO: error converter and exception-less handling
