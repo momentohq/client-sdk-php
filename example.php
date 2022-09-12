@@ -22,9 +22,7 @@ function createCache(SimpleCacheClient $client, string $cacheName) : void {
 }
 
 function listCaches(SimpleCacheClient $client) : void {
-    $client->listCaches();
     $result = $client->listCaches();
-
     while (true) {
         foreach ($result->caches() as $cache) {
             print "- {$cache->name()}\n";
