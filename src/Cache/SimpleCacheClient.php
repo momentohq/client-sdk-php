@@ -27,7 +27,6 @@ class SimpleCacheClient
 
     public function createCache(string $cacheName) : CacheOperationTypes\CreateCacheResponse
     {
-        // TODO: error handling
         return $this->controlClient->createCache($cacheName);
     }
 
@@ -38,7 +37,6 @@ class SimpleCacheClient
 
     public function deleteCache(string $cacheName) : CacheOperationTypes\DeleteCacheResponse
     {
-        // TODO: error handling
         return $this->controlClient->deleteCache($cacheName);
     }
 
