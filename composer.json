@@ -21,8 +21,8 @@
     },
     "require": {
         "php": ">=7.4",
-        "google/protobuf": "^3.21",
-        "grpc/grpc": "^1.42",
+        "google/protobuf": "3.21.5",
+        "grpc/grpc": "1.42.0",
         "ext-grpc": "*"
     },
     "require-dev": {
