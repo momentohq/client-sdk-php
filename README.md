@@ -23,9 +23,29 @@ traditional caching solutions.
 
 ## Using Momento
 
+Check out full working code in [the examples directory](examples/) of this repository!
+
+### Import into your project
+
 Install composer [as described on the composer website](https://getcomposer.org/doc/00-intro.md).
 
-Run `composer install` from the root of the repository to install the necessary prerequisites.
+Add our repository to your `composer.json` file and our SDK as a dependency:
 
-Then check out full working code in `example.php` at the root of this repository!
+```json
+{
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/momentohq/client-sdk-php"
+    }
+  ],
+  "require": {
+    "momentohq/client-sdk-php": "dev-main"
+  }
+}
+```
+
+Run `composer update` to install the necessary prerequisites.
+
+
 

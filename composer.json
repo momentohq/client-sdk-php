@@ -1,5 +1,5 @@
 {
-    "name": "momento/client-sdk-php",
+    "name": "momentohq/client-sdk-php",
     "type": "library",
     "autoload": {
         "psr-4": {
