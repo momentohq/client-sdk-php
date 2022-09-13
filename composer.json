@@ -13,7 +13,8 @@
             "src/Utilities/_DataValidation.php"
         ],
         "classmap": [
-            "src/Cache/CacheOperationTypes/CacheOperationTypes.php"
+            "src/Cache/CacheOperationTypes/CacheOperationTypes.php",
+            "src/Cache/Errors/Errors.php"
         ]
     },
     "autoload-dev": {
