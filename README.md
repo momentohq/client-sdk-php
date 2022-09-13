@@ -23,6 +23,8 @@ traditional caching solutions.
 
 ## Using Momento
 
+Install composer [as described on the composer website](https://getcomposer.org/doc/00-intro.md).
+
 Run `composer install` from the root of the repository to install the necessary prerequisites.
 
 Then check out full working code in `example.php` at the root of this repository!
