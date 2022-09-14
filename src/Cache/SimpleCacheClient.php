@@ -2,6 +2,8 @@
 
 namespace Momento\Cache;
 
+use Momento\Cache\Errors\InvalidArgumentError;
+
 class SimpleCacheClient
 {
 
@@ -11,7 +13,7 @@ class SimpleCacheClient
      * @param string $authToken: momento JWT
      * @param int $defaultTtlSeconds: Default Time to Live for the item in Cache
      */
-    function __construct(string $authToken, int $defaultTtlSeconds, int $dataClientOperationTimeoutMs=0)
+    function __construct(string $authToken, int $defaultTtlSeconds, ?int $dataClientOperationTimeoutMs=null)
     {
         $payload = $this->parseAuthToken($authToken);
         $this->controlClient = new _ScsControlClient($authToken, $payload["cp"]);
@@ -20,9 +22,21 @@ class SimpleCacheClient
         );
     }
 
+    private function throwBadAuthToken() {
+        throw new InvalidArgumentError('Invalid Auth token.');
+    }
+
     private function parseAuthToken(string $authToken) : array {
-        list($header, $payload, $signature) = explode (".", $authToken);
-        return json_decode(base64_decode($payload), true);
+        $exploded = explode (".", $authToken);
+        if (count($exploded) != 3) {
+            $this->throwBadAuthToken();
+        }
+        list($header, $payload, $signature) = $exploded;
+        $token = json_decode(base64_decode($payload), true);
+        if ($token === null) {
+            $this->throwBadAuthToken();
+        }
+        return $token;
     }
 
     public function createCache(string $cacheName) : CacheOperationTypes\CreateCacheResponse
@@ -48,5 +62,10 @@ class SimpleCacheClient
     public function get(string $cacheName, string $key) : CacheOperationTypes\CacheGetResponse
     {
         return $this->dataClient->get($cacheName, $key);
+    }
+
+    public function delete(string $cacheName, string $key) : CacheOperationTypes\CacheDeleteResponse
+    {
+        return $this->dataClient->delete($cacheName, $key);
     }
 }
