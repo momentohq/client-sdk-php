@@ -59,6 +59,7 @@ class _ScsDataClient
             );
             [$response, $status] = $call->wait();
         } catch (\Exception $e) {
+            // TODO: error converter and exception-less handling
             throw $e;
         }
         $this->checkCallStatus($status);
@@ -76,6 +77,7 @@ class _ScsDataClient
             );
             [$response, $status] = $call->wait();
         } catch (\Exception $e) {
+            // TODO: error converter and exception-less handling
             throw $e;
         }
         $this->checkCallStatus($status);
@@ -93,6 +95,7 @@ class _ScsDataClient
             );
             [$response, $status] = $call->wait();
         } catch (Exception $e) {
+            // TODO: error converter and exception-less handling
             throw $e;
         }
         $this->checkCallStatus($status);
