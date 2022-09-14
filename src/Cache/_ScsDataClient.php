@@ -17,7 +17,11 @@ use function Momento\Utilities\validateOperationTimeout;
 class _ScsDataClient
 {
 
-    private static int $DEFAULT_DEADLINE = 500000; // I believe this maps to 5 sec.
+    private static int $DEFAULT_DEADLINE_SECONDS = 5;
+    // TODO: is looks like PHP gRPC wants microsecond timeout values,
+    // but python's wanted seconds. Need to take a closer look to make sure
+    // this is accurate.
+    private static int $TIMEOUT_MULTIPLIER = 1000000;
     private int $deadline_seconds;
     private int $defaultTtlSeconds;
     private string $endpoint;
@@ -28,7 +32,7 @@ class _ScsDataClient
         validateTtl($defaultTtlSeconds);
         validateOperationTimeout($operationTimeoutMs);
         $this->defaultTtlSeconds = $defaultTtlSeconds;
-        $this->deadline_seconds = $operationTimeoutMs ? $operationTimeoutMs / 1000.0 : self::$DEFAULT_DEADLINE;
+        $this->deadline_seconds = $operationTimeoutMs ? $operationTimeoutMs / 1000.0 : self::$DEFAULT_DEADLINE_SECONDS;
         $this->grpcManager = new _DataGrpcManager($authToken, $endpoint);
         $this->endpoint = $endpoint;
     }
@@ -50,7 +54,9 @@ class _ScsDataClient
             $setRequest->setCacheKey($key);
             $setRequest->setCacheBody($value);
             $setRequest->setTtlMilliseconds($itemTtlSeconds * 1000);
-            $call = $this->grpcManager->client->Set($setRequest, ["cache"=>[$cacheName]], ["timeout"=>$this->deadline_seconds]);
+            $call = $this->grpcManager->client->Set(
+                $setRequest, ["cache"=>[$cacheName]], ["timeout"=>$this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
             [$response, $status] = $call->wait();
         } catch (\Exception $e) {
             throw $e;
@@ -65,7 +71,9 @@ class _ScsDataClient
         try {
             $getRequest = new _GetRequest();
             $getRequest->setCacheKey($key);
-            $call = $this->grpcManager->client->Get($getRequest, ["cache" => [$cacheName]], ["timeout"=>$this->deadline_seconds]);
+            $call = $this->grpcManager->client->Get(
+                $getRequest, ["cache" => [$cacheName]], ["timeout"=>$this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
             [$response, $status] = $call->wait();
         } catch (\Exception $e) {
             throw $e;
@@ -80,7 +88,9 @@ class _ScsDataClient
         try {
             $deleteRequest = new _DeleteRequest();
             $deleteRequest->setCacheKey($key);
-            $call = $this->grpcManager->client->Delete($deleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds]);
+            $call = $this->grpcManager->client->Delete(
+                $deleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
             [$response, $status] = $call->wait();
         } catch (Exception $e) {
             throw $e;
