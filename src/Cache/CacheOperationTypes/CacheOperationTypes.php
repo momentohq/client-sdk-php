@@ -103,3 +103,5 @@ class CacheGetResponse {
     }
 
 }
+
+class CacheDeleteResponse {}
