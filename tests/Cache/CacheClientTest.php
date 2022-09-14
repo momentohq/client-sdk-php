@@ -1,7 +1,6 @@
 <?php
 namespace Momento\Tests\Cache;
 
-use Momento\Cache\CacheOperationTypes\CacheGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheGetStatus;
 use Momento\Cache\Errors\AlreadyExistsError;
 use Momento\Cache\Errors\AuthenticationError;
@@ -118,8 +117,6 @@ class CacheClientTest extends TestCase
     // Delete cache tests
     public function testDeleteCacheSucceeds() {
         $cacheName = uniqid();
-        $this->client->createCache($cacheName);
-        $this->expectException(AlreadyExistsError::class);
         $this->client->createCache($cacheName);
         $this->client->deleteCache($cacheName);
         $this->expectException(NotFoundError::class);
