@@ -1,0 +1,35 @@
+name: On Pull Request
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TEST_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      TEST_CACHE_NAME: php-integration-test-cache
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Commitlint and Other Shared Build Steps
+        uses: momentohq/standards-and-practices/github-actions/shared-build@gh-actions-v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: grpc
+          tools: composer
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: Run tests
+        run: php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml
