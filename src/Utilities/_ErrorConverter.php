@@ -18,11 +18,11 @@ class _ErrorConverter {
         Grpc\STATUS_RESOURCE_EXHAUSTED => \Momento\Cache\Errors\LimitExceededError::class,
         Grpc\STATUS_ALREADY_EXISTS => \Momento\Cache\Errors\AlreadyExistsError::class,
         Grpc\STATUS_NOT_FOUND => \Momento\Cache\Errors\NotFoundError::class,
-        Grpc\STATUS_UNKNOWN => \Momento\Cache\Errors\InternalServerError::class,
-        Grpc\STATUS_ABORTED => \Momento\Cache\Errors\InternalServerError::class,
-        Grpc\STATUS_INTERNAL => \Momento\Cache\Errors\InternalServerError::class,
-        Grpc\STATUS_UNAVAILABLE => \Momento\Cache\Errors\InternalServerError::class,
-        Grpc\STATUS_DATA_LOSS => \Momento\Cache\Errors\InternalServerError::class
+        Grpc\STATUS_UNKNOWN => InternalServerError::class,
+        Grpc\STATUS_ABORTED => InternalServerError::class,
+        Grpc\STATUS_INTERNAL => InternalServerError::class,
+        Grpc\STATUS_UNAVAILABLE => InternalServerError::class,
+        Grpc\STATUS_DATA_LOSS => InternalServerError::class
     ];
 
     public static function convert(int $status, string $details) : \Exception
@@ -31,6 +31,6 @@ class _ErrorConverter {
             $class = self::$rpcToError[$status];
             return new $class($details);
         }
-        throw new \Momento\Cache\Errors\InternalServerError("CacheService failed an internal error");
+        throw new InternalServerError("CacheService failed an internal error");
     }
 }
