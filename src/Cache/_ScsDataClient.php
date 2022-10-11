@@ -3,18 +3,32 @@ namespace Momento\Cache;
 
 use Cache_client\_DeleteRequest;
 use Cache_client\_GetRequest;
+use Cache_client\_ListFetchRequest;
+use Cache_client\_ListPushBackRequest;
 use Cache_client\_ListPushFrontRequest;
 use Cache_client\_SetRequest;
 
 use Cache_client\ECacheResult;
 use Grpc\UnaryCall;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
+use Momento\Cache\CacheOperationTypes\CacheDeleteResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheGetStatus;
+use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
+use Momento\Cache\CacheOperationTypes\CacheListFetchResponseError;
+use Momento\Cache\CacheOperationTypes\CacheListFetchResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheListFetchResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheListFetchResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
+use Momento\Cache\CacheOperationTypes\CacheListPushBackResponseError;
+use Momento\Cache\CacheOperationTypes\CacheListPushBackResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
+use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponseError;
+use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseSuccess;
@@ -38,7 +52,6 @@ class _ScsDataClient
     private static int $TIMEOUT_MULTIPLIER = 1000000;
     private int $deadline_seconds;
     private int $defaultTtlSeconds;
-    private string $endpoint;
     private _DataGrpcManager $grpcManager;
 
     public function __construct(string $authToken, string $endpoint, int $defaultTtlSeconds, ?int $operationTimeoutMs)
@@ -48,7 +61,6 @@ class _ScsDataClient
         $this->defaultTtlSeconds = $defaultTtlSeconds;
         $this->deadline_seconds = $operationTimeoutMs ? $operationTimeoutMs / 1000.0 : self::$DEFAULT_DEADLINE_SECONDS;
         $this->grpcManager = new _DataGrpcManager($authToken, $endpoint);
-        $this->endpoint = $endpoint;
     }
 
     private function processCall(UnaryCall $call) : mixed
@@ -120,9 +132,90 @@ class _ScsDataClient
         } catch (SdkError $e) {
             return new CacheDeleteResponseError($e);
         } catch (\Exception $e){
-            return new CacheGetResponseError(new UnknownError($e->getMessage()));
+            return new CacheDeleteResponseError(new UnknownError($e->getMessage()));
         }
         return new CacheDeleteResponseSuccess();
+    }
+
+    public function listFetch(string $cacheName, string $listName) : CacheListFetchResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateListName($listName);
+            $listFetchRequest = new _ListFetchRequest();
+            $listFetchRequest->setListName($listName);
+            $call = $this->grpcManager->client->ListFetch(
+                $listFetchRequest, ["cache"=>[$cacheName]]
+            );
+            $response = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheListFetchResponseError($e);
+        } catch (\Exception $e){
+            return new CacheListFetchResponseError(new UnknownError($e->getMessage()));
+        }
+        if (!$response->hasFound())
+        {
+            return new CacheListFetchResponseMiss();
+        }
+        return new CacheListFetchResponseHit($response);
+    }
+
+    public function listPushFront(
+        string $cacheName, string $listName, string $value, bool $refreshTtl, ?int $truncateBackToSize=null, ?int $ttlSeconds=null
+    ) : CacheListPushFrontResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateListName($listName);
+            $itemTtlSeconds = $ttlSeconds ? $ttlSeconds : $this->defaultTtlSeconds;
+            validateTtl($itemTtlSeconds);
+            $listPushFrontRequest = new _ListPushFrontRequest();
+            $listPushFrontRequest->setListName($listName);
+            $listPushFrontRequest->setValue($value);
+            $listPushFrontRequest->setRefreshTtl($refreshTtl);
+            $listPushFrontRequest->setTtlMilliseconds($itemTtlSeconds * 1000);
+            if (!is_null($truncateBackToSize)) {
+                $listPushFrontRequest->setTruncateTailToSize($truncateBackToSize);
+            }
+            $call = $this->grpcManager->client->ListPushFront(
+                $listPushFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
+            $response = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheListPushFrontResponseError($e);
+        } catch (\Exception $e) {
+            return new CacheListPushFrontResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheListPushFrontResponseSuccess($response);
+    }
+
+    public function listPushBack(
+        string $cacheName, string $listName, string $value, bool $refreshTtl, ?int $truncateFrontToSize=null, ?int $ttlSeconds=null
+    ) : CacheListPushBackResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateListName($listName);
+            $itemTtlSeconds = $ttlSeconds ? $ttlSeconds : $this->defaultTtlSeconds;
+            validateTtl($itemTtlSeconds);
+            $listPushBackRequest = new _ListPushBackRequest();
+            $listPushBackRequest->setListName($listName);
+            $listPushBackRequest->setValue($value);
+            $listPushBackRequest->setRefreshTtl($refreshTtl);
+            $listPushBackRequest->setTtlMilliseconds($itemTtlSeconds * 1000);
+            if (!is_null($truncateFrontToSize)) {
+                $listPushBackRequest->setTruncateHeadToSize($truncateFrontToSize);
+            }
+            $call = $this->grpcManager->client->ListPushBack(
+                $listPushBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheListPushBackResponseError($e);
+        } catch (\Exception $e) {
+            return new CacheListPushBackResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheListPushBackResponseSuccess();
     }
 
 }

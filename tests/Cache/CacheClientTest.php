@@ -372,4 +372,72 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss());
     }
 
+    // List API tests
+
+    public function testListPushFrontFetchHappyPath() {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, true, 6000);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $values = $response->asHit()->values();
+        $this->assertNotEmpty($values);
+        $this->assertCount(1, $values);
+        $this->assertContains($value, $values);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, 'value', true, 6000);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $values = $response->asHit()->values();
+        $this->assertNotEmpty($values);
+        $this->assertCount(2, $values);
+    }
+
+    public function testListPushFront_NoRefreshTtl()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false, 5);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false, 10);
+        $this->assertNotNull($response->asSuccess());
+        sleep(5);
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull(($response->asMiss()));
+    }
+
+    public function testListPushFront_RefreshTtl()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false, 2);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, true, 10);
+        $this->assertNotNull($response->asSuccess());
+        sleep(2);
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertCount(2, $response->asHit()->values());
+    }
+
+    public function testListPushBackFetchHappyPath() {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, true, 6000);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $values = $response->asHit()->values();
+        $this->assertNotEmpty($values);
+        $this->assertCount(1, $values);
+        $this->assertContains($value, $values);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, 'value', true, 6000);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $values = $response->asHit()->values();
+        $this->assertNotEmpty($values);
+        $this->assertCount(2, $values);
+    }
 }

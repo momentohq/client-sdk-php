@@ -2,10 +2,24 @@
 namespace Momento\Cache\CacheOperationTypes;
 
 use Cache_client\_GetResponse;
+use Cache_client\_ListFetchResponse;
 use Control_client\_ListCachesResponse;
 use Cache_client\_SetResponse;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\Errors\SdkError;
+
+class CacheInfo
+{
+    private string $name;
+
+    public function __construct($grpcListedCache) {
+        $this->name = $grpcListedCache->getCacheName();
+    }
+
+    public function name() : string {
+        return $this->name;
+    }
+}
 
 trait ErrorBody {
     private SdkError $innerException;
@@ -188,19 +202,6 @@ class ListCachesResponseError extends ListCachesResponse
     use ErrorBody;
 }
 
-class CacheInfo
-{
-    private string $name;
-
-    public function __construct($grpcListedCache) {
-        $this->name = $grpcListedCache->getCacheName();
-    }
-
-    public function name() : string {
-        return $this->name;
-    }
-}
-
 abstract class CacheSetResponse extends ResponseBase
 {
     public function asSuccess(): CacheSetResponseSuccess|null
@@ -322,3 +323,121 @@ class CacheDeleteResponseError extends CacheDeleteResponse
 {
     use ErrorBody;
 }
+
+abstract class CacheListFetchResponse extends ResponseBase
+{
+    public function asHit() : CacheListFetchResponseHit|null
+    {
+        if ($this->isHit())
+        {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asMiss() : CacheListFetchResponseMiss|null
+    {
+        if ($this->isMiss())
+        {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError() : CacheListFetchResponseError|null
+    {
+        if ($this->isError())
+        {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheListFetchResponseHit extends CacheListFetchResponse
+{
+
+    private array $values = [];
+
+    public function __construct(_ListFetchResponse $response)
+    {
+        parent::__construct();
+        if ($response->getFound())
+        {
+            foreach ($response->getFound()->getValues() as $value)
+            {
+                $this->values[] = $value;
+            }
+        }
+    }
+
+    public function values() : array
+    {
+        return $this->values;
+    }
+
+}
+
+class CacheListFetchResponseMiss extends CacheListFetchResponse { }
+
+class CacheListFetchResponseError extends CacheListFetchResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheListPushFrontResponse extends ResponseBase
+{
+    public function asSuccess() : CacheListPushFrontResponseSuccess|null
+    {
+        if ($this->isSuccess())
+        {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError() : CacheListPushFrontResponseError|null
+    {
+        if ($this->isError())
+        {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse { }
+
+class CacheListPushFrontResponseError extends CacheListPushFrontResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheListPushBackResponse extends ResponseBase
+{
+    public function asSuccess() : CacheListPushBackResponseSuccess|null
+    {
+        if ($this->isSuccess())
+        {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError() : CacheListPushBackResponseError|null
+    {
+        if ($this->isError())
+        {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheListPushBackResponseSuccess extends CacheListPushBackResponse { }
+
+class CacheListPushBackResponseError extends CacheListPushBackResponse
+{
+    use ErrorBody;
+}
+

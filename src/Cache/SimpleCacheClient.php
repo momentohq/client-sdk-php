@@ -3,6 +3,9 @@
 namespace Momento\Cache;
 
 use Momento\Auth\ICredentialProvider;
+use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
+use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
+use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
 
 class SimpleCacheClient
 {
@@ -54,5 +57,24 @@ class SimpleCacheClient
     public function delete(string $cacheName, string $key) : CacheOperationTypes\CacheDeleteResponse
     {
         return $this->dataClient->delete($cacheName, $key);
+    }
+
+    public function listFetch(string $cacheName, string $listName) : CacheListFetchResponse
+    {
+        return $this->dataClient->listFetch($cacheName, $listName);
+    }
+
+    public function listPushFront(
+        string $cacheName, string $listName, string$value, bool $refreshTtl, ?int $ttlSeconds=null, ?int $truncateBackToSize=null
+    ) : CacheListPushFrontResponse
+    {
+        return $this->dataClient->listPushFront($cacheName, $listName, $value, $refreshTtl, $truncateBackToSize, $ttlSeconds);
+    }
+
+    public function listPushBack(
+        string $cacheName, string $listName, string$value, bool $refreshTtl, ?int $ttlSeconds=null, ?int $truncateFrontToSize=null
+    ) : CacheListPushBackResponse
+    {
+        return $this->dataClient->listPushBack($cacheName, $listName, $value, $refreshTtl, $truncateFrontToSize, $ttlSeconds);
     }
 }
