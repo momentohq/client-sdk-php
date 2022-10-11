@@ -36,6 +36,12 @@ Run `composer update` to install the necessary prerequisites.
 
 Check out full working code in [the examples directory](examples/) of this repository!
 
+Here is an example to get you started:
+
+```php
+{{ usageExampleCode }}
+```
+
 ### Error Handling
 
 Coming soon!
