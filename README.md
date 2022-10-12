@@ -4,17 +4,23 @@
 <img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-alpha.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-alpha.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md) 
 
 # Momento PHP Client Library
+
 
 :warning: Alpha SDK :warning:
 
 This is an official Momento SDK, but the API is in an alpha stage and may be subject to backward-incompatible
-changes. For more info, click on the alpha badge above.
+changes.  For more info, click on the alpha badge above.
+
 
 PHP client SDK for Momento Serverless Cache: a fast, simple, pay-as-you-go caching solution without
 any of the operational overhead required by traditional caching solutions!
+
+
+
+Japanese: [日本語](README.ja.md)
 
 ## Getting Started :running:
 
@@ -113,6 +119,5 @@ Coming soon!
 
 Coming soon!
 
----
-
+----------------------------------------------------------------------------------------
 For more info, visit our website at [https://gomomento.com](https://gomomento.com)!
