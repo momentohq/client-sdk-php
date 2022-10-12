@@ -10,27 +10,26 @@
 
 :warning: Alpha SDK :warning:
 
-This is an official Momento SDK, but the API is in an alpha stage and may be subject to backward-incompatible
-changes. For more info, click on the alpha badge above.
+こちらの SDK は Momento の公式 SDK ですが、API は Alpha ステージです。
+そのため、後方互換不可能な変更の対象になる可能性があります。詳細は上記の Alpha ボタンをクリックしてください。
 
-PHP client SDK for Momento Serverless Cache: a fast, simple, pay-as-you-go caching solution without
-any of the operational overhead required by traditional caching solutions!
+Momento Serverless Cache の PHP クライアント SDK：従来のキャッシュが必要とするオペレーションオーバーヘッドが全く無く、速くて、シンプルで、従量課金のキャッシュです！
 
-## Getting Started :running:
+## さあ、使用開始 :running:
 
-### Requirements
+### 必要条件
 
-- A Momento Auth Token is required, you can generate one using the [Momento CLI](https://github.com/momentohq/momento-cli)
-- At least PHP 7
-- The grpc PHP extension. See the [gRPC docs](https://github.com/grpc/grpc/blob/v1.46.3/src/php/README.md) section on installing the extension.
+- Momento Auth Token が必要です。[Momento CLI](https://github.com/momentohq/momento-cli)を使って生成できます。
+- 少なくとも PHP 7
+- grpc PHP エクステンション。 インストール方法はこちらの[gRPC docs](https://github.com/grpc/grpc/blob/v1.46.3/src/php/README.md)を参考にしてください。
 
-**IDE Notes**: You'll most likely want to use an IDE that supports PHP development, such as [PhpStorm](https://www.jetbrains.com/phpstorm/) or [Microsoft Visual Studio Code](https://code.visualstudio.com/).
+**IDE に関する注意事項**: [PhpStorm](https://www.jetbrains.com/phpstorm/)や[Microsoft Visual Studio Code](https://code.visualstudio.com/)の様な PHP 開発をサポートできる IDE が必要となります。
 
-### Installation
+### インストール
 
-Install composer [as described on the composer website](https://getcomposer.org/doc/00-intro.md).
+こちらのコンポーザーの[ウェブサイト](https://getcomposer.org/doc/00-intro.md)に掲載されているコンポーザーをインストールしてください。
 
-Add our repository to your `composer.json` file and our SDK as a dependency:
+私達のリポジトリを`composer.json`ファイルに追加し、SDK を依存パッケージとして追加してください：
 
 ```json
 {
@@ -46,13 +45,13 @@ Add our repository to your `composer.json` file and our SDK as a dependency:
 }
 ```
 
-Run `composer update` to install the necessary prerequisites.
+`composer update`を実行し他の必要条件をインストールしてください。
 
-### Usage
+### 使用方法
 
-Check out full working code in [the examples directory](examples/) of this repository!
+コード例は[examples ディレクトリ](examples/)を参照してください！
 
-Here is an example to get you started:
+以下が簡単に Momento を使用開始する例です：
 
 ```php
 <?php
@@ -105,14 +104,14 @@ printBanner("*                       Momento Example End                      *"
 
 ```
 
-### Error Handling
+### エラーの対処法
 
-Coming soon!
+準備中です！
 
-### Tuning
+### チューニング
 
-Coming soon!
+準備中です！
 
 ---
 
-For more info, visit our website at [https://gomomento.com](https://gomomento.com)!
+更なる詳細は私達のウェブサイト[https://jp.gomomento.com/](https://jp.gomomento.com/)をご確認ください！

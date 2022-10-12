@@ -1,5 +1,7 @@
 {{ ossHeader }}
 
+Japanese: [日本語](README.ja.md)
+
 ## Getting Started :running:
 
 ### Requirements
