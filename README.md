@@ -8,8 +8,6 @@
 
 # Momento PHP Client Library
 
-Japanese: [日本語](README.ja.md)
-
 :warning: Alpha SDK :warning:
 
 This is an official Momento SDK, but the API is in an alpha stage and may be subject to backward-incompatible
