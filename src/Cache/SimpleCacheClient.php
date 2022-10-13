@@ -2,7 +2,7 @@
 
 namespace Momento\Cache;
 
-use Momento\Cache\Errors\InvalidArgumentError;
+use Momento\Auth\ICredentialProvider;
 
 class SimpleCacheClient
 {
@@ -10,33 +10,20 @@ class SimpleCacheClient
     private _ScsControlClient $controlClient;
     private _ScsDataClient $dataClient;
     /**
-     * @param string $authToken: momento JWT
+     * @param ICredentialProvider $authProvider: Momento credential provider
      * @param int $defaultTtlSeconds: Default Time to Live for the item in Cache
+     * @param ?int $dataClientOperationTimeoutMs: msecs after which requests should be cancelled due to timeout
      */
-    function __construct(string $authToken, int $defaultTtlSeconds, ?int $dataClientOperationTimeoutMs=null)
-    {
-        $payload = $this->parseAuthToken($authToken);
-        $this->controlClient = new _ScsControlClient($authToken, $payload["cp"]);
+    function __construct(
+        ICredentialProvider $authProvider, int $defaultTtlSeconds, ?int $dataClientOperationTimeoutMs=null
+    ) {
+        $this->controlClient = new _ScsControlClient($authProvider->getAuthToken(), $authProvider->getControlEndpoint());
         $this->dataClient = new _ScsDataClient(
-            $authToken, $payload["c"], $defaultTtlSeconds, $dataClientOperationTimeoutMs
+            $authProvider->getAuthToken(),
+            $authProvider->getCacheEndpoint(),
+            $defaultTtlSeconds,
+            $dataClientOperationTimeoutMs
         );
-    }
-
-    private function throwBadAuthToken() {
-        throw new InvalidArgumentError('Invalid Auth token.');
-    }
-
-    private function parseAuthToken(string $authToken) : array {
-        $exploded = explode (".", $authToken);
-        if (count($exploded) != 3) {
-            $this->throwBadAuthToken();
-        }
-        list($header, $payload, $signature) = $exploded;
-        $token = json_decode(base64_decode($payload), true);
-        if ($token === null) {
-            $this->throwBadAuthToken();
-        }
-        return $token;
     }
 
     public function createCache(string $cacheName) : CacheOperationTypes\CreateCacheResponse
