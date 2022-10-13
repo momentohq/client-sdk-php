@@ -63,6 +63,15 @@ class _ScsDataClient
         $this->grpcManager = new _DataGrpcManager($authToken, $endpoint);
     }
 
+    private function ttlToMillis(?int $ttl=null) : int
+    {
+        if (!$ttl) {
+            $ttl = $this->defaultTtlSeconds;
+        }
+        validateTtl($ttl);
+        return $ttl * 1000;
+    }
+
     private function processCall(UnaryCall $call) : mixed
     {
         [$response, $status] = $call->wait();
@@ -76,12 +85,11 @@ class _ScsDataClient
     {
         try {
             validateCacheName($cacheName);
-            $itemTtlSeconds = $ttlSeconds ? $ttlSeconds : $this->defaultTtlSeconds;
-            validateTtl($itemTtlSeconds);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $setRequest = new _SetRequest();
             $setRequest->setCacheKey($key);
             $setRequest->setCacheBody($value);
-            $setRequest->setTtlMilliseconds($itemTtlSeconds * 1000);
+            $setRequest->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->Set(
                 $setRequest, ["cache"=>[$cacheName]], ["timeout"=>$this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
             );
@@ -167,13 +175,12 @@ class _ScsDataClient
         try {
             validateCacheName($cacheName);
             validateListName($listName);
-            $itemTtlSeconds = $ttlSeconds ? $ttlSeconds : $this->defaultTtlSeconds;
-            validateTtl($itemTtlSeconds);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $listPushFrontRequest = new _ListPushFrontRequest();
             $listPushFrontRequest->setListName($listName);
             $listPushFrontRequest->setValue($value);
             $listPushFrontRequest->setRefreshTtl($refreshTtl);
-            $listPushFrontRequest->setTtlMilliseconds($itemTtlSeconds * 1000);
+            $listPushFrontRequest->setTtlMilliseconds($ttlMillis);
             if (!is_null($truncateBackToSize)) {
                 $listPushFrontRequest->setTruncateTailToSize($truncateBackToSize);
             }
@@ -196,13 +203,12 @@ class _ScsDataClient
         try {
             validateCacheName($cacheName);
             validateListName($listName);
-            $itemTtlSeconds = $ttlSeconds ? $ttlSeconds : $this->defaultTtlSeconds;
-            validateTtl($itemTtlSeconds);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $listPushBackRequest = new _ListPushBackRequest();
             $listPushBackRequest->setListName($listName);
             $listPushBackRequest->setValue($value);
             $listPushBackRequest->setRefreshTtl($refreshTtl);
-            $listPushBackRequest->setTtlMilliseconds($itemTtlSeconds * 1000);
+            $listPushBackRequest->setTtlMilliseconds($ttlMillis);
             if (!is_null($truncateFrontToSize)) {
                 $listPushBackRequest->setTruncateHeadToSize($truncateFrontToSize);
             }
