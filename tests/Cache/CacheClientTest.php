@@ -377,6 +377,7 @@ class CacheClientTest extends TestCase
     public function testListPushFrontFetchHappyPath() {
         $listName = uniqid();
         $value = uniqid();
+        $value2 = uniqid();
         $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, true, 6000);
         $this->assertNotNull($response->asSuccess());
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
@@ -385,13 +386,14 @@ class CacheClientTest extends TestCase
         $this->assertNotEmpty($values);
         $this->assertCount(1, $values);
         $this->assertContains($value, $values);
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, 'value', true, 6000);
+
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value2, true, 6000);
         $this->assertNotNull($response->asSuccess());
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNotNull($response->asHit());
         $values = $response->asHit()->values();
         $this->assertNotEmpty($values);
-        $this->assertCount(2, $values);
+        $this->assertEquals([$value2, $value], $values);
     }
 
     public function testListPushFront_NoRefreshTtl()
@@ -424,6 +426,7 @@ class CacheClientTest extends TestCase
     public function testListPushBackFetchHappyPath() {
         $listName = uniqid();
         $value = uniqid();
+        $value2 = uniqid();
         $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, true, 6000);
         $this->assertNotNull($response->asSuccess());
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
@@ -432,12 +435,13 @@ class CacheClientTest extends TestCase
         $this->assertNotEmpty($values);
         $this->assertCount(1, $values);
         $this->assertContains($value, $values);
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, 'value', true, 6000);
+
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value2, true, 6000);
         $this->assertNotNull($response->asSuccess());
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNotNull($response->asHit());
         $values = $response->asHit()->values();
         $this->assertNotEmpty($values);
-        $this->assertCount(2, $values);
+        $this->assertEquals([$value, $value2], $values);
     }
 }
