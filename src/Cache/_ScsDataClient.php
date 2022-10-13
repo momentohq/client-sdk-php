@@ -145,7 +145,7 @@ class _ScsDataClient
             $listFetchRequest = new _ListFetchRequest();
             $listFetchRequest->setListName($listName);
             $call = $this->grpcManager->client->ListFetch(
-                $listFetchRequest, ["cache"=>[$cacheName]]
+                $listFetchRequest, ["cache"=>[$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
