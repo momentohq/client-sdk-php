@@ -12,6 +12,10 @@ Japanese: [日本語](README.ja.md)
 
 **IDE Notes**: You'll most likely want to use an IDE that supports PHP development, such as [PhpStorm](https://www.jetbrains.com/phpstorm/) or [Microsoft Visual Studio Code](https://code.visualstudio.com/).
 
+### Examples
+
+Check out full working code in [the examples directory](examples/) of this repository!
+
 ### Installation
 
 Install composer [as described on the composer website](https://getcomposer.org/doc/00-intro.md).
