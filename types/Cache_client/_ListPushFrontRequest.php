@@ -34,9 +34,9 @@ class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
     /**
      * ensure total length <= this; remove excess from back of list
      *
-     * Generated from protobuf field <code>optional uint32 truncate_tail_to_size = 5;</code>
+     * Generated from protobuf field <code>optional uint32 truncate_back_to_size = 5;</code>
      */
-    protected $truncate_tail_to_size = null;
+    protected $truncate_back_to_size = null;
 
     /**
      * Constructor.
@@ -48,7 +48,7 @@ class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
      *     @type string $value
      *     @type int|string $ttl_milliseconds
      *     @type bool $refresh_ttl
-     *     @type int $truncate_tail_to_size
+     *     @type int $truncate_back_to_size
      *           ensure total length <= this; remove excess from back of list
      * }
      */
@@ -148,35 +148,35 @@ class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
     /**
      * ensure total length <= this; remove excess from back of list
      *
-     * Generated from protobuf field <code>optional uint32 truncate_tail_to_size = 5;</code>
+     * Generated from protobuf field <code>optional uint32 truncate_back_to_size = 5;</code>
      * @return int
      */
-    public function getTruncateTailToSize()
+    public function getTruncateBackToSize()
     {
-        return isset($this->truncate_tail_to_size) ? $this->truncate_tail_to_size : 0;
+        return isset($this->truncate_back_to_size) ? $this->truncate_back_to_size : 0;
     }
 
-    public function hasTruncateTailToSize()
+    public function hasTruncateBackToSize()
     {
-        return isset($this->truncate_tail_to_size);
+        return isset($this->truncate_back_to_size);
     }
 
-    public function clearTruncateTailToSize()
+    public function clearTruncateBackToSize()
     {
-        unset($this->truncate_tail_to_size);
+        unset($this->truncate_back_to_size);
     }
 
     /**
      * ensure total length <= this; remove excess from back of list
      *
-     * Generated from protobuf field <code>optional uint32 truncate_tail_to_size = 5;</code>
+     * Generated from protobuf field <code>optional uint32 truncate_back_to_size = 5;</code>
      * @param int $var
      * @return $this
      */
-    public function setTruncateTailToSize($var)
+    public function setTruncateBackToSize($var)
     {
         GPBUtil::checkUint32($var);
-        $this->truncate_tail_to_size = $var;
+        $this->truncate_back_to_size = $var;
 
         return $this;
     }

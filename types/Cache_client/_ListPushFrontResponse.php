@@ -13,6 +13,12 @@ use Google\Protobuf\Internal\GPBUtil;
  */
 class _ListPushFrontResponse extends \Google\Protobuf\Internal\Message
 {
+    /**
+     * length of the list after the push
+     *
+     * Generated from protobuf field <code>uint32 list_length = 1;</code>
+     */
+    protected $list_length = 0;
 
     /**
      * Constructor.
@@ -20,11 +26,39 @@ class _ListPushFrontResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
+     *     @type int $list_length
+     *           length of the list after the push
      * }
      */
     public function __construct($data = NULL) {
         \GPBMetadata\Cacheclient::initOnce();
         parent::__construct($data);
+    }
+
+    /**
+     * length of the list after the push
+     *
+     * Generated from protobuf field <code>uint32 list_length = 1;</code>
+     * @return int
+     */
+    public function getListLength()
+    {
+        return $this->list_length;
+    }
+
+    /**
+     * length of the list after the push
+     *
+     * Generated from protobuf field <code>uint32 list_length = 1;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setListLength($var)
+    {
+        GPBUtil::checkUint32($var);
+        $this->list_length = $var;
+
+        return $this;
     }
 
 }

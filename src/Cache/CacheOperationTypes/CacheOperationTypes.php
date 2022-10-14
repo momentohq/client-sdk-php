@@ -8,6 +8,8 @@ use Cache_client\_ListFetchResponse;
 use Cache_client\_ListLengthResponse;
 use Cache_client\_ListPopBackResponse;
 use Cache_client\_ListPopFrontResponse;
+use Cache_client\_ListPushBackResponse;
+use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetResponse;
 use Control_client\_ListCachesResponse;
 use Momento\Cache\Errors\MomentoErrorCode;
@@ -452,8 +454,19 @@ abstract class CacheListPushFrontResponse extends ResponseBase
     }
 }
 
-class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse
-{
+class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse {
+    private int $listLength;
+
+    public function __construct(_ListPushFrontResponse $response)
+    {
+        parent::__construct();
+        $this->listLength = $response->getListLength();
+    }
+
+    public function listLength() : int
+    {
+        return $this->listLength;
+    }
 }
 
 class CacheListPushFrontResponseError extends CacheListPushFrontResponse
@@ -480,8 +493,19 @@ abstract class CacheListPushBackResponse extends ResponseBase
     }
 }
 
-class CacheListPushBackResponseSuccess extends CacheListPushBackResponse
-{
+class CacheListPushBackResponseSuccess extends CacheListPushBackResponse {
+    private int $listLength;
+
+    public function __construct(_ListPushBackResponse $response)
+    {
+        parent::__construct();
+        $this->listLength = $response->getListLength();
+    }
+
+    public function listLength() : int
+    {
+        return $this->listLength;
+    }
 }
 
 class CacheListPushBackResponseError extends CacheListPushBackResponse

@@ -34,9 +34,9 @@ class _ListPushBackRequest extends \Google\Protobuf\Internal\Message
     /**
      * ensure total length <= this; remove excess from front of list
      *
-     * Generated from protobuf field <code>optional uint32 truncate_head_to_size = 5;</code>
+     * Generated from protobuf field <code>optional uint32 truncate_front_to_size = 5;</code>
      */
-    protected $truncate_head_to_size = null;
+    protected $truncate_front_to_size = null;
 
     /**
      * Constructor.
@@ -48,7 +48,7 @@ class _ListPushBackRequest extends \Google\Protobuf\Internal\Message
      *     @type string $value
      *     @type int|string $ttl_milliseconds
      *     @type bool $refresh_ttl
-     *     @type int $truncate_head_to_size
+     *     @type int $truncate_front_to_size
      *           ensure total length <= this; remove excess from front of list
      * }
      */
@@ -148,35 +148,35 @@ class _ListPushBackRequest extends \Google\Protobuf\Internal\Message
     /**
      * ensure total length <= this; remove excess from front of list
      *
-     * Generated from protobuf field <code>optional uint32 truncate_head_to_size = 5;</code>
+     * Generated from protobuf field <code>optional uint32 truncate_front_to_size = 5;</code>
      * @return int
      */
-    public function getTruncateHeadToSize()
+    public function getTruncateFrontToSize()
     {
-        return isset($this->truncate_head_to_size) ? $this->truncate_head_to_size : 0;
+        return isset($this->truncate_front_to_size) ? $this->truncate_front_to_size : 0;
     }
 
-    public function hasTruncateHeadToSize()
+    public function hasTruncateFrontToSize()
     {
-        return isset($this->truncate_head_to_size);
+        return isset($this->truncate_front_to_size);
     }
 
-    public function clearTruncateHeadToSize()
+    public function clearTruncateFrontToSize()
     {
-        unset($this->truncate_head_to_size);
+        unset($this->truncate_front_to_size);
     }
 
     /**
      * ensure total length <= this; remove excess from front of list
      *
-     * Generated from protobuf field <code>optional uint32 truncate_head_to_size = 5;</code>
+     * Generated from protobuf field <code>optional uint32 truncate_front_to_size = 5;</code>
      * @param int $var
      * @return $this
      */
-    public function setTruncateHeadToSize($var)
+    public function setTruncateFrontToSize($var)
     {
         GPBUtil::checkUint32($var);
-        $this->truncate_head_to_size = $var;
+        $this->truncate_front_to_size = $var;
 
         return $this;
     }

@@ -426,6 +426,7 @@ class CacheClientTest extends TestCase
         $value2 = uniqid();
         $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, true, 6000);
         $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(1, $response->asSuccess()->listLength());
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNotNull($response->asHit());
         $values = $response->asHit()->values();
@@ -435,6 +436,7 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value2, true, 6000);
         $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(2, $response->asSuccess()->listLength());
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNotNull($response->asHit());
         $values = $response->asHit()->values();
@@ -502,6 +504,7 @@ class CacheClientTest extends TestCase
         $value2 = uniqid();
         $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, true, 6000);
         $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(1, $response->asSuccess()->listLength());
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNotNull($response->asHit());
         $values = $response->asHit()->values();
@@ -511,6 +514,7 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value2, true, 6000);
         $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(2, $response->asSuccess()->listLength());
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNotNull($response->asHit());
         $values = $response->asHit()->values();
