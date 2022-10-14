@@ -17,9 +17,11 @@ if (!function_exists('validateTtl'))
 
 if (!function_exists('isNullOrEmpty'))
 {
-    function isNullOrEmpty(string $str=null) : bool
+    function isNullOrEmpty(string $str=null, string $message=null) : void
     {
-        return (is_null($str) || $str === "");
+        if (is_null($str) || $str === "") {
+            throw new InvalidArgumentError($message);
+        }
     }
 }
 
@@ -27,10 +29,7 @@ if (!function_exists('validateCacheName'))
 {
     function validateCacheName(string $cacheName) : void
     {
-        if (isNullOrEmpty($cacheName))
-        {
-            throw new InvalidArgumentError("Cache name must be a non-empty string");
-        }
+        isNullOrEmpty("Cache name must be a non-empty string");
     }
 }
 
@@ -38,10 +37,31 @@ if (!function_exists('validateListName'))
 {
     function validateListName(string $listName) : void
     {
-        if (isNullOrEmpty($listName))
-        {
-            throw new InvalidArgumentError("List name must be a non-empty string");
-        }
+        isNullOrEmpty("List name must be a non-empty string");
+    }
+}
+
+if (!function_exists('validateDictionaryName'))
+{
+    function validateDictionaryName(string $listName) : void
+    {
+        isNullOrEmpty("Dictionary name must be a non-empty string");
+    }
+}
+
+if (!function_exists('validateFieldName'))
+{
+    function validateFieldName(string $listName) : void
+    {
+        isNullOrEmpty("Field name must be a non-empty string");
+    }
+}
+
+if (!function_exists('validateValueName'))
+{
+    function validateValueName(string $listName) : void
+    {
+        isNullOrEmpty("Value name must be a non-empty string");
     }
 }
 
@@ -59,3 +79,4 @@ if (!function_exists('validateOperationTimeout'))
         }
     }
 }
+
