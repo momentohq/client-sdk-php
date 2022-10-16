@@ -6,7 +6,6 @@ use Cache_client\_DeleteRequest;
 use Cache_client\_DictionaryDeleteRequest;
 use Cache_client\_DictionaryFieldValuePair;
 use Cache_client\_DictionaryGetRequest;
-use Cache_client\_DictionaryGetResponse;
 use Cache_client\_DictionarySetRequest;
 use Cache_client\_GetRequest;
 use Cache_client\_ListFetchRequest;
@@ -19,6 +18,8 @@ use Grpc\UnaryCall;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseHit;
@@ -249,7 +250,7 @@ class _ScsDataClient
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $dictionarySetRequest = new _DictionarySetRequest();
             $dictionarySetRequest->setDictionaryName($dictionaryName);
-            $dictionarySetRequest->setItems(toSingletonFieldValuePair($field, $value));
+            $dictionarySetRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
             $dictionarySetRequest->setRefreshTtl($refreshTtl);
             $dictionarySetRequest->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->DictionarySet($dictionarySetRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
@@ -264,6 +265,14 @@ class _ScsDataClient
         return new CacheDictionarySetResponseSuccess();
     }
 
+    private function toSingletonFieldValuePair(string $field, string $value): _DictionaryFieldValuePair
+    {
+        $singletonPair = new _DictionaryFieldValuePair();
+        $singletonPair->setField($field);
+        $singletonPair->setValue($value);
+        return $singletonPair;
+    }
+
     public function dictionaryGet(string $cacheName, string $dictionaryName, string $field): CacheDictionaryGetResponse
     {
         try {
@@ -272,8 +281,9 @@ class _ScsDataClient
             validateFieldName($field);
             $dictionaryGetRequest = new _DictionaryGetRequest();
             $dictionaryGetRequest->setDictionaryName($dictionaryName);
+            $dictionaryGetRequest->setFields([$field]);
             $call = $this->grpcManager->client->DictionaryGet($dictionaryGetRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
-            $dictionaryGetResponse = new _DictionaryGetResponse($this->processCall($call));
+            $dictionaryGetResponse = $this->processCall($call);
         } catch (InvalidArgumentError $e) {
             return new CacheDictionaryGetResponseError(new InvalidArgumentError($e->getMessage()));
         } catch (SdkError $e) {
@@ -309,11 +319,6 @@ class _ScsDataClient
         } catch (Exception $e) {
             return new CacheDictionaryDeleteResponseError(new UnknownError($e->getMessage()));
         }
-        return new CacheDeleteResponseSuccess();
-    }
-
-    private function toSingletonFieldValuePair(string $field, string $value): _DictionaryFieldValuePair
-    {
-        return new _DictionaryFieldValuePair([$field => $field, $value => $value]);
+        return new CacheDictionaryDeleteResponseSuccess();
     }
 }
