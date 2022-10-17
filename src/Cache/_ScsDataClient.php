@@ -307,7 +307,8 @@ class _ScsDataClient
             validateDictionaryName($dictionaryName);
             $dictionaryDeleteRequest = new _DictionaryDeleteRequest();
             $dictionaryDeleteRequest->setDictionaryName($dictionaryName);
-            $dictionaryDeleteRequest->setAll(new All());
+            $all = new All();
+            $dictionaryDeleteRequest->setAll($all);
             $call = $this->grpcManager->client->DictionaryDelete($dictionaryDeleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
             $this->processCall($call);
         } catch (SdkError $e) {
