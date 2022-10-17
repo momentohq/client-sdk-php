@@ -51,38 +51,17 @@ trait ErrorBody
 
 class CacheInfo
 {
-    private SdkError $innerException;
-    private MomentoErrorCode $errorCode;
-    private string $message;
+    private string $name;
 
-    public function __construct(SdkError $error)
+    public function __construct($grpcListedCache)
     {
-        parent::__construct();
-        $this->innerException = $error;
-        $this->message = "{$error->messageWrapper}: {$error->getMessage()}";
-        $this->errorCode = $error->errorCode;
+        $this->name = $grpcListedCache->getCacheName();
     }
 
-    public function innerException(): SdkError
+    public function name(): string
     {
-        return $this->innerException;
+        return $this->name;
     }
-
-    public function errorCode(): MomentoErrorCode
-    {
-        return $this->errorCode;
-    }
-
-    public function message(): string
-    {
-        return $this->message;
-    }
-
-    public function __toString()
-    {
-        return parent::__toString() . ": " . $this->message;
-    }
-
 }
 
 abstract class ResponseBase
