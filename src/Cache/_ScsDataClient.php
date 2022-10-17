@@ -4,6 +4,7 @@ namespace Momento\Cache;
 
 use Cache_client\_DeleteRequest;
 use Cache_client\_DictionaryDeleteRequest;
+use Cache_client\_DictionaryDeleteRequest\All;
 use Cache_client\_DictionaryFieldValuePair;
 use Cache_client\_DictionaryGetRequest;
 use Cache_client\_DictionarySetRequest;
@@ -48,7 +49,6 @@ use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseSuccess;
 use Momento\Cache\Errors\InternalServerError;
-use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Utilities\_ErrorConverter;
@@ -256,8 +256,6 @@ class _ScsDataClient
             $dictionarySetRequest->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->DictionarySet($dictionarySetRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
             $this->processCall($call);
-        } catch (InvalidArgumentError $e) {
-            return new CacheDictionarySetResponseError(new InvalidArgumentError($e->getMessage()));
         } catch (SdkError $e) {
             return new CacheDictionarySetResponseError($e);
         } catch (Exception $e) {
@@ -285,8 +283,6 @@ class _ScsDataClient
             $dictionaryGetRequest->setFields([$field]);
             $call = $this->grpcManager->client->DictionaryGet($dictionaryGetRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
             $dictionaryGetResponse = $this->processCall($call);
-        } catch (InvalidArgumentError $e) {
-            return new CacheDictionaryGetResponseError(new InvalidArgumentError($e->getMessage()));
         } catch (SdkError $e) {
             return new CacheDictionaryGetResponseError($e);
         } catch (Exception $e) {
@@ -311,10 +307,9 @@ class _ScsDataClient
             validateDictionaryName($dictionaryName);
             $dictionaryDeleteRequest = new _DictionaryDeleteRequest();
             $dictionaryDeleteRequest->setDictionaryName($dictionaryName);
+            $dictionaryDeleteRequest->setAll(new All());
             $call = $this->grpcManager->client->DictionaryDelete($dictionaryDeleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
             $this->processCall($call);
-        } catch (InvalidArgumentError $e) {
-            return new CacheDictionaryDeleteResponseError(new InvalidArgumentError($e->getMessage()));
         } catch (SdkError $e) {
             return new CacheDictionaryDeleteResponseError($e);
         } catch (Exception $e) {
