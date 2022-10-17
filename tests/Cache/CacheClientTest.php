@@ -756,7 +756,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(4, $response->asSuccess()->length());
 
         $response = $this->client->listErase($this->TEST_CACHE_NAME, $listName, 1, 20);
-        $this->assertNotEmpty($response->asSuccess());
+        $this->assertNotNull($response->asSuccess());
 
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNotNull($response->asHit());
