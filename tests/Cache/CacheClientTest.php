@@ -740,6 +740,29 @@ class CacheClientTest extends TestCase
         $this->assertEquals(array_slice($values, 2), $response->asHit()->values());
     }
 
+    public function testListEraseRange_LargeCountValue()
+    {
+        $listName = uniqid();
+        $values = [];
+        foreach (range(0, 3) as $i) {
+            $val = uniqid();
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $this->assertNotNull($response->asSuccess());
+            $values[] = $val;
+        }
+
+        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(4, $response->asSuccess()->length());
+
+        $response = $this->client->listErase($this->TEST_CACHE_NAME, $listName, 1, 20);
+        $this->assertNotEmpty($response->asSuccess());
+
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals([$values[0]], $response->asHit()->values());
+    }
+
     public function testListErase_MissingList()
     {
         $response = $this->client->listErase($this->TEST_CACHE_NAME, uniqid());
