@@ -65,10 +65,12 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asSuccess());
         $response = $this->client->set($cacheName, $key, $value);
         $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(get_class($response) . ": key $key = $value", "$response");
         $response = $this->client->get($cacheName, $key);
         $this->assertNotNull($response->asHit());
         $response = $response->asHit();
         $this->assertEquals($response->value(), $value);
+        $this->assertEquals(get_class($response) . ": $value", "$response");
         $response = $this->client->get($this->TEST_CACHE_NAME, $key);
         $this->assertNotNull($response->asMiss());
         $response = $this->client->deleteCache($cacheName);
@@ -112,6 +114,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asError());
         $response = $response->asError();
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->errorCode());
+        $this->assertEquals(get_class($response) . ": {$response->message()}", "$response");
     }
 
     public function testCreateCacheNullName() {
@@ -185,6 +188,7 @@ class CacheClientTest extends TestCase
             $cacheNames = array_map(fn($i) => $i->name(), $caches);
             $this->assertContains($cacheName, $cacheNames);
             $this->assertEquals(null, $listCachesResp->nextToken());
+            $this->assertEquals(get_class($listCachesResp) . ": " . join(', ', $cacheNames), "$listCachesResp");
         } finally {
             $this->client->deleteCache($cacheName);
         }
@@ -192,9 +196,9 @@ class CacheClientTest extends TestCase
 
     public function testListCachesBadAuth() {
         $client = $this->getBadAuthTokenClient();
-        $respnse = $client->listCaches();
-        $this->assertNotNull($respnse->asError());
-        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $respnse->asError()->errorCode());
+        $response = $client->listCaches();
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
     }
 
     public function testListCachesNextToken() {
@@ -423,6 +427,32 @@ class CacheClientTest extends TestCase
         $this->assertCount(2, $response->asHit()->values());
     }
 
+    public function testListPushFront_TruncateList()
+    {
+        $listName = uniqid();
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $value3 = uniqid();
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value1, false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value2, false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value3, false, truncateBackToSize: 2);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals([$value3, $value2], $response->asHit()->values());
+    }
+
+    public function testListPushFront_TruncateList_NegativeValue()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false, truncateBackToSize: -1);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
     public function testListPushBackFetchHappyPath() {
         $listName = uniqid();
         $value = uniqid();
@@ -443,5 +473,299 @@ class CacheClientTest extends TestCase
         $values = $response->asHit()->values();
         $this->assertNotEmpty($values);
         $this->assertEquals([$value, $value2], $values);
+    }
+
+    public function testListPushBack_NoRefreshTtl()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false, 5);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false, 10);
+        $this->assertNotNull($response->asSuccess());
+        sleep(5);
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull(($response->asMiss()));
+    }
+
+    public function testListPushBack_RefreshTtl()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false, 2);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, true, 10);
+        $this->assertNotNull($response->asSuccess());
+        sleep(2);
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertCount(2, $response->asHit()->values());
+    }
+
+    public function testListPushBack_TruncateList()
+    {
+        $listName = uniqid();
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $value3 = uniqid();
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value1, false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value2, false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value3, false, truncateFrontToSize: 2);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals([$value2, $value3], $response->asHit()->values());
+    }
+
+    public function testListPushBack_TruncateList_NegativeValue()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false, truncateFrontToSize: -1);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testListPopFront_MissHappyPath()
+    {
+        $listName = uniqid();
+        $response = $this->client->listPopFront($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testListPopFront_HappyPath()
+    {
+        $listName = uniqid();
+        $values = [];
+        foreach (range(0, 3) as $i)
+        {
+            $val = uniqid();
+            $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $val, false);
+            $this->assertNotNull($response->asSuccess());
+            array_unshift($values, $val);
+        }
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($values, $response->asHit()->values());
+        while ($val = array_shift($values))
+        {
+            $response = $this->client->listPopFront($this->TEST_CACHE_NAME, $listName);
+            $this->assertNotNull($response->asHit());
+            $this->assertEquals($val, $response->asHit()->value());
+            $this->assertEquals(get_class($response) . ": {$response->asHit()->value()}", "$response");
+        }
+    }
+
+    public function testListPopBack_MissHappyPath()
+    {
+        $listName = uniqid();
+        $response = $this->client->listPopBack($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testListPopFront_EmptyList()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPopFront($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value, $response->asHit()->value());
+        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(0, $response->asSuccess()->length());
+        $response = $this->client->listPopFront($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testListPopBack_HappyPath()
+    {
+        $listName = uniqid();
+        $values = [];
+        foreach (range(0, 3) as $i)
+        {
+            $val = uniqid();
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $this->assertNotNull($response->asSuccess());
+            $values[] = $val;
+        }
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($values, $response->asHit()->values());
+        while ($val = array_pop($values))
+        {
+            $response = $this->client->listPopBack($this->TEST_CACHE_NAME, $listName);
+            $this->assertNotNull($response->asHit());
+            $this->assertEquals($val, $response->asHit()->value());
+            $this->assertEquals(get_class($response) . ": {$response->asHit()->value()}", "$response");
+        }
+    }
+
+    public function testListPopBack_EmptyList()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPopBack($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value, $response->asHit()->value());
+        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(0, $response->asSuccess()->length());
+        $response = $this->client->listPopBack($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testListRemoveValue_HappyPath()
+    {
+        $listName = uniqid();
+        $values = [];
+        $valueToRemove = uniqid();
+        foreach (range(0, 3) as $i)
+        {
+            $val = uniqid();
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $this->assertNotNull($response->asSuccess());
+            $values[] = $val;
+        }
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $valueToRemove, false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $valueToRemove, false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $expectedValues = $values;
+        array_push($expectedValues, $valueToRemove, $valueToRemove);
+        $this->assertEquals($expectedValues, $response->asHit()->values());
+
+        $response = $this->client->listRemoveValue($this->TEST_CACHE_NAME, $listName, $valueToRemove);
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($values, $response->asHit()->values());
+    }
+
+    public function testListRemoveValues_ValueNotPresent()
+    {
+        $listName = uniqid();
+        $values = [];
+        foreach (range(0, 3) as $i)
+        {
+            $val = uniqid();
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $this->assertNotNull($response->asSuccess());
+            $values[] = $val;
+        }
+
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($values, $response->asHit()->values());
+
+        $response = $this->client->listRemoveValue($this->TEST_CACHE_NAME, $listName, "i-am-not-in-the-list");
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($values, $response->asHit()->values());
+    }
+
+    public function testListLength_HappyPath()
+    {
+        $listName = uniqid();
+        foreach (range(0, 3) as $i) {
+            $val = uniqid();
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $this->assertNotNull($response->asSuccess());
+            $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
+            $this->assertNotNull($response->asSuccess());
+            $this->assertEquals($i + 1, $response->asSuccess()->length());
+            $this->assertEquals(get_class($response) . ": {$response->asSuccess()->length()}", "$response");
+        }
+    }
+
+    public function testListLength_MissingList()
+    {
+        $response = $this->client->listLength($this->TEST_CACHE_NAME, uniqid());
+        $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(0, $response->asSuccess()->length());
+    }
+
+    // List erase
+    public function testListEraseAll_HappyPath()
+    {
+        $listName = uniqid();
+        foreach (range(0, 3) as $i) {
+            $val = uniqid();
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $this->assertNotNull($response->asSuccess());
+        }
+
+        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(4, $response->asSuccess()->length());
+
+        $response = $this->client->listErase($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(0, $response->asSuccess()->length());
+    }
+
+    public function testListEraseRange_HappyPath()
+    {
+        $listName = uniqid();
+        $values = [];
+        foreach (range(0, 3) as $i) {
+            $val = uniqid();
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $this->assertNotNull($response->asSuccess());
+            $values[] = $val;
+        }
+
+        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(4, $response->asSuccess()->length());
+
+        $response = $this->client->listErase($this->TEST_CACHE_NAME, $listName, 0, 2);
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals(array_slice($values, 2), $response->asHit()->values());
+    }
+
+    public function testListEraseRange_LargeCountValue()
+    {
+        $listName = uniqid();
+        $values = [];
+        foreach (range(0, 3) as $i) {
+            $val = uniqid();
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $this->assertNotNull($response->asSuccess());
+            $values[] = $val;
+        }
+
+        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(4, $response->asSuccess()->length());
+
+        $response = $this->client->listErase($this->TEST_CACHE_NAME, $listName, 1, 20);
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals([$values[0]], $response->asHit()->values());
+    }
+
+    public function testListErase_MissingList()
+    {
+        $response = $this->client->listErase($this->TEST_CACHE_NAME, uniqid());
+        $this->assertNotNull($response->asSuccess());
     }
 }
