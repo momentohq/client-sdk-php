@@ -5,6 +5,9 @@ namespace Momento\Cache\CacheOperationTypes;
 use Cache_client\_DictionaryGetResponse;
 use Cache_client\_GetResponse;
 use Cache_client\_ListFetchResponse;
+use Cache_client\_ListLengthResponse;
+use Cache_client\_ListPopBackResponse;
+use Cache_client\_ListPopFrontResponse;
 use Cache_client\_SetResponse;
 use Control_client\_ListCachesResponse;
 use Momento\Cache\Errors\MomentoErrorCode;
@@ -38,21 +41,48 @@ trait ErrorBody
     {
         return $this->message;
     }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": " . $this->message;
+    }
+
 }
 
 class CacheInfo
 {
-    private string $name;
+    private SdkError $innerException;
+    private MomentoErrorCode $errorCode;
+    private string $message;
 
-    public function __construct($grpcListedCache)
+    public function __construct(SdkError $error)
     {
-        $this->name = $grpcListedCache->getCacheName();
+        parent::__construct();
+        $this->innerException = $error;
+        $this->message = "{$error->messageWrapper}: {$error->getMessage()}";
+        $this->errorCode = $error->errorCode;
     }
 
-    public function name(): string
+    public function innerException(): SdkError
     {
-        return $this->name;
+        return $this->innerException;
     }
+
+    public function errorCode(): MomentoErrorCode
+    {
+        return $this->errorCode;
+    }
+
+    public function message(): string
+    {
+        return $this->message;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": " . $this->message;
+    }
+
 }
 
 abstract class ResponseBase
@@ -62,6 +92,11 @@ abstract class ResponseBase
     public function __construct()
     {
         $this->baseType = get_parent_class($this);
+    }
+
+    public function __toString()
+    {
+        return get_class($this);
     }
 
     protected function isError(): bool
@@ -204,6 +239,12 @@ class ListCachesResponseSuccess extends ListCachesResponse
     {
         return $this->nextToken;
     }
+
+    public function __toString()
+    {
+        $cacheNames = array_map(fn($i) => $i->name(), $this->caches);
+        return get_class($this) . ": " . join(', ', $cacheNames);
+    }
 }
 
 class ListCachesResponseError extends ListCachesResponse
@@ -252,6 +293,10 @@ class CacheSetResponseSuccess extends CacheSetResponse
         return $this->value;
     }
 
+    public function __toString()
+    {
+        return get_class($this) . ": key {$this->key} = {$this->value}";
+    }
 }
 
 class CacheSetResponseError extends CacheSetResponse
@@ -302,6 +347,10 @@ class CacheGetResponseHit extends CacheGetResponse
         return $this->value;
     }
 
+    public function __toString()
+    {
+        return parent::__toString() . ": {$this->value}";
+    }
 }
 
 class CacheGetResponseMiss extends CacheGetResponse
@@ -372,6 +421,7 @@ class CacheListFetchResponseHit extends CacheListFetchResponse
 {
 
     private array $values = [];
+    private int $count;
 
     public function __construct(_ListFetchResponse $response)
     {
@@ -380,6 +430,7 @@ class CacheListFetchResponseHit extends CacheListFetchResponse
             foreach ($response->getFound()->getValues() as $value) {
                 $this->values[] = $value;
             }
+            $this->count = count($this->values);
         }
     }
 
@@ -388,6 +439,10 @@ class CacheListFetchResponseHit extends CacheListFetchResponse
         return $this->values;
     }
 
+    public function __toString()
+    {
+        return parent::__toString() . ": {$this->count} items";
+    }
 }
 
 class CacheListFetchResponseMiss extends CacheListFetchResponse
@@ -451,6 +506,221 @@ class CacheListPushBackResponseSuccess extends CacheListPushBackResponse
 }
 
 class CacheListPushBackResponseError extends CacheListPushBackResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheListPopFrontResponse extends ResponseBase
+{
+    public function asHit(): CacheListPopFrontResponseHit|null
+    {
+        if ($this->isHit()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asMiss(): CacheListPopFrontResponseMiss|null
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheListPopFrontResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheListPopFrontResponseHit extends CacheListPopFrontResponse
+{
+    private string $value;
+
+    public function __construct(_ListPopFrontResponse $response)
+    {
+        parent::__construct();
+        $this->value = $response->getFound()->getFront();
+    }
+
+    public function value(): string
+    {
+        return $this->value;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": {$this->value}";
+    }
+}
+
+class CacheListPopFrontResponseMiss extends CacheListPopFrontResponse
+{
+}
+
+class CacheListPopFrontResponseError extends CacheListPopFrontResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheListPopBackResponse extends ResponseBase
+{
+    public function asHit(): CacheListPopBackResponseHit|null
+    {
+        if ($this->isHit()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asMiss(): CacheListPopBackResponseMiss|null
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheListPopBackResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheListPopBackResponseHit extends CacheListPopBackResponse
+{
+    private string $value;
+
+    public function __construct(_ListPopBackResponse $response)
+    {
+        parent::__construct();
+        $this->value = $response->getFound()->getBack();
+    }
+
+    public function value(): string
+    {
+        return $this->value;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": {$this->value}";
+    }
+}
+
+class CacheListPopBackResponseMiss extends CacheListPopBackResponse
+{
+}
+
+class CacheListPopBackResponseError extends CacheListPopBackResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheListRemoveValueResponse extends ResponseBase
+{
+    public function asSuccess(): CacheListRemoveValueResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheListRemoveValueResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheListRemoveValueResponseSuccess extends CacheListRemoveValueResponse
+{
+}
+
+class CacheListRemoveValueResponseError extends CacheListRemoveValueResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheListLengthResponse extends ResponseBase
+{
+    public function asSuccess(): CacheListLengthResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheListLengthResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheListLengthResponseSuccess extends CacheListLengthResponse
+{
+    private int $length;
+
+    public function __construct(_ListLengthResponse $response)
+    {
+        parent::__construct();
+        $this->length = $response->getFound() ? $response->getFound()->getLength() : 0;
+    }
+
+    public function length(): int
+    {
+        return $this->length;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": {$this->length}";
+    }
+}
+
+class CacheListLengthResponseError extends CacheListLengthResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheListEraseResponse extends ResponseBase
+{
+    public function asSuccess(): CacheListEraseResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheListEraseResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheListEraseResponseSuccess extends CacheListEraseResponse
+{
+}
+
+class CacheListEraseResponseError extends CacheListEraseResponse
 {
     use ErrorBody;
 }

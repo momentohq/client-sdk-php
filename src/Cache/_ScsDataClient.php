@@ -9,9 +9,15 @@ use Cache_client\_DictionaryFieldValuePair;
 use Cache_client\_DictionaryGetRequest;
 use Cache_client\_DictionarySetRequest;
 use Cache_client\_GetRequest;
+use Cache_client\_ListEraseRequest;
 use Cache_client\_ListFetchRequest;
+use Cache_client\_ListLengthRequest;
+use Cache_client\_ListPopBackRequest;
+use Cache_client\_ListPopFrontRequest;
 use Cache_client\_ListPushBackRequest;
 use Cache_client\_ListPushFrontRequest;
+use Cache_client\_ListRange;
+use Cache_client\_ListRemoveRequest;
 use Cache_client\_SetRequest;
 use Cache_client\ECacheResult;
 use Exception;
@@ -33,18 +39,33 @@ use Momento\Cache\CacheOperationTypes\CacheGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheGetStatus;
+use Momento\Cache\CacheOperationTypes\CacheListEraseResponse;
+use Momento\Cache\CacheOperationTypes\CacheListEraseResponseError;
+use Momento\Cache\CacheOperationTypes\CacheListEraseResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheListFetchResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheListLengthResponse;
+use Momento\Cache\CacheOperationTypes\CacheListLengthResponseError;
+use Momento\Cache\CacheOperationTypes\CacheListLengthResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheListPopBackResponse;
+use Momento\Cache\CacheOperationTypes\CacheListPopBackResponseError;
+use Momento\Cache\CacheOperationTypes\CacheListPopBackResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheListPopBackResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponse;
+use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponseError;
+use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPushBackResponseError;
 use Momento\Cache\CacheOperationTypes\CacheListPushBackResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponseError;
 use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
+use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponseError;
+use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseSuccess;
@@ -57,6 +78,8 @@ use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateFieldName;
 use function Momento\Utilities\validateListName;
 use function Momento\Utilities\validateOperationTimeout;
+use function Momento\Utilities\validateRange;
+use function Momento\Utilities\validateTruncateSize;
 use function Momento\Utilities\validateTtl;
 use function Momento\Utilities\validateValueName;
 
@@ -192,6 +215,7 @@ class _ScsDataClient
         try {
             validateCacheName($cacheName);
             validateListName($listName);
+            validateTruncateSize($truncateBackToSize);
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $listPushFrontRequest = new _ListPushFrontRequest();
             $listPushFrontRequest->setListName($listName);
@@ -220,6 +244,7 @@ class _ScsDataClient
         try {
             validateCacheName($cacheName);
             validateListName($listName);
+            validateTruncateSize($truncateFrontToSize);
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $listPushBackRequest = new _ListPushBackRequest();
             $listPushBackRequest->setListName($listName);
@@ -239,6 +264,120 @@ class _ScsDataClient
             return new CacheListPushBackResponseError(new UnknownError($e->getMessage()));
         }
         return new CacheListPushBackResponseSuccess();
+    }
+
+    public function listPopFront(string $cacheName, string $listName): CacheListPopFrontResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateListName($listName);
+            $listPopFrontRequest = new _ListPopFrontRequest();
+            $listPopFrontRequest->setListName($listName);
+            $call = $this->grpcManager->client->ListPopFront(
+                $listPopFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
+            $response = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheListPopFrontResponseError($e);
+        } catch (Exception $e) {
+            return new CacheListPopFrontResponseError(new UnknownError($e->getMessage()));
+        }
+        if (!$response->hasFound()) {
+            return new CacheListPopFrontResponseMiss();
+        }
+        return new CacheListPopFrontResponseHit($response);
+    }
+
+    public function listPopBack(string $cacheName, string $listName): CacheListPopBackResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateListName($listName);
+            $listPopBackRequest = new _ListPopBackRequest();
+            $listPopBackRequest->setListName($listName);
+            $call = $this->grpcManager->client->ListPopBack(
+                $listPopBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
+            $response = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheListPopBackResponseError($e);
+        } catch (Exception $e) {
+            return new CacheListPopBackResponseError(new UnknownError($e->getMessage()));
+        }
+        if (!$response->hasFound()) {
+            return new CacheListPopBackResponseMiss();
+        }
+        return new CacheListPopBackResponseHit($response);
+    }
+
+    public function listRemoveValue(string $cacheName, string $listName, string $value): CacheListRemoveValueResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateListName($listName);
+            $listRemoveValueRequest = new _ListRemoveRequest();
+            $listRemoveValueRequest->setListName($listName);
+            $listRemoveValueRequest->setAllElementsWithValue($value);
+            $call = $this->grpcManager->client->ListRemove(
+                $listRemoveValueRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheListRemoveValueResponseError($e);
+        } catch (Exception $e) {
+            return new CacheListRemoveValueResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheListRemoveValueResponseSuccess();
+    }
+
+    public function listLength(string $cacheName, string $listName): CacheListLengthResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateListName($listName);
+            $listLengthRequest = new _ListLengthRequest();
+            $listLengthRequest->setListName($listName);
+            $call = $this->grpcManager->client->ListLength(
+                $listLengthRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
+            $response = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheListLengthResponseError($e);
+        } catch (Exception $e) {
+            return new CacheListLengthResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheListLengthResponseSuccess($response);
+    }
+
+    public function listErase(string $cacheName, string $listName, ?int $beginIndex = null, ?int $count = null): CacheListEraseResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateListName($listName);
+            validateRange($beginIndex, $count);
+            $listEraseRequest = new _ListEraseRequest();
+            $listEraseRequest->setListName($listName);
+            if (!is_null($beginIndex) && !is_null($count)) {
+                $listRanges = new _ListEraseRequest\_ListRanges();
+                $listRange = new _ListRange();
+                $listRange->setBeginIndex($beginIndex);
+                $listRange->setCount($count);
+                $listRanges->setRanges([$listRange]);
+                $listEraseRequest->setSome($listRanges);
+            } else {
+                $all = new _ListEraseRequest\_All();
+                $listEraseRequest->setAll($all);
+            }
+            $call = $this->grpcManager->client->ListErase(
+                $listEraseRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheListEraseResponseError($e);
+        } catch (Exception $e) {
+            return new CacheListEraseResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheListEraseResponseSuccess();
     }
 
     public function dictionarySet(string $cacheName, string $dictionaryName, string $field, string $value, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetResponse

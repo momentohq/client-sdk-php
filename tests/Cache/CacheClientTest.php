@@ -55,10 +55,12 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asSuccess());
         $response = $this->client->set($cacheName, $key, $value);
         $this->assertNotNull($response->asSuccess());
+        $this->assertEquals(get_class($response) . ": key $key = $value", "$response");
         $response = $this->client->get($cacheName, $key);
         $this->assertNotNull($response->asHit());
         $response = $response->asHit();
         $this->assertEquals($response->value(), $value);
+        $this->assertEquals(get_class($response) . ": $value", "$response");
         $response = $this->client->get($this->TEST_CACHE_NAME, $key);
         $this->assertNotNull($response->asMiss());
         $response = $this->client->deleteCache($cacheName);
@@ -111,6 +113,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asError());
         $response = $response->asError();
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->errorCode());
+        $this->assertEquals(get_class($response) . ": {$response->message()}", "$response");
     }
 
     public function testCreateCacheNullName()
@@ -203,6 +206,7 @@ class CacheClientTest extends TestCase
             $cacheNames = array_map(fn($i) => $i->name(), $caches);
             $this->assertContains($cacheName, $cacheNames);
             $this->assertEquals(null, $listCachesResp->nextToken());
+            $this->assertEquals(get_class($listCachesResp) . ": " . join(', ', $cacheNames), "$listCachesResp");
         } finally {
             $this->client->deleteCache($cacheName);
         }
@@ -211,9 +215,9 @@ class CacheClientTest extends TestCase
     public function testListCachesBadAuth()
     {
         $client = $this->getBadAuthTokenClient();
-        $respnse = $client->listCaches();
-        $this->assertNotNull($respnse->asError());
-        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $respnse->asError()->errorCode());
+        $response = $client->listCaches();
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
     }
 
     public function testListCachesNextToken()
@@ -463,6 +467,32 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNotNull($response->asHit());
         $this->assertCount(2, $response->asHit()->values());
+    }
+
+    public function testListPushFront_TruncateList()
+    {
+        $listName = uniqid();
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $value3 = uniqid();
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value1, false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value2, false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value3, false, truncateBackToSize: 2);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals([$value3, $value2], $response->asHit()->values());
+    }
+
+    public function testListPushFront_TruncateList_NegativeValue()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false, truncateBackToSize: -1);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
     public function testListPushBackFetchHappyPath()
