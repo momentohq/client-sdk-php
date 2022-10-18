@@ -41,10 +41,21 @@ class CacheClientTest extends TestCase
         }
     }
 
+    private function getBadAuthTokenClient(): SimpleCacheClient
+    {
+        $badEnvName = "_MOMENTO_BAD_AUTH_TOKEN";
+        putenv("{$badEnvName}={$this->BAD_AUTH_TOKEN}");
+        $authProvider = new EnvMomentoTokenProvider($badEnvName);
+        putenv($badEnvName);
+        return new SimpleCacheClient($authProvider, $this->DEFAULT_TTL_SECONDS);
+    }
+
     public function tearDown(): void
     {
         $this->client->deleteCache($this->TEST_CACHE_NAME);
     }
+
+    // Happy path test
 
     public function testCreateSetGetDelete()
     {
@@ -66,8 +77,6 @@ class CacheClientTest extends TestCase
         $response = $this->client->deleteCache($cacheName);
         $this->assertNotNull($response->asSuccess());
     }
-
-    // Happy path test
 
     public function testNegativeDefaultTtl()
     {
@@ -99,14 +108,14 @@ class CacheClientTest extends TestCase
         $client = new SimpleCacheClient($this->authProvider, $this->DEFAULT_TTL_SECONDS, 0);
     }
 
+    // Create cache tests
+
     public function testCreateCacheAlreadyExists()
     {
         $response = $this->client->createCache($this->TEST_CACHE_NAME);
         $this->assertNotNull($response->asAlreadyExists());
     }
-
-    // Create cache tests
-
+    
     public function testCreateCacheEmptyName()
     {
         $response = $this->client->createCache("");
@@ -135,15 +144,6 @@ class CacheClientTest extends TestCase
         $response = $client->createCache(uniqid());
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
-    }
-
-    private function getBadAuthTokenClient(): SimpleCacheClient
-    {
-        $badEnvName = "_MOMENTO_BAD_AUTH_TOKEN";
-        putenv("{$badEnvName}={$this->BAD_AUTH_TOKEN}");
-        $authProvider = new EnvMomentoTokenProvider($badEnvName);
-        putenv($badEnvName);
-        return new SimpleCacheClient($authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
     // Delete cache tests
