@@ -101,6 +101,20 @@ class ScsClient extends \Grpc\BaseStub {
     }
 
     /**
+     * @param \Cache_client\_DictionaryIncrementRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function DictionaryIncrement(\Cache_client\_DictionaryIncrementRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/DictionaryIncrement',
+        $argument,
+        ['\Cache_client\_DictionaryIncrementResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
      * @param \Cache_client\_DictionaryDeleteRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
