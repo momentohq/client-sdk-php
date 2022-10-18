@@ -5,6 +5,9 @@ namespace Momento\Cache;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheGetResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponse;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheListLengthResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPopBackResponse;
@@ -22,10 +25,11 @@ class SimpleCacheClient
 
     private _ScsControlClient $controlClient;
     private _ScsDataClient $dataClient;
+
     /**
-     * @param ICredentialProvider $authProvider: Momento credential provider
-     * @param int $defaultTtlSeconds: Default Time to Live for the item in Cache
-     * @param ?int $dataClientOperationTimeoutMs: msecs after which requests should be cancelled due to timeout
+     * @param ICredentialProvider $authProvider : Momento credential provider
+     * @param int $defaultTtlSeconds : Default Time to Live for the item in Cache
+     * @param ?int $dataClientOperationTimeoutMs : msecs after which requests should be cancelled due to timeout
      */
     public function __construct(
         ICredentialProvider $authProvider, int $defaultTtlSeconds, ?int $dataClientOperationTimeoutMs=null
@@ -69,7 +73,7 @@ class SimpleCacheClient
         return $this->dataClient->delete($cacheName, $key);
     }
 
-    public function listFetch(string $cacheName, string $listName) : CacheListFetchResponse
+    public function listFetch(string $cacheName, string $listName): CacheListFetchResponse
     {
         return $this->dataClient->listFetch($cacheName, $listName);
     }
@@ -111,5 +115,20 @@ class SimpleCacheClient
     public function listErase(string $cacheName, string $listName, ?int $beginIndex=null, ?int $count=null)
     {
         return $this->dataClient->listErase($cacheName, $listName, $beginIndex, $count);
+    }
+
+    public function dictionarySet(string $cacheName, string $dictionaryName, string $field, string $value, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetResponse
+    {
+        return $this->dataClient->dictionarySet($cacheName, $dictionaryName, $field, $value, $refreshTtl, $ttlSeconds);
+    }
+
+    public function dictionaryGet(string $cacheName, string $dictionaryName, string $field): CacheDictionaryGetResponse
+    {
+        return $this->dataClient->dictionaryGet($cacheName, $dictionaryName, $field);
+    }
+
+    public function dictionaryDelete(string $cacheName, string $dictionaryName): CacheDictionaryDeleteResponse
+    {
+        return $this->dataClient->dictionaryDelete($cacheName, $dictionaryName);
     }
 }
