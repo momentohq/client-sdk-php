@@ -41,15 +41,6 @@ class CacheClientTest extends TestCase
         }
     }
 
-    private function getBadAuthTokenClient(): SimpleCacheClient
-    {
-        $badEnvName = "_MOMENTO_BAD_AUTH_TOKEN";
-        putenv("{$badEnvName}={$this->BAD_AUTH_TOKEN}");
-        $authProvider = new EnvMomentoTokenProvider($badEnvName);
-        putenv($badEnvName);
-        return new SimpleCacheClient($authProvider, $this->DEFAULT_TTL_SECONDS);
-    }
-
     public function tearDown(): void
     {
         $this->client->deleteCache($this->TEST_CACHE_NAME);
@@ -57,7 +48,7 @@ class CacheClientTest extends TestCase
 
     // Happy path test
 
-    public function Create_Set_Get_Delete_HappyPath()
+    public function testCreateSetGetDelete()
     {
         $cacheName = uniqid();
         $key = uniqid();
@@ -78,7 +69,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asSuccess());
     }
 
-    public function NegativeTTL_IsError()
+    public function testNegativeDefaultTtl()
     {
         $this->expectExceptionMessage("TTL Seconds must be a non-negative integer");
         $client = new SimpleCacheClient($this->authProvider, -1);
@@ -86,7 +77,7 @@ class CacheClientTest extends TestCase
 
     // Client initialization tests
 
-    public function InvalidAuthToken_IsError()
+    public function testNonJwtTokens()
     {
         $AUTH_TOKEN = "notanauthtoken";
         $this->expectExceptionMessage("Invalid Momento auth token.");
@@ -96,13 +87,13 @@ class CacheClientTest extends TestCase
         AuthUtils::parseAuthToken($AUTH_TOKEN);
     }
 
-    public function NegativeRequestTime_IsError()
+    public function testNegativeRequestTimeout()
     {
         $this->expectExceptionMessage("Request timeout must be greater than zero.");
         $client = new SimpleCacheClient($this->authProvider, $this->DEFAULT_TTL_SECONDS, -1);
     }
 
-    public function ZeroRequestTimeout_IsError()
+    public function testZeroRequestTimeout()
     {
         $this->expectExceptionMessage("Request timeout must be greater than zero.");
         $client = new SimpleCacheClient($this->authProvider, $this->DEFAULT_TTL_SECONDS, 0);
@@ -110,13 +101,13 @@ class CacheClientTest extends TestCase
 
     // Create cache tests
 
-    public function CreateCache_IsAlreadyExists()
+    public function testCreateCacheAlreadyExists()
     {
         $response = $this->client->createCache($this->TEST_CACHE_NAME);
         $this->assertNotNull($response->asAlreadyExists());
     }
-
-    public function CreateCache_EmptyName_IsError()
+    
+    public function testCreateCacheEmptyName()
     {
         $response = $this->client->createCache("");
         $this->assertNotNull($response->asError());
@@ -125,20 +116,20 @@ class CacheClientTest extends TestCase
         $this->assertEquals(get_class($response) . ": {$response->message()}", "$response");
     }
 
-    public function CreateCache_NullName_IsError()
+    public function testCreateCacheNullName()
     {
         $this->expectException(TypeError::class);
         $this->client->createCache(null);
     }
 
-    public function CreateCache_InvalidName_IsError()
+    public function testCreateCacheBadName()
     {
         $response = $this->client->createCache(1);
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function CreateCache_InvalidToken_IsError()
+    public function testCreateCacheBadAuth()
     {
         $client = $this->getBadAuthTokenClient();
         $response = $client->createCache(uniqid());
@@ -146,9 +137,18 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
     }
 
+    private function getBadAuthTokenClient(): SimpleCacheClient
+    {
+        $badEnvName = "_MOMENTO_BAD_AUTH_TOKEN";
+        putenv("{$badEnvName}={$this->BAD_AUTH_TOKEN}");
+        $authProvider = new EnvMomentoTokenProvider($badEnvName);
+        putenv($badEnvName);
+        return new SimpleCacheClient($authProvider, $this->DEFAULT_TTL_SECONDS);
+    }
+
     // Delete cache tests
 
-    public function DeleteCache_HappyPath()
+    public function testDeleteCacheSucceeds()
     {
         $cacheName = uniqid();
         $response = $this->client->createCache($cacheName);
@@ -160,7 +160,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function DeleteCache_UnknownCacheName_IsError()
+    public function testDeleteUnknownCache()
     {
         $cacheName = uniqid();
         $response = $this->client->deleteCache($cacheName);
@@ -168,20 +168,20 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function DeleteCache_NullCacheName_IsError()
+    public function testDeleteNullCacheName()
     {
         $this->expectException(TypeError::class);
         $this->client->deleteCache(null);
     }
 
-    public function DeleteCache_EmptyCacheName_IsError()
+    public function testDeleteEmptyCacheName()
     {
         $response = $this->client->deleteCache("");
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function DeleteCache_InvalidToken_IsError()
+    public function testDeleteCacheBadAuth()
     {
         $client = $this->getBadAuthTokenClient();
         $response = $client->deleteCache(uniqid());
@@ -190,7 +190,7 @@ class CacheClientTest extends TestCase
     }
 
     // List caches tests
-    public function ListCache_HappyPath()
+    public function testListCaches()
     {
         $cacheName = uniqid();
         $resp = $this->client->listCaches();
@@ -212,7 +212,7 @@ class CacheClientTest extends TestCase
         }
     }
 
-    public function ListCache_InvalidToken_IsError()
+    public function testListCachesBadAuth()
     {
         $client = $this->getBadAuthTokenClient();
         $response = $client->listCaches();
@@ -220,13 +220,13 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
     }
 
-    public function ListCache_NextToken()
+    public function testListCachesNextToken()
     {
         $this->markTestSkipped("pagination not yet implemented");
     }
 
     // Setting and getting tests
-    public function CacheSetGet_HappyPath()
+    public function testCacheHit()
     {
         $key = uniqid();
         $value = uniqid();
@@ -241,14 +241,14 @@ class CacheClientTest extends TestCase
         $this->assertEquals($value, $getResp->asHit()->value());
     }
 
-    public function CacheGet_IsMiss()
+    public function testGetMiss()
     {
         $key = uniqid();
         $getResp = $this->client->get($this->TEST_CACHE_NAME, $key);
         $this->assertNotNull($getResp->asMiss());
     }
 
-    public function CacheSetGet_ExpiresAfterTtl()
+    public function testExpiresAfterTtl()
     {
         $key = uniqid();
         $value = uniqid();
@@ -262,7 +262,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss());
     }
 
-    public function CacheSetGet_VariousTtls()
+    public function testSetWithDifferentTtls()
     {
         $key1 = uniqid();
         $key2 = uniqid();
@@ -285,7 +285,7 @@ class CacheClientTest extends TestCase
 
     // Set tests
 
-    public function CacheSet_WithNonExistentCacheName_IsError()
+    public function testSetWithNonexistentCache()
     {
         $cacheName = uniqid();
         $response = $this->client->set($cacheName, "key", "value");
@@ -293,51 +293,51 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function CacheSet_WithNullCacheName_IsError()
+    public function testSetWithNullCacheName()
     {
         $this->expectException(TypeError::class);
         $this->client->set(null, "key", "value");
     }
 
-    public function CacheSet_WithEmptyCacheName_IsError()
+    public function testSetWithEmptyCacheName()
     {
         $response = $this->client->set("", "key", "value");
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function CacheSet_WithNullKey_IsError()
+    public function testSetWithNullKey()
     {
         $this->expectException(TypeError::class);
         $this->client->set($this->TEST_CACHE_NAME, null, "value");
     }
 
-    public function CacheSet_WithNullValue_IsError()
+    public function testSetWithNullValue()
     {
         $this->expectException(TypeError::class);
         $this->client->set($this->TEST_CACHE_NAME, "key", null);
     }
 
-    public function CacheSet_WithNegativeTtl_IsError()
+    public function testSetNegativeTtl()
     {
         $response = $this->client->set($this->TEST_CACHE_NAME, "key", "value", -1);
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function CacheSet_WithInvalidKey_IsError()
+    public function testSetBadKey()
     {
         $this->expectException(TypeError::class);
         $this->client->set($this->TEST_CACHE_NAME, null, "bar");
     }
 
-    public function CacheSet_WithInvalidValue_IsError()
+    public function testSetBadValue()
     {
         $this->expectException(TypeError::class);
         $this->client->set($this->TEST_CACHE_NAME, "foo", null);
     }
 
-    public function CacheSet_WithInvalidToken_IsError()
+    public function testSetBadAuth()
     {
         $client = $this->getBadAuthTokenClient();
         $response = $client->set($this->TEST_CACHE_NAME, "foo", "bar");
@@ -346,7 +346,7 @@ class CacheClientTest extends TestCase
     }
 
     // Get tests
-    public function CacheGet_WithNonExistentCacheName_IsError()
+    public function testGetNonexistentCache()
     {
         $cacheName = uniqid();
         $response = $this->client->get($cacheName, "foo");
@@ -354,26 +354,26 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function CacheGet_WithNullCacheName_IsError()
+    public function testGetNullCacheName()
     {
         $this->expectException(TypeError::class);
         $this->client->get(null, "foo");
     }
 
-    public function CacheGet_WithEmptyCacheName_IsError()
+    public function testGetEmptyCacheName()
     {
         $response = $this->client->get("", "foo");
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function CacheGet_WithNullKey_IsError()
+    public function testGetNullKey()
     {
         $this->expectException(TypeError::class);
         $this->client->get($this->TEST_CACHE_NAME, null);
     }
 
-    public function CacheGet_WithInvalidToken_IsError()
+    public function testGetBadAuth()
     {
         $client = $this->getBadAuthTokenClient();
         $response = $client->get($this->TEST_CACHE_NAME, "key");
@@ -381,7 +381,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
     }
 
-    public function CacheGet_WithShortTimeout_IsError()
+    public function testGetTimeout()
     {
         $client = new SimpleCacheClient($this->authProvider, $this->DEFAULT_TTL_SECONDS, 1);
         $response = $client->get($this->TEST_CACHE_NAME, "key");
@@ -391,7 +391,7 @@ class CacheClientTest extends TestCase
 
     // Delete tests
 
-    public function CacheDelete_WithNonExistentKey_IsError()
+    public function testDeleteNonexistentKey()
     {
         $key = "a key that isn't there";
         $response = $this->client->get($this->TEST_CACHE_NAME, $key);
@@ -402,7 +402,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss());
     }
 
-    public function CacheDelete_HappyPath()
+    public function testDelete()
     {
         $key = "key1";
         $response = $this->client->get($this->TEST_CACHE_NAME, $key);
@@ -419,7 +419,7 @@ class CacheClientTest extends TestCase
 
     // List API tests
 
-    public function ListPushFrontFetch_HappyPath()
+    public function testListPushFrontFetchHappyPath()
     {
         $listName = uniqid();
         $value = uniqid();
@@ -442,7 +442,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals([$value2, $value], $values);
     }
 
-    public function ListPushFront_WithoutRefreshTtl_HappyPath()
+    public function testListPushFront_NoRefreshTtl()
     {
         $listName = uniqid();
         $value = uniqid();
@@ -455,7 +455,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull(($response->asMiss()));
     }
 
-    public function ListPushFront_WithRefreshTtl_HappyPath()
+    public function testListPushFront_RefreshTtl()
     {
         $listName = uniqid();
         $value = uniqid();
@@ -469,7 +469,7 @@ class CacheClientTest extends TestCase
         $this->assertCount(2, $response->asHit()->values());
     }
 
-    public function cHappyPath()
+    public function testListPushFront_TruncateList()
     {
         $listName = uniqid();
         $value1 = uniqid();
@@ -486,7 +486,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals([$value3, $value2], $response->asHit()->values());
     }
 
-    public function ListPushFront_WithNegativeTruncateSize_IsError()
+    public function testListPushFront_TruncateList_NegativeValue()
     {
         $listName = uniqid();
         $value = uniqid();
@@ -495,7 +495,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function ListPushBackFetch_HappyPath()
+    public function testListPushBackFetchHappyPath()
     {
         $listName = uniqid();
         $value = uniqid();
@@ -518,7 +518,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals([$value, $value2], $values);
     }
 
-    public function ListPushBack_WithoutRefreshTtl_HappyPath()
+    public function testListPushBack_NoRefreshTtl()
     {
         $listName = uniqid();
         $value = uniqid();
@@ -531,7 +531,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull(($response->asMiss()));
     }
 
-    public function ListPushBack_WithRefreshTtl_HappyPath()
+    public function testListPushBack_RefreshTtl()
     {
         $listName = uniqid();
         $value = uniqid();
@@ -545,7 +545,7 @@ class CacheClientTest extends TestCase
         $this->assertCount(2, $response->asHit()->values());
     }
 
-    public function ListPushBack_WithTruncateSize_HappyPath()
+    public function testListPushBack_TruncateList()
     {
         $listName = uniqid();
         $value1 = uniqid();
@@ -562,7 +562,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals([$value2, $value3], $response->asHit()->values());
     }
 
-    public function ListPushBack_WithNegativeTruncateSize_IsError()
+    public function testListPushBack_TruncateList_NegativeValue()
     {
         $listName = uniqid();
         $value = uniqid();
@@ -571,14 +571,14 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function ListPopFront_Miss_HappyPath()
+    public function testListPopFront_MissHappyPath()
     {
         $listName = uniqid();
         $response = $this->client->listPopFront($this->TEST_CACHE_NAME, $listName);
         $this->assertNotNull($response->asMiss());
     }
 
-    public function ListPopFront_HappyPath()
+    public function testListPopFront_HappyPath()
     {
         $listName = uniqid();
         $values = [];
@@ -599,14 +599,14 @@ class CacheClientTest extends TestCase
         }
     }
 
-    public function ListPopBack_Miss_HappyPath()
+    public function testListPopBack_MissHappyPath()
     {
         $listName = uniqid();
         $response = $this->client->listPopBack($this->TEST_CACHE_NAME, $listName);
         $this->assertNotNull($response->asMiss());
     }
 
-    public function ListPopFront_EmptyList_HappyPath()
+    public function testListPopFront_EmptyList()
     {
         $listName = uniqid();
         $value = uniqid();
@@ -622,7 +622,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss());
     }
 
-    public function ListPopBack_HappyPath()
+    public function testListPopBack_HappyPath()
     {
         $listName = uniqid();
         $values = [];
@@ -643,7 +643,7 @@ class CacheClientTest extends TestCase
         }
     }
 
-    public function ListPopBack_EmptyList_HappyPath()
+    public function testListPopBack_EmptyList()
     {
         $listName = uniqid();
         $value = uniqid();
@@ -659,7 +659,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss());
     }
 
-    public function ListRemoveValue_HappyPath()
+    public function testListRemoveValue_HappyPath()
     {
         $listName = uniqid();
         $values = [];
@@ -688,7 +688,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($values, $response->asHit()->values());
     }
 
-    public function ListRemoveValues_ValueNotPresent_IsError()
+    public function testListRemoveValues_ValueNotPresent()
     {
         $listName = uniqid();
         $values = [];
@@ -711,7 +711,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($values, $response->asHit()->values());
     }
 
-    public function ListLength_HappyPath()
+    public function testListLength_HappyPath()
     {
         $listName = uniqid();
         foreach (range(0, 3) as $i) {
@@ -725,7 +725,7 @@ class CacheClientTest extends TestCase
         }
     }
 
-    public function ListLength_MissingList_HappyPath()
+    public function testListLength_MissingList()
     {
         $response = $this->client->listLength($this->TEST_CACHE_NAME, uniqid());
         $this->assertNotNull($response->asSuccess());
@@ -733,7 +733,7 @@ class CacheClientTest extends TestCase
     }
 
     // List erase
-    public function ListEraseAll_HappyPath()
+    public function testListEraseAll_HappyPath()
     {
         $listName = uniqid();
         foreach (range(0, 3) as $i) {
@@ -754,7 +754,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(0, $response->asSuccess()->length());
     }
 
-    public function ListEraseRange_HappyPath()
+    public function testListEraseRange_HappyPath()
     {
         $listName = uniqid();
         $values = [];
@@ -777,7 +777,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(array_slice($values, 2), $response->asHit()->values());
     }
 
-    public function ListEraseRange_LargeCountValue_HappyPath()
+    public function testListEraseRange_LargeCountValue()
     {
         $listName = uniqid();
         $values = [];
@@ -800,14 +800,14 @@ class CacheClientTest extends TestCase
         $this->assertEquals([$values[0]], $response->asHit()->values());
     }
 
-    public function ListErase_MissingList_HappyPath()
+    public function testListErase_MissingList()
     {
         $response = $this->client->listErase($this->TEST_CACHE_NAME, uniqid());
         $this->assertNotNull($response->asSuccess());
     }
 
     // Dictionary tests
-    public function DictionaryGet_IsMissing()
+    public function testDictionaryIsMissing()
     {
         $dictionaryName = uniqid();
         $field = uniqid();
@@ -815,7 +815,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss());
     }
 
-    public function DictionarySetGet_HappyPath()
+    public function testDictionaryHappyPath()
     {
         $dictionaryName = uniqid();
         $field = uniqid();
@@ -826,7 +826,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asHit());
     }
 
-    public function DictionarySetGet_FieldMissing()
+    public function testDictionaryFieldMissing()
     {
         $dictionaryName = uniqid();
         $field = uniqid();
@@ -839,7 +839,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss());
     }
 
-    public function DictionarySet_WithoutRefreshTtl_HappyPath()
+    public function testDictionaryNoRefreshTtl()
     {
         $dictionaryName = uniqid();
         $field = uniqid();
@@ -856,7 +856,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss());
     }
 
-    public function DictionaryGet_WithEmptyDictionaryName_IsError()
+    public function testDictionaryThrowExceptionForEmptyDictionaryName()
     {
         $dictionaryName = "";
         $field = uniqid();
@@ -865,7 +865,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function DictionaryGet_WithEmptyFieldName_IsError()
+    public function testDictionaryThrowExceptionForEmptyFieldName()
     {
         $dictionaryName = uniqid();
         $field = "";
@@ -874,7 +874,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function DictionaryGet_WithEmptyValue_IsError()
+    public function testDictionaryThrowExceptionForEmptyValueName()
     {
         $dictionaryName = uniqid();
         $field = uniqid();
@@ -884,7 +884,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function DictionarySet_WithRefreshTtl_HappyPath()
+    public function testDictionaryRefreshTtl()
     {
         $dictionaryName = uniqid();
         $field = uniqid();
@@ -900,7 +900,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($value, $response->asHit()->value());
     }
 
-    public function DictionaryDelete_WithEmptyCacheName_IsError()
+    public function testDictionaryDeleteThrowExceptionForEmptyCacheName()
     {
         $cacheName = "";
         $dictionaryName = uniqid();
@@ -909,7 +909,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function DictionaryDelete_WithEmptyDictionaryName_IsError()
+    public function testDictionaryDeleteThrowExceptionForEmptyDictionaryName()
     {
         $dictionaryName = "";
         $response = $this->client->dictionaryDelete($this->TEST_CACHE_NAME, $dictionaryName);
@@ -917,7 +917,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function DictionaryDelete_HappyPath()
+    public function testDictionaryDeleteHappyPath()
     {
         $dictionaryName = uniqid();
         $field = uniqid();
