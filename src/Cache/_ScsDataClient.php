@@ -104,6 +104,24 @@ class _ScsDataClient
         $this->grpcManager = new _DataGrpcManager($authToken, $endpoint);
     }
 
+    private function ttlToMillis(?int $ttl = null): int
+    {
+        if (!$ttl) {
+            $ttl = $this->defaultTtlSeconds;
+        }
+        validateTtl($ttl);
+        return $ttl * 1000;
+    }
+
+    private function processCall(UnaryCall $call): mixed
+    {
+        [$response, $status] = $call->wait();
+        if ($status->code !== 0) {
+            throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
+        }
+        return $response;
+    }
+
     public function set(string $cacheName, string $key, string $value, int $ttlSeconds = null): CacheSetResponse
     {
         try {
@@ -123,24 +141,6 @@ class _ScsDataClient
             return new CacheSetResponseError(new UnknownError($e->getMessage()));
         }
         return new CacheSetResponseSuccess($response, $key, $value);
-    }
-
-    private function ttlToMillis(?int $ttl = null): int
-    {
-        if (!$ttl) {
-            $ttl = $this->defaultTtlSeconds;
-        }
-        validateTtl($ttl);
-        return $ttl * 1000;
-    }
-
-    private function processCall(UnaryCall $call): mixed
-    {
-        [$response, $status] = $call->wait();
-        if ($status->code !== 0) {
-            throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
-        }
-        return $response;
     }
 
     public function get(string $cacheName, string $key): CacheGetResponse
@@ -431,7 +431,7 @@ class _ScsDataClient
             return new CacheDictionaryGetResponseMiss();
         }
         if ($dictionaryGetResponse->getFound()->getItems()->count() == 0) {
-            return new CacheDictionaryGetResponseError(new Exception("_DictionaryGetResponseResponse contained no data but was found"));
+            return new CacheDictionaryGetResponseError(new UnknownError("_DictionaryGetResponseResponse contained no data but was found"));
         }
         if ($dictionaryGetResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
             return new CacheDictionaryGetResponseMiss();

@@ -4,7 +4,6 @@ namespace Momento\Tests\Cache;
 
 use Momento\Auth\AuthUtils;
 use Momento\Auth\EnvMomentoTokenProvider;
-use Momento\Cache\CacheOperationTypes\CacheGetStatus;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\SimpleCacheClient;
 use PHPUnit\Framework\TestCase;
@@ -44,6 +43,15 @@ class CacheClientTest extends TestCase
     public function tearDown(): void
     {
         $this->client->deleteCache($this->TEST_CACHE_NAME);
+    }
+
+    private function getBadAuthTokenClient(): SimpleCacheClient
+    {
+        $badEnvName = "_MOMENTO_BAD_AUTH_TOKEN";
+        putenv("{$badEnvName}={$this->BAD_AUTH_TOKEN}");
+        $authProvider = new EnvMomentoTokenProvider($badEnvName);
+        putenv($badEnvName);
+        return new SimpleCacheClient($authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
     // Happy path test
@@ -106,7 +114,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->createCache($this->TEST_CACHE_NAME);
         $this->assertNotNull($response->asAlreadyExists());
     }
-    
+
     public function testCreateCacheEmptyName()
     {
         $response = $this->client->createCache("");
@@ -135,15 +143,6 @@ class CacheClientTest extends TestCase
         $response = $client->createCache(uniqid());
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
-    }
-
-    private function getBadAuthTokenClient(): SimpleCacheClient
-    {
-        $badEnvName = "_MOMENTO_BAD_AUTH_TOKEN";
-        putenv("{$badEnvName}={$this->BAD_AUTH_TOKEN}");
-        $authProvider = new EnvMomentoTokenProvider($badEnvName);
-        putenv($badEnvName);
-        return new SimpleCacheClient($authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
     // Delete cache tests
