@@ -5,6 +5,7 @@ namespace Momento\Cache;
 use Cache_client\_DeleteRequest;
 use Cache_client\_DictionaryDeleteRequest;
 use Cache_client\_DictionaryDeleteRequest\All;
+use Cache_client\_DictionaryFetchRequest;
 use Cache_client\_DictionaryFieldValuePair;
 use Cache_client\_DictionaryGetRequest;
 use Cache_client\_DictionarySetRequest;
@@ -28,6 +29,10 @@ use Momento\Cache\CacheOperationTypes\CacheDeleteResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseHit;
@@ -456,5 +461,25 @@ class _ScsDataClient
             return new CacheDictionaryDeleteResponseError(new UnknownError($e->getMessage()));
         }
         return new CacheDictionaryDeleteResponseSuccess();
+    }
+
+    public function dictionaryFetch(string $cacheName, string $dictionaryName): CacheDictionaryFetchResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateDictionaryName($dictionaryName);
+            $dictionaryFetchRequest = new _DictionaryFetchRequest();
+            $dictionaryFetchRequest->setDictionaryName($dictionaryName);
+            $call = $this->grpcManager->client->DictionaryFetch($dictionaryFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $dictionaryFetchResponse = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheDictionaryFetcheResponseError($e);
+        } catch (Exception $e) {
+            return new CacheDictionaryFetchResponseError(new UnknownError($e->getMessage()));
+        }
+        if ($dictionaryFetchResponse->hasFound()) {
+            return new CacheDictionaryFetchResponseHit($dictionaryFetchResponse);
+        }
+        return new CacheDictionaryFetchResponseMiss();
     }
 }

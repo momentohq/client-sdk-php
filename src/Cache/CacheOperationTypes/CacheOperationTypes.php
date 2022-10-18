@@ -454,7 +454,8 @@ abstract class CacheListPushFrontResponse extends ResponseBase
     }
 }
 
-class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse {
+class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse
+{
     private int $listLength;
 
     public function __construct(_ListPushFrontResponse $response)
@@ -463,7 +464,7 @@ class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse {
         $this->listLength = $response->getListLength();
     }
 
-    public function listLength() : int
+    public function listLength(): int
     {
         return $this->listLength;
     }
@@ -493,7 +494,8 @@ abstract class CacheListPushBackResponse extends ResponseBase
     }
 }
 
-class CacheListPushBackResponseSuccess extends CacheListPushBackResponse {
+class CacheListPushBackResponseSuccess extends CacheListPushBackResponse
+{
     private int $listLength;
 
     public function __construct(_ListPushBackResponse $response)
@@ -502,7 +504,7 @@ class CacheListPushBackResponseSuccess extends CacheListPushBackResponse {
         $this->listLength = $response->getListLength();
     }
 
-    public function listLength() : int
+    public function listLength(): int
     {
         return $this->listLength;
     }
@@ -834,6 +836,62 @@ class CacheDictionaryDeleteResponseSuccess extends CacheDictionaryDeleteResponse
 }
 
 class CacheDictionaryDeleteResponseError extends CacheDictionaryDeleteResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheDictionaryFetchResponse extends ResponseBase
+{
+    public function asHit(): CacheDictionaryFetchResponseHit|null
+    {
+        if ($this->isHit()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asMiss(): CacheDictionaryFetchResponseMiss|null
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheDictionaryFetchResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheDictionaryFetchResponseHit extends CacheDictionaryFetchResponse
+{
+    private RepeatedField $items;
+    private array $dictionary;
+
+    public function __construct(_DictionaryFetchResponse $response)
+    {
+        parent::__construct();
+        $this->items = $response->getFound()->getItems();
+        foreach ($this->items as $item) {
+            $this->dictionary[$item->getField()] = $item->getValue();
+        }
+    }
+
+    public function dictionary(): string
+    {
+        return $this->dictionary;
+    }
+}
+
+class CacheDictionaryFetchResponseMiss extends CacheDictionaryFetchResponse
+{
+}
+
+class CacheDictionaryFetchResponseError extends CacheDictionaryFetchResponse
 {
     use ErrorBody;
 }

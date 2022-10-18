@@ -4,10 +4,10 @@ namespace Momento\Cache;
 
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
-use Momento\Cache\CacheOperationTypes\CacheGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponse;
+use Momento\Cache\CacheOperationTypes\CacheGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheListLengthResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPopBackResponse;
@@ -32,8 +32,9 @@ class SimpleCacheClient
      * @param ?int $dataClientOperationTimeoutMs : msecs after which requests should be cancelled due to timeout
      */
     public function __construct(
-        ICredentialProvider $authProvider, int $defaultTtlSeconds, ?int $dataClientOperationTimeoutMs=null
-    ) {
+        ICredentialProvider $authProvider, int $defaultTtlSeconds, ?int $dataClientOperationTimeoutMs = null
+    )
+    {
         $this->controlClient = new _ScsControlClient($authProvider->getAuthToken(), $authProvider->getControlEndpoint());
         $this->dataClient = new _ScsDataClient(
             $authProvider->getAuthToken(),
@@ -43,32 +44,32 @@ class SimpleCacheClient
         );
     }
 
-    public function createCache(string $cacheName) : CreateCacheResponse
+    public function createCache(string $cacheName): CreateCacheResponse
     {
         return $this->controlClient->createCache($cacheName);
     }
 
-    public function listCaches(?string $nextToken=null) : ListCachesResponse
+    public function listCaches(?string $nextToken = null): ListCachesResponse
     {
         return $this->controlClient->listCaches($nextToken);
     }
 
-    public function deleteCache(string $cacheName) : DeleteCacheResponse
+    public function deleteCache(string $cacheName): DeleteCacheResponse
     {
         return $this->controlClient->deleteCache($cacheName);
     }
 
-    public function set(string $cacheName, string $key, string $value, int $ttlSeconds=0) : CacheSetResponse
+    public function set(string $cacheName, string $key, string $value, int $ttlSeconds = 0): CacheSetResponse
     {
         return $this->dataClient->set($cacheName, $key, $value, $ttlSeconds);
     }
 
-    public function get(string $cacheName, string $key) : CacheGetResponse
+    public function get(string $cacheName, string $key): CacheGetResponse
     {
         return $this->dataClient->get($cacheName, $key);
     }
 
-    public function delete(string $cacheName, string $key) : CacheDeleteResponse
+    public function delete(string $cacheName, string $key): CacheDeleteResponse
     {
         return $this->dataClient->delete($cacheName, $key);
     }
@@ -79,40 +80,40 @@ class SimpleCacheClient
     }
 
     public function listPushFront(
-        string $cacheName, string $listName, string $value, bool $refreshTtl, ?int $ttlSeconds=null, ?int $truncateBackToSize=null
-    ) : CacheListPushFrontResponse
+        string $cacheName, string $listName, string $value, bool $refreshTtl, ?int $ttlSeconds = null, ?int $truncateBackToSize = null
+    ): CacheListPushFrontResponse
     {
         return $this->dataClient->listPushFront($cacheName, $listName, $value, $refreshTtl, $truncateBackToSize, $ttlSeconds);
     }
 
     public function listPushBack(
-        string $cacheName, string $listName, string $value, bool $refreshTtl, ?int $ttlSeconds=null, ?int $truncateFrontToSize=null
-    ) : CacheListPushBackResponse
+        string $cacheName, string $listName, string $value, bool $refreshTtl, ?int $ttlSeconds = null, ?int $truncateFrontToSize = null
+    ): CacheListPushBackResponse
     {
         return $this->dataClient->listPushBack($cacheName, $listName, $value, $refreshTtl, $truncateFrontToSize, $ttlSeconds);
     }
 
-    public function listPopFront(string $cacheName, string $listName) : CacheListPopFrontResponse
+    public function listPopFront(string $cacheName, string $listName): CacheListPopFrontResponse
     {
         return $this->dataClient->listPopFront($cacheName, $listName);
     }
 
-    public function listPopBack(string $cacheName, string $listName) : CacheListPopBackResponse
+    public function listPopBack(string $cacheName, string $listName): CacheListPopBackResponse
     {
         return $this->dataClient->listPopBack($cacheName, $listName);
     }
 
-    public function listRemoveValue(string $cacheName, string $listName, string $value) : CacheListRemoveValueResponse
+    public function listRemoveValue(string $cacheName, string $listName, string $value): CacheListRemoveValueResponse
     {
         return $this->dataClient->listRemoveValue($cacheName, $listName, $value);
     }
 
-    public function listLength(string $cacheName, string $listName) : CacheListLengthResponse
+    public function listLength(string $cacheName, string $listName): CacheListLengthResponse
     {
         return $this->dataClient->listLength($cacheName, $listName);
     }
 
-    public function listErase(string $cacheName, string $listName, ?int $beginIndex=null, ?int $count=null)
+    public function listErase(string $cacheName, string $listName, ?int $beginIndex = null, ?int $count = null)
     {
         return $this->dataClient->listErase($cacheName, $listName, $beginIndex, $count);
     }
@@ -130,5 +131,10 @@ class SimpleCacheClient
     public function dictionaryDelete(string $cacheName, string $dictionaryName): CacheDictionaryDeleteResponse
     {
         return $this->dataClient->dictionaryDelete($cacheName, $dictionaryName);
+    }
+
+    public function dictionaryFetch(string $cacheName, string $dictionaryName): CacheDictionaryFetchResponse
+    {
+        return $this->dataClient->dictionaryFetch($cacheName, $dictionaryName);
     }
 }
