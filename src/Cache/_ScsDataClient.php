@@ -223,7 +223,7 @@ class _ScsDataClient
             $listPushFrontRequest->setRefreshTtl($refreshTtl);
             $listPushFrontRequest->setTtlMilliseconds($ttlMillis);
             if (!is_null($truncateBackToSize)) {
-                $listPushFrontRequest->setTruncateTailToSize($truncateBackToSize);
+                $listPushFrontRequest->setTruncateBackToSize($truncateBackToSize);
             }
             $call = $this->grpcManager->client->ListPushFront(
                 $listPushFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
@@ -252,18 +252,18 @@ class _ScsDataClient
             $listPushBackRequest->setRefreshTtl($refreshTtl);
             $listPushBackRequest->setTtlMilliseconds($ttlMillis);
             if (!is_null($truncateFrontToSize)) {
-                $listPushBackRequest->setTruncateHeadToSize($truncateFrontToSize);
+                $listPushBackRequest->setTruncateFrontToSize($truncateFrontToSize);
             }
             $call = $this->grpcManager->client->ListPushBack(
                 $listPushBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
             );
-            $this->processCall($call);
+            $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheListPushBackResponseError($e);
         } catch (Exception $e) {
             return new CacheListPushBackResponseError(new UnknownError($e->getMessage()));
         }
-        return new CacheListPushBackResponseSuccess();
+        return new CacheListPushBackResponseSuccess($response);
     }
 
     public function listPopFront(string $cacheName, string $listName): CacheListPopFrontResponse
