@@ -1,9 +1,11 @@
 <?php
+
 namespace Momento\Cache\Errors;
 
 use Grpc\Status;
 
-enum MomentoErrorCode {
+enum MomentoErrorCode
+{
     /// Invalid argument passed to Momento client
     case INVALID_ARGUMENT_ERROR;
     /// Service returned an unknown response
@@ -27,7 +29,7 @@ enum MomentoErrorCode {
     /// Client's configured timeout was exceeded
     case TIMEOUT_ERROR;
     /// Server was unable to handle the request
-   case SERVER_UNAVAILABLE;
+    case SERVER_UNAVAILABLE;
     /// A client resource (most likely memory) was exhausted
     case CLIENT_RESOURCE_EXHAUSTED;
     /// System is not in a state required for the operation's execution
@@ -41,7 +43,8 @@ class MomentoGrpcErrorDetails
     public int $code;
     public string $details;
     public mixed $metadata;
-    public function __construct(int $code, string $details, mixed $metadata)
+
+    public function __construct(int $code, string $details, mixed $metadata = null)
     {
         $this->code = $code;
         $this->details = $details;
@@ -49,8 +52,10 @@ class MomentoGrpcErrorDetails
     }
 }
 
-class MomentoErrorTransportDetails {
+class MomentoErrorTransportDetails
+{
     public MomentoGrpcErrorDetails $grpc;
+
     public function __construct(MomentoGrpcErrorDetails $grpc)
     {
         $this->grpc = $grpc;
@@ -64,78 +69,88 @@ abstract class SdkError extends \Exception
     public string $messageWrapper;
 
     public function __construct(
-        string $message, int $code = 0, ?\Throwable $previous = null, ?array $metadata = null
+        string $message, int $code = 0, ?\Throwable $previous = null, mixed $metadata = null
     )
     {
         parent::__construct($message, $code, $previous);
-        if ($metadata) {
-            $this->setTransportDetails($code, $message, $metadata);
-        }
+        $this->setTransportDetails($code, $message, $metadata);
     }
 
-    public function setTransportDetails(int $code, string $details, array $metadata)
+    public function setTransportDetails(int $code, string $details, mixed $metadata)
     {
         $grpcDetails = new MomentoGrpcErrorDetails($code, $details, $metadata);
         $this->transportDetails = new MomentoErrorTransportDetails($grpcDetails);
     }
 }
 
-class AlreadyExistsError extends SdkError {
+class AlreadyExistsError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::ALREADY_EXISTS_ERROR;
     public string $messageWrapper = 'A cache with the specified name already exists.  To resolve this error, either delete the existing cache and make a new one, or use a different name';
 }
 
-class AuthenticationError extends SdkError {
+class AuthenticationError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::AUTHENTICATION_ERROR;
     public string $messageWrapper = 'Invalid authentication credentials to connect to cache service';
 }
 
-class BadRequestError extends SdkError {
+class BadRequestError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::BAD_REQUEST_ERROR;
     public string $messageWrapper = 'The request was invalid; please contact us at support@momentohq.com';
 }
 
-class CancelledError extends SdkError {
+class CancelledError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::CANCELLED_ERROR;
     public string $messageWrapper = 'The request was cancelled by the server; please contact us at support@momentohq.com';
 }
 
-class FailedPreconditionError extends SdkError {
+class FailedPreconditionError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::FAILED_PRECONDITION_ERROR;
     public string $messageWrapper = 'System is not in a state required for the operation\'s execution';
 }
 
-class InternalServerError extends SdkError {
+class InternalServerError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::INTERNAL_SERVER_ERROR;
     public string $messageWrapper = 'An unexpected error occurred while trying to fulfill the request; please contact us at support@momentohq.com';
 }
 
-class InvalidArgumentError extends SdkError {
+class InvalidArgumentError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::INVALID_ARGUMENT_ERROR;
     public string $messageWrapper = 'Invalid argument passed to Momento client';
 }
 
-class LimitExceededError extends SdkError {
+class LimitExceededError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::LIMIT_EXCEEDED_ERROR;
     public string $messageWrapper = 'Request rate exceeded the limits for this account.  To resolve this error, reduce your request rate, or contact us at support@momentohq.com to request a limit increase';
 }
 
-class NotFoundError extends SdkError {
+class NotFoundError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::NOT_FOUND_ERROR;
     public string $messageWrapper = 'A cache with the specified name does not exist.  To resolve this error, make sure you have created the cache before attempting to use it';
 }
 
-class PermissionError extends SdkError {
+class PermissionError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::PERMISSION_ERROR;
     public string $messageWrapper = 'Insufficient permissions to perform an operation on a cache';
 }
 
-class ServerUnavailableError extends SdkError {
+class ServerUnavailableError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::SERVER_UNAVAILABLE;
     public string $messageWrapper = 'The server was unable to handle the request; consider retrying.  If the error persists, please contact us at support@momentohq.com';
 }
 
-class TimeoutError extends SdkError {
+class TimeoutError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::TIMEOUT_ERROR;
     public string $messageWrapper = 'The client\'s configured timeout was exceeded; you may need to use a Configuration with more lenient timeouts';
 }
@@ -146,7 +161,8 @@ class UnknownError extends SdkError
     public string $messageWrapper = 'Unknown error has occurred';
 }
 
-class UnknownServiceError extends SdkError {
+class UnknownServiceError extends SdkError
+{
     public MomentoErrorCode $errorCode = MomentoErrorCode::UNKNOWN_SERVICE_ERROR;
     public string $messageWrapper = 'Service returned an unknown response; please contact us at support@momentohq.com';
 }

@@ -4,6 +4,10 @@ namespace Momento\Cache;
 
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponse;
+use Momento\Cache\CacheOperationTypes\CacheGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponse;
@@ -149,5 +153,20 @@ class SimpleCacheClient
     public function dictionaryGetBatch(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetBatchResponse
     {
         return $this->dataClient->dictionaryGetBatch($cacheName, $dictionaryName, $fields);
+    public function dictionaryIncrement(
+        string $cacheName, string $dictionaryName, string $field, bool $refreshTtl, int $amount = 1, ?int $ttlSeconds = null
+    ): CacheDictionaryIncrementResponse
+    {
+        return $this->dataClient->dictionaryIncrement($cacheName, $dictionaryName, $field, $refreshTtl, $amount, $ttlSeconds);
+    }
+
+    public function dictionaryRemoveField(string $cacheName, string $dictionaryName, string $field): CacheDictionaryRemoveFieldResponse
+    {
+        return $this->dataClient->dictionaryRemoveField($cacheName, $dictionaryName, $field);
+    }
+
+    public function dictionaryRemoveFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryRemoveFieldsResponse
+    {
+        return $this->dataClient->dictionaryRemoveFields($cacheName, $dictionaryName, $fields);
     }
 }
