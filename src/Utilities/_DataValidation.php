@@ -68,9 +68,12 @@ if (!function_exists('validateValueName')) {
 if (!function_exists('validateItems')) {
     function validateItems(array $items): void
     {
-        if (empty($items)) {
-            throw new InvalidArgumentError("Items must be a non-empty array");
+        foreach ($items as $item) {
+            if (empty($item)) {
+                throw new InvalidArgumentError("Items must be a non-empty array");
+            }
         }
+
     }
 }
 

@@ -6,6 +6,7 @@ use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponse;
@@ -143,5 +144,10 @@ class SimpleCacheClient
     public function dictionarySetBatch(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetBatchResponse
     {
         return $this->dataClient->dictionarySetBatch($cacheName, $dictionaryName, $items, $refreshTtl, $ttlSeconds);
+    }
+
+    public function dictionaryGetBatch(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetBatchResponse
+    {
+        return $this->dataClient->dictionaryGetBatch($cacheName, $dictionaryName, $fields);
     }
 }
