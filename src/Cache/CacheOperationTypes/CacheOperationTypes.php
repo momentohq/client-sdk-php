@@ -897,3 +897,31 @@ class CacheDictionaryFetchResponseError extends CacheDictionaryFetchResponse
 {
     use ErrorBody;
 }
+
+abstract class CacheDictionarySetBatchResponse extends ResponseBase
+{
+    public function asSuccess(): CacheDictionarySetBatchResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheDictionarySetBatchResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheDictionarySetBatchResponseSuccess extends CacheDictionarySetBatchResponse
+{
+}
+
+class CacheDictionarySetBatchResponseError extends CacheDictionarySetBatchResponse
+{
+    use ErrorBody;
+}

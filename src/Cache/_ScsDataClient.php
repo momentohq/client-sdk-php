@@ -37,6 +37,8 @@ use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponseSuccess;
@@ -81,6 +83,8 @@ use Momento\Utilities\_ErrorConverter;
 use function Momento\Utilities\validateCacheName;
 use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateFieldName;
+use function Momento\Utilities\validateFieldsKeys;
+use function Momento\Utilities\validateItems;
 use function Momento\Utilities\validateListName;
 use function Momento\Utilities\validateOperationTimeout;
 use function Momento\Utilities\validateRange;
@@ -481,5 +485,35 @@ class _ScsDataClient
             return new CacheDictionaryFetchResponseHit($dictionaryFetchResponse);
         }
         return new CacheDictionaryFetchResponseMiss();
+    }
+
+    public function dictionarySetBatch(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null)
+    {
+        try {
+            validateCacheName($cacheName);
+            validateDictionaryName($dictionaryName);
+            validateItems($items);
+            validateFieldsKeys($items);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $protoItems = [];
+            $fieldValuePair = new _DictionaryFieldValuePair();
+            foreach ($items as $item) {
+                $fieldValuePair->setField($item["field"]);
+                $fieldValuePair->setValue($item["value"]);
+                $protoItems[] = $fieldValuePair;
+            }
+            $dictionarySetBatchRequest = new _DictionarySetRequest();
+            $dictionarySetBatchRequest->setDictionaryName($dictionaryName);
+            $dictionarySetBatchRequest->setRefreshTtl($refreshTtl);
+            $dictionarySetBatchRequest->setItems($protoItems);
+            $dictionarySetBatchRequest->setTtlMilliseconds($ttlMillis);
+            $call = $this->grpcManager->client->DictionarySet($dictionarySetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheDictionarySetBatchResponseError($e);
+        } catch (Exception $e) {
+            return new CacheDictionaryFetchResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheDictionarySetBatchResponseSuccess();
     }
 }
