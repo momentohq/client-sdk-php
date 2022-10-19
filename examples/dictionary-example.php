@@ -7,7 +7,7 @@ use Momento\Cache\SimpleCacheClient;
 
 $MOMENTO_AUTH_TOKEN = getenv("MOMENTO_AUTH_TOKEN");
 $CACHE_NAME = getenv("CACHE_NAME");
-$DICTIONARY_NAME = "exmaple-dictionary";
+$DICTIONARY_NAME = "example-dictionary";
 $FIELD = "MyField";
 $VALUE = "MyValue";
 $ITEM_DEFAULT_TTL_SECONDS = 60;
@@ -28,35 +28,32 @@ $client = new SimpleCacheClient($authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 $response = $client->createCache($CACHE_NAME);
 if ($response->asSuccess()) {
     print "Created cache " . $CACHE_NAME . "\n";
-}
-if ($response->asAlreadyExists()) {
-    print "Cache " . $CACHE_NAME . " already exists.\n";
-}
-if ($response->asError()) {
+} elseif ($response->asError()) {
     print "Error creating cache: " . $response->asError()->message() . "\n";
     exit;
+} elseif ($response->asAlreadyExists()) {
+    print "Cache " . $CACHE_NAME . " already exists.\n";
 }
 
 // Dictionary Set
 print "Setting field: $FIELD and value: $VALUE in dictionary: $DICTIONARY_NAME\n";
 $response = $client->dictionarySet($CACHE_NAME, $DICTIONARY_NAME, $FIELD, $VALUE, false, $ITEM_DEFAULT_TTL_SECONDS);
-if ($response->asError()) {
+if ($response->asSuccess()) {
+    print "SUCCESS: Dictionary set - field: " . $FIELD . " value: " . $VALUE . " dictionary: " . $DICTIONARY_NAME . "\n";
+} elseif ($response->asError()) {
     print "Error setting a value in a dictionary: " . $response->asError()->message() . "\n";
     exit;
-} else {
-    print "SUCCESS: Dictionary set - field: " . $FIELD . " value: " . $VALUE . " dictionary: " . $DICTIONARY_NAME . "\n";
 }
 
 // Dictionary Get
 print "Getting field: $FIELD in dictionary: $DICTIONARY_NAME\n";
 $response = $client->dictionaryGet($CACHE_NAME, $DICTIONARY_NAME, $FIELD);
-if ($response->asError()) {
+if ($response->asHit()) {
+    print "HIT: Dictionary get - field: " . $FIELD . " value: " . $response->asHit()->value() . " dictionary: " . $DICTIONARY_NAME . "\n";
+} elseif ($response->asMiss()) {
+    print "Get operation was a MISS\n";
+} elseif ($response->asError()) {
     print "Error getting a value in a dictionary: " . $response->asError()->message() . "\n";
     exit;
-}
-if ($response->asMiss()) {
-    print "Get operation was a MISS\n";
-} else {
-    print "HIT: Dictionary get - field: " . $FIELD . " value: " . $response->asHit()->value() . " dictionary: " . $DICTIONARY_NAME . "\n";
 }
 printBanner("*                       Momento Example End                      *");
