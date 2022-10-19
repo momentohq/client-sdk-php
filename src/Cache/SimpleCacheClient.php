@@ -5,6 +5,7 @@ namespace Momento\Cache;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponse;
 use Momento\Cache\CacheOperationTypes\CacheGetResponse;

@@ -2,6 +2,7 @@
 
 namespace Momento\Cache\CacheOperationTypes;
 
+use Cache_client\_DictionaryFetchResponse;
 use Cache_client\_DictionaryGetResponse;
 use Cache_client\_GetResponse;
 use Cache_client\_ListFetchResponse;
@@ -12,6 +13,7 @@ use Cache_client\_ListPushBackResponse;
 use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetResponse;
 use Control_client\_ListCachesResponse;
+use Google\Protobuf\Internal\RepeatedField;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\Errors\SdkError;
 
@@ -881,7 +883,7 @@ class CacheDictionaryFetchResponseHit extends CacheDictionaryFetchResponse
         }
     }
 
-    public function dictionary(): string
+    public function dictionary(): array
     {
         return $this->dictionary;
     }

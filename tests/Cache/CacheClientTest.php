@@ -40,10 +40,10 @@ class CacheClientTest extends TestCase
         }
     }
 
-    public function tearDown(): void
-    {
-        $this->client->deleteCache($this->TEST_CACHE_NAME);
-    }
+//    public function tearDown(): void
+//    {
+//        $this->client->deleteCache($this->TEST_CACHE_NAME);
+//    }
 
     private function getBadAuthTokenClient(): SimpleCacheClient
     {
@@ -931,6 +931,76 @@ class CacheClientTest extends TestCase
         $response = $this->client->dictionaryDelete($this->TEST_CACHE_NAME, $dictionaryName);
         $this->assertNotNull($response->asSuccess());
         $response = $this->client->dictionaryGet($this->TEST_CACHE_NAME, $dictionaryName, $field);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testDictionaryFetchWithNullCacheNameIsError()
+    {
+        $this->expectException(TypeError::class);
+        $cacheName = null;
+        $dictionaryName = uniqid();
+        $this->client->dictionaryFetch($cacheName, $dictionaryName);
+    }
+
+    public function testDictionaryFetchWithNullDictionaryNameIsError()
+    {
+        $this->expectException(TypeError::class);
+        $dictionaryName = null;
+        $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+    }
+
+    public function testDictionaryFetchMissingHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testDictionaryFetchHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field1 = uniqid();
+        $field2 = uniqid();
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $contentDictionary = [$field1 => $value1, $field2 => $value2];
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, $field1, $value1, true, 10);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, $field2, $value2, true, 10);
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($response->asHit()->dictionary(), $contentDictionary);
+        $this->assertSame($response->asHit()->dictionary(), $contentDictionary);
+    }
+
+    public function testDictionaryFetchDictionaryDoesNotExistNoop()
+    {
+        $dictionaryName = uniqid();
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asMiss());
+        $response = $this->client->dictionaryDelete($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testDictionaryDeleteDictionaryExistsHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), false);
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asHit());
+        $response = $this->client->dictionaryDelete($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
         $this->assertNotNull($response->asMiss());
     }
 }
