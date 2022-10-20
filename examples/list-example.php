@@ -61,7 +61,7 @@ $response = $client->listFetch($CACHE_NAME, $LIST_NAME);
 if ($response->asHit()) {
     print "HIT: Fetched values from list (" . $LIST_NAME . "): ";
     foreach ($response->asHit()->values() as $value) {
-        print $value . "\t";
+        print $value . "\n";
     }
     print "\n";
 } elseif ($response->asMiss()) {
