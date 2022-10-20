@@ -967,7 +967,6 @@ class CacheClientTest extends TestCase
         $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
         $this->assertNotNull($response->asHit());
         $this->assertEquals($response->asHit()->dictionary(), $contentDictionary);
-        $this->assertSame($response->asHit()->dictionary(), $contentDictionary);
     }
 
     public function testDictionaryFetchDictionaryDoesNotExistNoop()
