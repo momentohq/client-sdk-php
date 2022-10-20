@@ -14,7 +14,6 @@ use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
 use Control_client\_ListCachesResponse;
-use Google\Protobuf\Internal\RepeatedField;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
@@ -795,12 +794,11 @@ class CacheDictionaryGetResponseHit extends CacheDictionaryGetResponse
 
     public function __construct(_DictionaryGetResponse $response = null, ?string $cacheBody = null)
     {
+        parent::__construct();
         if (!is_null($response) && is_null($cacheBody)) {
-            parent::__construct();
             $this->value = $response->getFound()->getItems()[0]->getCacheBody();
         }
         if (is_null($response) && !is_null($cacheBody)) {
-            parent::__construct();
             $this->value = $cacheBody;
         }
     }
@@ -878,14 +876,13 @@ abstract class CacheDictionaryFetchResponse extends ResponseBase
 
 class CacheDictionaryFetchResponseHit extends CacheDictionaryFetchResponse
 {
-    private RepeatedField $items;
     private array $dictionary;
 
     public function __construct(_DictionaryFetchResponse $response)
     {
         parent::__construct();
-        $this->items = $response->getFound()->getItems();
-        foreach ($this->items as $item) {
+        $items = $response->getFound()->getItems();
+        foreach ($items as $item) {
             $this->dictionary[$item->getField()] = $item->getValue();
         }
     }
