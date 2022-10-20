@@ -499,10 +499,10 @@ class _ScsDataClient
             validateFieldsKeys($items);
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $protoItems = [];
-            $fieldValuePair = new _DictionaryFieldValuePair();
-            foreach ($items as $item) {
-                $fieldValuePair->setField($item["field"]);
-                $fieldValuePair->setValue($item["value"]);
+            foreach ($items as $field => $value) {
+                $fieldValuePair = new _DictionaryFieldValuePair();
+                $fieldValuePair->setField($field);
+                $fieldValuePair->setValue($value);
                 $protoItems[] = $fieldValuePair;
             }
             $dictionarySetBatchRequest = new _DictionarySetRequest();
