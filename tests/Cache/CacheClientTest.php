@@ -1036,6 +1036,11 @@ class CacheClientTest extends TestCase
         $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+
+        $items = [];
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
     public function testDictionarySetBatchHappyPath()
@@ -1119,6 +1124,11 @@ class CacheClientTest extends TestCase
     {
         $dictionaryName = uniqid();
         $fields = [""];
+        $response = $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, $fields);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+
+        $fields = [];
         $response = $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, $fields);
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());

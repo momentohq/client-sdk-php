@@ -68,6 +68,9 @@ if (!function_exists('validateValueName')) {
 if (!function_exists('validateItems')) {
     function validateItems(array $items): void
     {
+        if (empty($items)) {
+            throw new InvalidArgumentError("Items must be a non-empty array");
+        }
         foreach ($items as $item) {
             if (empty($item)) {
                 throw new InvalidArgumentError("Items must be a non-empty array");
@@ -80,6 +83,9 @@ if (!function_exists('validateItems')) {
 if (!function_exists('validateFieldsKeys')) {
     function validateFieldsKeys(array $items): void
     {
+        if (empty($items)) {
+            throw new InvalidArgumentError("Items must be a non-empty array");
+        }
         foreach ($items as $field => $value) {
             if (isNullOrEmpty($field) || isNullOrEmpty($value)) {
                 throw new InvalidArgumentError("Each key and value must be a non-empty string");
