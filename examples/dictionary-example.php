@@ -7,9 +7,10 @@ use Momento\Cache\SimpleCacheClient;
 
 $MOMENTO_AUTH_TOKEN = getenv("MOMENTO_AUTH_TOKEN");
 $CACHE_NAME = getenv("CACHE_NAME");
-$ITEM_DEFAULT_TTL_SECONDS = 60;
-$KEY = "MyKey";
+$DICTIONARY_NAME = "example-dictionary";
+$FIELD = "MyField";
 $VALUE = "MyValue";
+$ITEM_DEFAULT_TTL_SECONDS = 60;
 
 function printBanner(string $message): void
 {
@@ -18,6 +19,7 @@ function printBanner(string $message): void
 }
 
 printBanner("*                      Momento Example Start                     *");
+
 // Setup
 $authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
 $client = new SimpleCacheClient($authProvider, $ITEM_DEFAULT_TTL_SECONDS);
@@ -33,47 +35,25 @@ if ($response->asSuccess()) {
     print "Cache " . $CACHE_NAME . " already exists.\n";
 }
 
-// List cache
-$response = $client->listCaches();
+// Dictionary Set
+print "Setting field: $FIELD and value: $VALUE in dictionary: $DICTIONARY_NAME\n";
+$response = $client->dictionarySet($CACHE_NAME, $DICTIONARY_NAME, $FIELD, $VALUE, false, $ITEM_DEFAULT_TTL_SECONDS);
 if ($response->asSuccess()) {
-    while (true) {
-        print "SUCCESS: List caches: \n";
-        foreach ($response->asSuccess()->caches() as $cache) {
-            $cacheName = $cache->name();
-            print "$cacheName\n";
-        }
-        $nextToken = $response->asSuccess()->nextToken();
-        if (!$nextToken) {
-            break;
-        }
-        $response = $client->listCaches($nextToken);
-    }
-    print "\n";
+    print "SUCCESS: Dictionary set - field: " . $FIELD . " value: " . $VALUE . " dictionary: " . $DICTIONARY_NAME . "\n";
 } elseif ($response->asError()) {
-    print "Error listing cache: " . $response->asError()->message() . "\n";
+    print "Error setting a value in a dictionary: " . $response->asError()->message() . "\n";
     exit;
 }
 
-// Set
-print "Setting key: $KEY to value: $VALUE\n";
-$response = $client->set($CACHE_NAME, $KEY, $VALUE);
-if ($response->asSuccess()) {
-    print "SUCCESS: - Set key: " . $KEY . " value: " . $VALUE . " cache: " . $CACHE_NAME . "\n";
-} elseif ($response->asError()) {
-    print "Error setting key: " . $response->asError()->message() . "\n";
-    exit;
-}
-
-// Get
-print "Getting value for key: $KEY\n";
-$response = $client->get($CACHE_NAME, $KEY);
+// Dictionary Get
+print "Getting field: $FIELD in dictionary: $DICTIONARY_NAME\n";
+$response = $client->dictionaryGet($CACHE_NAME, $DICTIONARY_NAME, $FIELD);
 if ($response->asHit()) {
-    print "SUCCESS: - Get key: " . $KEY . " value: " . $response->asHit()->value() . " cache: " . $CACHE_NAME . "\n";
+    print "HIT: Dictionary get - field: " . $FIELD . " value: " . $response->asHit()->value() . " dictionary: " . $DICTIONARY_NAME . "\n";
 } elseif ($response->asMiss()) {
     print "Get operation was a MISS\n";
 } elseif ($response->asError()) {
-    print "Error getting cache: " . $response->asError()->message() . "\n";
+    print "Error getting a value in a dictionary: " . $response->asError()->message() . "\n";
     exit;
 }
-
 printBanner("*                       Momento Example End                      *");
