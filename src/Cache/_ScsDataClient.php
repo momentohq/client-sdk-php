@@ -5,6 +5,7 @@ namespace Momento\Cache;
 use Cache_client\_DeleteRequest;
 use Cache_client\_DictionaryDeleteRequest;
 use Cache_client\_DictionaryDeleteRequest\All;
+use Cache_client\_DictionaryFetchRequest;
 use Cache_client\_DictionaryFieldValuePair;
 use Cache_client\_DictionaryGetRequest;
 use Cache_client\_DictionarySetRequest;
@@ -28,10 +29,20 @@ use Momento\Cache\CacheOperationTypes\CacheDeleteResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponseSuccess;
@@ -76,6 +87,8 @@ use Momento\Utilities\_ErrorConverter;
 use function Momento\Utilities\validateCacheName;
 use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateFieldName;
+use function Momento\Utilities\validateFieldsKeys;
+use function Momento\Utilities\validateItems;
 use function Momento\Utilities\validateListName;
 use function Momento\Utilities\validateOperationTimeout;
 use function Momento\Utilities\validateRange;
@@ -456,5 +469,77 @@ class _ScsDataClient
             return new CacheDictionaryDeleteResponseError(new UnknownError($e->getMessage()));
         }
         return new CacheDictionaryDeleteResponseSuccess();
+    }
+
+    public function dictionaryFetch(string $cacheName, string $dictionaryName): CacheDictionaryFetchResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateDictionaryName($dictionaryName);
+            $dictionaryFetchRequest = new _DictionaryFetchRequest();
+            $dictionaryFetchRequest->setDictionaryName($dictionaryName);
+            $call = $this->grpcManager->client->DictionaryFetch($dictionaryFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $dictionaryFetchResponse = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheDictionaryFetcheResponseError($e);
+        } catch (Exception $e) {
+            return new CacheDictionaryFetchResponseError(new UnknownError($e->getMessage()));
+        }
+        if ($dictionaryFetchResponse->hasFound()) {
+            return new CacheDictionaryFetchResponseHit($dictionaryFetchResponse);
+        }
+        return new CacheDictionaryFetchResponseMiss();
+    }
+
+    public function dictionarySetBatch(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetBatchResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateDictionaryName($dictionaryName);
+            validateItems($items);
+            validateFieldsKeys($items);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $protoItems = [];
+            foreach ($items as $field => $value) {
+                $fieldValuePair = new _DictionaryFieldValuePair();
+                $fieldValuePair->setField($field);
+                $fieldValuePair->setValue($value);
+                $protoItems[] = $fieldValuePair;
+            }
+            $dictionarySetBatchRequest = new _DictionarySetRequest();
+            $dictionarySetBatchRequest->setDictionaryName($dictionaryName);
+            $dictionarySetBatchRequest->setRefreshTtl($refreshTtl);
+            $dictionarySetBatchRequest->setItems($protoItems);
+            $dictionarySetBatchRequest->setTtlMilliseconds($ttlMillis);
+            $call = $this->grpcManager->client->DictionarySet($dictionarySetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheDictionarySetBatchResponseError($e);
+        } catch (Exception $e) {
+            return new CacheDictionarySetBatchResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheDictionarySetBatchResponseSuccess();
+    }
+
+    public function dictionaryGetBatch(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetBatchResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateDictionaryName($dictionaryName);
+            validateItems($fields);
+            $dictionaryGetBatchRequest = new _DictionaryGetRequest();
+            $dictionaryGetBatchRequest->setDictionaryName($dictionaryName);
+            $dictionaryGetBatchRequest->setFields($fields);
+            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $dictionaryGetBatchResponse = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheDictionaryGetBatchResponseError($e);
+        } catch (Exception $e) {
+            return new CacheDictionaryGetBatchResponseError(new UnknownError($e->getMessage()));
+        }
+        if ($dictionaryGetBatchResponse->hasFound()) {
+            return new CacheDictionaryGetBatchResponseSuccess($dictionaryGetBatchResponse);
+        }
+        return new CacheDictionaryGetBatchResponseSuccess(null, count($fields));
     }
 }

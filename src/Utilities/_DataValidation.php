@@ -65,6 +65,35 @@ if (!function_exists('validateValueName')) {
     }
 }
 
+if (!function_exists('validateItems')) {
+    function validateItems(array $items): void
+    {
+        if (empty($items)) {
+            throw new InvalidArgumentError("Items must be a non-empty array");
+        }
+        foreach ($items as $item) {
+            if (empty($item)) {
+                throw new InvalidArgumentError("Items must be a non-empty array");
+            }
+        }
+
+    }
+}
+
+if (!function_exists('validateFieldsKeys')) {
+    function validateFieldsKeys(array $items): void
+    {
+        if (empty($items)) {
+            throw new InvalidArgumentError("Items must be a non-empty array");
+        }
+        foreach ($items as $field => $value) {
+            if (isNullOrEmpty($field) || isNullOrEmpty($value)) {
+                throw new InvalidArgumentError("Each key and value must be a non-empty string");
+            }
+        }
+    }
+}
+
 if (!function_exists('validateOperationTimeout')) {
     function validateOperationTimeout(?int $operationTimeout = null)
     {
@@ -77,39 +106,31 @@ if (!function_exists('validateOperationTimeout')) {
     }
 }
 
-if (!function_exists('validateTruncateSize'))
-{
-    function validateTruncateSize(?int $truncateSize=null)
+if (!function_exists('validateTruncateSize')) {
+    function validateTruncateSize(?int $truncateSize = null)
     {
-        if ($truncateSize === null)
-        {
+        if ($truncateSize === null) {
             return;
         }
-        if ($truncateSize <= 0)
-        {
+        if ($truncateSize <= 0) {
             throw new InvalidArgumentError("Truncate size must be greater than zero.");
         }
     }
 }
 
-if (!function_exists('validateRange'))
-{
+if (!function_exists('validateRange')) {
     function validateRange(?int $beginIndex, ?int $count)
     {
-        if (is_null($beginIndex) && is_null($count))
-        {
+        if (is_null($beginIndex) && is_null($count)) {
             return;
         }
-        if (!is_null($beginIndex) xor !is_null($count))
-        {
+        if (!is_null($beginIndex) xor !is_null($count)) {
             throw new InvalidArgumentError("Beginning index and count must be supplied together.");
         }
-        if ($beginIndex < 0)
-        {
+        if ($beginIndex < 0) {
             throw new InvalidArgumentError("Beginning index and count must be a positive integer.");
         }
-        if ($count <= 0)
-        {
+        if ($count <= 0) {
             throw new InvalidArgumentError("Count must be greater than zero.");
         }
     }

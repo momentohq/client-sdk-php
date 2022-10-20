@@ -2,6 +2,7 @@
 
 namespace Momento\Cache\CacheOperationTypes;
 
+use Cache_client\_DictionaryFetchResponse;
 use Cache_client\_DictionaryGetResponse;
 use Cache_client\_GetResponse;
 use Cache_client\_ListFetchResponse;
@@ -11,9 +12,11 @@ use Cache_client\_ListPopFrontResponse;
 use Cache_client\_ListPushBackResponse;
 use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetResponse;
+use Cache_client\ECacheResult;
 use Control_client\_ListCachesResponse;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\Errors\SdkError;
+use Momento\Cache\Errors\UnknownError;
 
 trait ErrorBody
 {
@@ -454,7 +457,8 @@ abstract class CacheListPushFrontResponse extends ResponseBase
     }
 }
 
-class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse {
+class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse
+{
     private int $listLength;
 
     public function __construct(_ListPushFrontResponse $response)
@@ -463,7 +467,7 @@ class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse {
         $this->listLength = $response->getListLength();
     }
 
-    public function listLength() : int
+    public function listLength(): int
     {
         return $this->listLength;
     }
@@ -493,7 +497,8 @@ abstract class CacheListPushBackResponse extends ResponseBase
     }
 }
 
-class CacheListPushBackResponseSuccess extends CacheListPushBackResponse {
+class CacheListPushBackResponseSuccess extends CacheListPushBackResponse
+{
     private int $listLength;
 
     public function __construct(_ListPushBackResponse $response)
@@ -502,7 +507,7 @@ class CacheListPushBackResponseSuccess extends CacheListPushBackResponse {
         $this->listLength = $response->getListLength();
     }
 
-    public function listLength() : int
+    public function listLength(): int
     {
         return $this->listLength;
     }
@@ -787,11 +792,15 @@ class CacheDictionaryGetResponseHit extends CacheDictionaryGetResponse
 {
     private string $value;
 
-    public function __construct(_DictionaryGetResponse $response)
+    public function __construct(_DictionaryGetResponse $response = null, ?string $cacheBody = null)
     {
         parent::__construct();
-        $this->value = $response->getFound()->getItems()[0]->getCacheBody();
-
+        if (!is_null($response) && is_null($cacheBody)) {
+            $this->value = $response->getFound()->getItems()[0]->getCacheBody();
+        }
+        if (is_null($response) && !is_null($cacheBody)) {
+            $this->value = $cacheBody;
+        }
     }
 
     public function value(): string
@@ -834,6 +843,154 @@ class CacheDictionaryDeleteResponseSuccess extends CacheDictionaryDeleteResponse
 }
 
 class CacheDictionaryDeleteResponseError extends CacheDictionaryDeleteResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheDictionaryFetchResponse extends ResponseBase
+{
+    public function asHit(): CacheDictionaryFetchResponseHit|null
+    {
+        if ($this->isHit()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asMiss(): CacheDictionaryFetchResponseMiss|null
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheDictionaryFetchResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheDictionaryFetchResponseHit extends CacheDictionaryFetchResponse
+{
+    private array $dictionary;
+
+    public function __construct(_DictionaryFetchResponse $response)
+    {
+        parent::__construct();
+        $items = $response->getFound()->getItems();
+        foreach ($items as $item) {
+            $this->dictionary[$item->getField()] = $item->getValue();
+        }
+    }
+
+    public function dictionary(): array
+    {
+        return $this->dictionary;
+    }
+}
+
+class CacheDictionaryFetchResponseMiss extends CacheDictionaryFetchResponse
+{
+}
+
+class CacheDictionaryFetchResponseError extends CacheDictionaryFetchResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheDictionarySetBatchResponse extends ResponseBase
+{
+    public function asSuccess(): CacheDictionarySetBatchResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheDictionarySetBatchResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheDictionarySetBatchResponseSuccess extends CacheDictionarySetBatchResponse
+{
+}
+
+class CacheDictionarySetBatchResponseError extends CacheDictionarySetBatchResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheDictionaryGetBatchResponse extends ResponseBase
+{
+    public function asSuccess(): CacheDictionaryGetBatchResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheDictionaryGetBatchResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResponse
+{
+    private array $responsesList = [];
+
+    public function __construct(_DictionaryGetResponse $responses = null, ?int $numRequested = null)
+    {
+        if (!is_null($responses) && is_null($numRequested)) {
+            parent::__construct();
+            foreach ($responses->getFound()->getItems() as $response) {
+                if ($response->getResult() == ECacheResult::Hit) {
+                    $this->responsesList[] = new CacheDictionaryGetResponseHit(null, $response->getCacheBody());
+                }
+                if ($response->getResult() == ECacheResult::Miss) {
+                    $this->responsesList[] = new CacheDictionaryGetResponseMiss();
+                } else {
+                    $this->responsesList[] = new CacheDictionaryGetResponseError(new UnknownError(strval($response->getResult())));
+                }
+            }
+        }
+        if (is_null($responses) && !is_null($numRequested)) {
+            foreach (range(0, $numRequested - 1) as $ignored) {
+                $this->responsesList[] = new CacheDictionaryGetResponseMiss();
+            }
+        }
+    }
+
+    public function values(): array
+    {
+        $ret = [];
+        foreach ($this->responsesList as $response) {
+            if ($response->asHit()) {
+                $ret[] = $response->asHit()->value();
+            }
+            if ($response->asMiss()) {
+                $ret[] = null;
+            }
+        }
+        return $ret;
+    }
+}
+
+class CacheDictionaryGetBatchResponseError extends CacheDictionaryGetBatchResponse
 {
     use ErrorBody;
 }

@@ -40,11 +40,6 @@ class CacheClientTest extends TestCase
         }
     }
 
-    public function tearDown(): void
-    {
-        $this->client->deleteCache($this->TEST_CACHE_NAME);
-    }
-
     private function getBadAuthTokenClient(): SimpleCacheClient
     {
         $badEnvName = "_MOMENTO_BAD_AUTH_TOKEN";
@@ -1102,5 +1097,234 @@ class CacheClientTest extends TestCase
         $response = $this->client->dictionaryGet($this->TEST_CACHE_NAME, $dictionaryName, $field);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asMiss());
+    }
+
+    public function testDictionaryFetchWithNullCacheNameIsError()
+    {
+        $this->expectException(TypeError::class);
+        $cacheName = null;
+        $dictionaryName = uniqid();
+        $this->client->dictionaryFetch($cacheName, $dictionaryName);
+    }
+
+    public function testDictionaryFetchWithNullDictionaryNameIsError()
+    {
+        $this->expectException(TypeError::class);
+        $dictionaryName = null;
+        $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+    }
+
+    public function testDictionaryFetchMissingHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testDictionaryFetchHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field1 = uniqid();
+        $field2 = uniqid();
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $contentDictionary = [$field1 => $value1, $field2 => $value2];
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, $field1, $value1, true, 10);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, $field2, $value2, true, 10);
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($response->asHit()->dictionary(), $contentDictionary);
+    }
+
+    public function testDictionaryFetchDictionaryDoesNotExistNoop()
+    {
+        $dictionaryName = uniqid();
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asMiss());
+        $response = $this->client->dictionaryDelete($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testDictionaryDeleteDictionaryExistsHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), false);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), false);
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asHit());
+        $response = $this->client->dictionaryDelete($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testDictionarySetBatchWithNullDictionaryNameIsError()
+    {
+        $this->expectException(TypeError::class);
+        $dictionaryName = null;
+        $items = [uniqid()];
+        $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+    }
+
+    public function testDictionarySetBatchWithEmptyDictionaryNameIsError()
+    {
+        $dictionaryName = "";
+        $items = [uniqid()];
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testDictionarySetBatchWithNullItemsIsError()
+    {
+        $this->expectException(TypeError::class);
+        $dictionaryName = uniqid();
+        $items = null;
+        $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+    }
+
+    public function testDictionarySetBatchWithEmptyItemsIsError()
+    {
+        $dictionaryName = uniqid();
+        $items = [""];
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+
+        $items = [];
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testDictionarySetBatchHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field1 = uniqid();
+        $field2 = uniqid();
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $items = [$field1 => $value1, $field2 => $value2];
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->dictionaryGet($this->TEST_CACHE_NAME, $dictionaryName, $field1);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value1, $response->asHit()->value());
+
+        $response = $this->client->dictionaryGet($this->TEST_CACHE_NAME, $dictionaryName, $field2);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value2, $response->asHit()->value());
+    }
+
+    public function testDictionarySetBatchRefreshTtlHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field = uniqid();
+        $value = uniqid();
+        $content = [$field => $value];
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $content, false, 2);
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $content, true, 10);
+        $this->assertNotNull($response->asSuccess());
+        sleep(2);
+
+        $response = $this->client->dictionaryGet($this->TEST_CACHE_NAME, $dictionaryName, $field);
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value, $response->asHit()->value());
+    }
+
+    public function testDictionarySetBatchNoRefreshTtlHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field = uniqid();
+        $value = uniqid();
+        $content = [$field => $value];
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $content, false, 5);
+        $this->assertNotNull($response->asSuccess());
+        sleep(1);
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $content, false, 10);
+        $this->assertNotNull($response->asSuccess());
+        sleep(4);
+
+        $response = $this->client->dictionaryGet($this->TEST_CACHE_NAME, $dictionaryName, $field);
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testDictionaryGetBatchWithNullDictionaryNameIsError()
+    {
+        $this->expectException(TypeError::class);
+        $dictionaryName = null;
+        $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, uniqid());
+    }
+
+    public function testDictionaryGetBatchWithEmptyDictionaryNameIsError()
+    {
+        $dictionaryName = "";
+        $response = $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, [uniqid()]);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testDictionaryGetBatchWithNullFieldsIsError()
+    {
+        $this->expectException(TypeError::class);
+        $dictionaryName = uniqid();
+        $fields = null;
+        $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, $fields);
+    }
+
+    public function testDictionaryGetBatchWithEmptyFieldsIsError()
+    {
+        $dictionaryName = uniqid();
+        $fields = [""];
+        $response = $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, $fields);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+
+        $fields = [];
+        $response = $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, $fields);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testDictionaryGetBatchHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field1 = uniqid();
+        $field2 = uniqid();
+        $field3 = uniqid();
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $items = [$field1 => $value1, $field2 => $value2];
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
+        $this->assertNotNull($response->asSuccess());
+        $values = [$value1, $value2, null];
+        $this->assertEquals($values, $response->asSuccess()->values());
+    }
+
+    public function testDictionaryGetBatchDictionaryMissingHappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field1 = uniqid();
+        $field2 = uniqid();
+        $field3 = uniqid();
+        $response = $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
+        $this->assertNotNull($response->asSuccess());
+        $values = [null, null, null];
+        $this->assertEquals($values, $response->asSuccess()->values());
     }
 }
