@@ -956,11 +956,11 @@ class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResp
 {
     private array $responsesList = [];
 
-    public function __construct(array $responses = null, ?int $numRequested = null)
+    public function __construct(_DictionaryGetResponse $responses = null, ?int $numRequested = null)
     {
         if (!is_null($responses) && is_null($numRequested)) {
             parent::__construct();
-            foreach ($responses->hasFound()->getItems() as $response) {
+            foreach ($responses->getFound()->getItems() as $response) {
                 if ($response->getResult() == ECacheResult::Hit) {
                     $this->responsesList[] = new CacheDictionaryGetResponseHit(null, $response->getCacheBody());
                 }

@@ -34,6 +34,7 @@ use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseError;
@@ -534,7 +535,7 @@ class _ScsDataClient
         } catch (SdkError $e) {
             return new CacheDictionaryGetBatchResponseError($e);
         } catch (Exception $e) {
-            return new CacheDictionaryGetResponseError(new UnknownError($e->getMessage()));
+            return new CacheDictionaryGetBatchResponseError(new UnknownError($e->getMessage()));
         }
         if ($dictionaryGetBatchResponse->hasFound()) {
             return new CacheDictionaryGetBatchResponseSuccess($dictionaryGetBatchResponse);
