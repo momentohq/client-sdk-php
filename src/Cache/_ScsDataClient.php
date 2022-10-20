@@ -492,7 +492,7 @@ class _ScsDataClient
             $call = $this->grpcManager->client->DictionaryFetch($dictionaryFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
             $dictionaryFetchResponse = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionaryFetcheResponseError($e);
+            return new CacheDictionaryFetchResponseError($e);
         } catch (Exception $e) {
             return new CacheDictionaryFetchResponseError(new UnknownError($e->getMessage()));
         }

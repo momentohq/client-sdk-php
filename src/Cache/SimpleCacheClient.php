@@ -14,7 +14,6 @@ use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponse;
-use Momento\Cache\CacheOperationTypes\CacheGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheListLengthResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPopBackResponse;
@@ -153,6 +152,8 @@ class SimpleCacheClient
     public function dictionaryGetBatch(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetBatchResponse
     {
         return $this->dataClient->dictionaryGetBatch($cacheName, $dictionaryName, $fields);
+    }
+
     public function dictionaryIncrement(
         string $cacheName, string $dictionaryName, string $field, bool $refreshTtl, int $amount = 1, ?int $ttlSeconds = null
     ): CacheDictionaryIncrementResponse
