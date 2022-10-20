@@ -40,11 +40,6 @@ class CacheClientTest extends TestCase
         }
     }
 
-//    public function tearDown(): void
-//    {
-//        $this->client->deleteCache($this->TEST_CACHE_NAME);
-//    }
-
     private function getBadAuthTokenClient(): SimpleCacheClient
     {
         $badEnvName = "_MOMENTO_BAD_AUTH_TOKEN";
