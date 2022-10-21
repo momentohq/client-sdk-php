@@ -4,6 +4,7 @@ namespace Momento\Cache\CacheOperationTypes;
 
 use Cache_client\_DictionaryFetchResponse;
 use Cache_client\_DictionaryGetResponse;
+use Cache_client\_DictionaryIncrementResponse;
 use Cache_client\_GetResponse;
 use Cache_client\_ListFetchResponse;
 use Cache_client\_ListLengthResponse;
@@ -808,6 +809,11 @@ class CacheDictionaryGetResponseHit extends CacheDictionaryGetResponse
         return $this->value;
     }
 
+    public function __toString()
+    {
+        return parent::__toString() . ": " . $this->value;
+    }
+
 }
 
 class CacheDictionaryGetResponseMiss extends CacheDictionaryGetResponse
@@ -991,6 +997,108 @@ class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResp
 }
 
 class CacheDictionaryGetBatchResponseError extends CacheDictionaryGetBatchResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheDictionaryIncrementResponse extends ResponseBase
+{
+    public function asSuccess(): CacheDictionaryIncrementResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheDictionaryIncrementResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheDictionaryIncrementResponseSuccess extends CacheDictionaryIncrementResponse
+{
+
+    private int $value;
+
+    public function __construct(_DictionaryIncrementResponse $response)
+    {
+        parent::__construct();
+        $this->value = $response->getValue();
+    }
+
+    public function value(): int
+    {
+        return $this->value;
+    }
+
+    public function string(): string
+    {
+        return "{$this->value}";
+    }
+}
+
+class CacheDictionaryIncrementResponseError extends CacheDictionaryIncrementResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheDictionaryRemoveFieldResponse extends ResponseBase
+{
+    public function asSuccess(): CacheDictionaryRemoveFieldResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheDictionaryRemoveFieldResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheDictionaryRemoveFieldResponseSuccess extends CacheDictionaryRemoveFieldResponse
+{
+}
+
+class CacheDictionaryRemoveFieldResponseError extends CacheDictionaryRemoveFieldResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheDictionaryRemoveFieldsResponse extends ResponseBase
+{
+    public function asSuccess(): CacheDictionaryRemoveFieldsResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheDictionaryRemoveFieldsResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheDictionaryRemoveFieldsResponseSuccess extends CacheDictionaryRemoveFieldsResponse
+{
+}
+
+class CacheDictionaryRemoveFieldsResponseError extends CacheDictionaryRemoveFieldsResponse
 {
     use ErrorBody;
 }

@@ -8,6 +8,7 @@ use Cache_client\_DictionaryDeleteRequest\All;
 use Cache_client\_DictionaryFetchRequest;
 use Cache_client\_DictionaryFieldValuePair;
 use Cache_client\_DictionaryGetRequest;
+use Cache_client\_DictionaryIncrementRequest;
 use Cache_client\_DictionarySetRequest;
 use Cache_client\_GetRequest;
 use Cache_client\_ListEraseRequest;
@@ -40,6 +41,15 @@ use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponseSuccess;
@@ -87,6 +97,7 @@ use Momento\Utilities\_ErrorConverter;
 use function Momento\Utilities\validateCacheName;
 use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateFieldName;
+use function Momento\Utilities\validateFields;
 use function Momento\Utilities\validateFieldsKeys;
 use function Momento\Utilities\validateItems;
 use function Momento\Utilities\validateListName;
@@ -401,6 +412,7 @@ class _ScsDataClient
             validateFieldName($field);
             validateValueName($value);
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            validateTtl($ttlMillis);
             $dictionarySetRequest = new _DictionarySetRequest();
             $dictionarySetRequest->setDictionaryName($dictionaryName);
             $dictionarySetRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
@@ -481,7 +493,7 @@ class _ScsDataClient
             $call = $this->grpcManager->client->DictionaryFetch($dictionaryFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
             $dictionaryFetchResponse = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionaryFetcheResponseError($e);
+            return new CacheDictionaryFetchResponseError($e);
         } catch (Exception $e) {
             return new CacheDictionaryFetchResponseError(new UnknownError($e->getMessage()));
         }
@@ -542,4 +554,80 @@ class _ScsDataClient
         }
         return new CacheDictionaryGetBatchResponseSuccess(null, count($fields));
     }
+
+    public function dictionaryIncrement(
+        string $cacheName, string $dictionaryName, string $field, bool $refreshTtl, int $amount = 1, ?int $ttlSeconds = null
+    ): CacheDictionaryIncrementResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateDictionaryName($dictionaryName);
+            validateFieldName($field);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            validateTtl($ttlMillis);
+            $dictionaryIncrementRequest = new _DictionaryIncrementRequest();
+            $dictionaryIncrementRequest
+                ->setDictionaryName($dictionaryName)
+                ->setField($field)
+                ->setAmount($amount)
+                ->setRefreshTtl($refreshTtl)
+                ->setTtlMilliseconds($ttlMillis);
+            $call = $this->grpcManager->client->DictionaryIncrement(
+                $dictionaryIncrementRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
+            $response = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheDictionaryIncrementResponseError($e);
+        } catch (Exception $e) {
+            return new CacheDictionaryIncrementResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheDictionaryIncrementResponseSuccess($response);
+    }
+
+    public function dictionaryRemoveField(string $cacheName, string $dictionaryName, string $field): CacheDictionaryRemoveFieldResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateDictionaryName($dictionaryName);
+            validateFieldName($field);
+            $dictionaryRemoveFieldRequest = new _DictionaryDeleteRequest();
+            $some = new _DictionaryDeleteRequest\Some();
+            $some->setFields([$field]);
+            $dictionaryRemoveFieldRequest->setDictionaryName($dictionaryName);
+            $dictionaryRemoveFieldRequest->setSome($some);
+            $call = $this->grpcManager->client->DictionaryDelete(
+                $dictionaryRemoveFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheDictionaryRemoveFieldResponseError($e);
+        } catch (Exception $e) {
+            return new CacheDictionaryRemoveFieldResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheDictionaryRemoveFieldResponseSuccess();
+    }
+
+    public function dictionaryRemoveFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryRemoveFieldsResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateDictionaryName($dictionaryName);
+            validateFields($fields);
+            $dictionaryRemoveFieldsRequest = new _DictionaryDeleteRequest();
+            $some = new _DictionaryDeleteRequest\Some();
+            $some->setFields($fields);
+            $dictionaryRemoveFieldsRequest->setDictionaryName($dictionaryName);
+            $dictionaryRemoveFieldsRequest->setSome($some);
+            $call = $this->grpcManager->client->DictionaryDelete(
+                $dictionaryRemoveFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+            );
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheDictionaryRemoveFieldsResponseError($e);
+        } catch (Exception $e) {
+            return new CacheDictionaryRemoveFieldsResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheDictionaryRemoveFieldsResponseSuccess();
+    }
+
 }

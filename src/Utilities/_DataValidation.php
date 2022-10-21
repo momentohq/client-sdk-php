@@ -56,6 +56,18 @@ if (!function_exists('validateFieldName')) {
     }
 }
 
+if (!function_exists('validateFields')) {
+    function validateFields(array $fieldNames): void
+    {
+        if (empty($fieldNames)) {
+            throw new InvalidArgumentError("Field names must be a non-empty array");
+        }
+        foreach ($fieldNames as $fieldName) {
+            validateFieldName($fieldName);
+        }
+    }
+}
+
 if (!function_exists('validateValueName')) {
     function validateValueName(string $valueName): void
     {

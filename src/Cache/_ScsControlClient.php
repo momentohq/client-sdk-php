@@ -33,7 +33,7 @@ class _ScsControlClient
         $this->grpcManager = new _ControlGrpcManager($authToken, $endpoint);
     }
 
-    private function processCall(UnaryCall $call) : mixed
+    private function processCall(UnaryCall $call): mixed
     {
         [$response, $status] = $call->wait();
         if ($status->code !== 0) {
@@ -42,7 +42,7 @@ class _ScsControlClient
         return $response;
     }
 
-    public function createCache(string $cacheName) : CreateCacheResponse
+    public function createCache(string $cacheName): CreateCacheResponse
     {
         try {
             validateCacheName($cacheName);
@@ -54,13 +54,13 @@ class _ScsControlClient
             return new CreateCacheResponseAlreadyExists();
         } catch (SdkError $e) {
             return new CreateCacheResponseError($e);
-        } catch (\Exception $e){
+        } catch (\Exception $e) {
             return new CreateCacheResponseError(new UnknownError($e->getMessage()));
         }
         return new CreateCacheResponseSuccess();
     }
 
-    public function deleteCache(string $cacheName) : DeleteCacheResponse
+    public function deleteCache(string $cacheName): DeleteCacheResponse
     {
         try {
             validateCacheName($cacheName);
@@ -70,13 +70,13 @@ class _ScsControlClient
             $this->processCall($call);
         } catch (SdkError $e) {
             return new DeleteCacheResponseError($e);
-        } catch (\Exception $e){
+        } catch (\Exception $e) {
             return new DeleteCacheResponseError(new UnknownError($e->getMessage()));
         }
         return new DeleteCacheResponseSuccess();
     }
 
-    public function listCaches(?string $nextToken=null): ListCachesResponse
+    public function listCaches(?string $nextToken = null): ListCachesResponse
     {
         try {
             $request = new _ListCachesRequest();
