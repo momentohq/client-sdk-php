@@ -1568,4 +1568,32 @@ class CacheClientTest extends TestCase
         $values = [null, null, null];
         $this->assertEquals($values, $response->asSuccess()->values());
     }
+
+    // __toString() tests
+
+    public function testCacheGetToString_HappyPath()
+    {
+        $key = uniqid();
+        $value = "a short value";
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": $value", "$response");
+    }
+
+    public function testCacheGetToString_LongValue()
+    {
+        $key = uniqid();
+        $value = str_repeat("a", 256);
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertEquals($value, $response->asHit()->value());
+        $this->assertStringEndsWith("...", "$response");
+    }
+
 }
