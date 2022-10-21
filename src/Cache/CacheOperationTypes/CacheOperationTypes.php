@@ -484,7 +484,7 @@ class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse
 
     public function __toString()
     {
-        return parent::__toString() . ": " . $this->listLength;
+        return parent::__toString() . ": " . $this->listLength . " items";
     }
 }
 
@@ -529,7 +529,7 @@ class CacheListPushBackResponseSuccess extends CacheListPushBackResponse
 
     public function __toString()
     {
-        return parent::__toString() . ": " . $this->listLength;
+        return parent::__toString() . ": " . $this->listLength . " items";
     }
 }
 
@@ -918,7 +918,8 @@ class CacheDictionaryFetchResponseHit extends CacheDictionaryFetchResponse
 
     public function __toString()
     {
-        return parent::__toString() . ": {count($this->dictionary)} items";
+        $numItems = count($this->dictionary);
+        return parent::__toString() . ": $numItems items";
     }
 }
 
