@@ -97,6 +97,7 @@ use Momento\Utilities\_ErrorConverter;
 use function Momento\Utilities\validateCacheName;
 use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateFieldName;
+use function Momento\Utilities\validateFields;
 use function Momento\Utilities\validateFieldsKeys;
 use function Momento\Utilities\validateItems;
 use function Momento\Utilities\validateListName;
@@ -611,9 +612,7 @@ class _ScsDataClient
         try {
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
-            foreach ($fields as $field) {
-                validateFieldName($field);
-            }
+            validateFields($fields);
             $dictionaryRemoveFieldsRequest = new _DictionaryDeleteRequest();
             $some = new _DictionaryDeleteRequest\Some();
             $some->setFields($fields);
