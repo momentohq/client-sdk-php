@@ -22,9 +22,10 @@
     },
     "require": {
         "php": ">=7.4",
+        "ext-grpc": "*",
+        "firebase/php-jwt": "^6.3",
         "google/protobuf": "3.21.5",
-        "grpc/grpc": "1.42.0",
-        "ext-grpc": "*"
+        "grpc/grpc": "1.42.0"
     },
     "require-dev": {
         "composer/composer" : "^2.4.1",
