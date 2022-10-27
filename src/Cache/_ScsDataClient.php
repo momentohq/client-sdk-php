@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Momento\Cache;
 
@@ -110,10 +111,10 @@ use function Momento\Utilities\validateValueName;
 class _ScsDataClient
 {
 
-    private static int $DEFAULT_DEADLINE_SECONDS = 5;
-    private int $deadline_seconds;
-    // Used to convert deadline_seconds into microseconds for gRPC
-    private static int $TIMEOUT_MULTIPLIER = 1000000;
+    private static int $DEFAULT_DEADLINE_MILLISECONDS = 5000;
+    private int $deadline_milliseconds;
+    // Used to convert deadline_milliseconds into microseconds for gRPC
+    private static int $TIMEOUT_MULTIPLIER = 1000;
     private int $defaultTtlSeconds;
     private _DataGrpcManager $grpcManager;
     private int $timeout;
@@ -123,8 +124,8 @@ class _ScsDataClient
         validateTtl($defaultTtlSeconds);
         validateOperationTimeout($operationTimeoutMs);
         $this->defaultTtlSeconds = $defaultTtlSeconds;
-        $this->deadline_seconds = $operationTimeoutMs ? $operationTimeoutMs / 1000.0 : self::$DEFAULT_DEADLINE_SECONDS;
-        $this->timeout = $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER;
+        $this->deadline_milliseconds = $operationTimeoutMs ? $operationTimeoutMs : self::$DEFAULT_DEADLINE_MILLISECONDS;
+        $this->timeout = $this->deadline_milliseconds * self::$TIMEOUT_MULTIPLIER;
         $this->grpcManager = new _DataGrpcManager($authToken, $endpoint);
     }
 

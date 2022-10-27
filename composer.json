@@ -1,39 +1,41 @@
 {
-    "name": "momentohq/client-sdk-php",
-    "type": "library",
-    "autoload": {
-        "psr-4": {
-            "Momento\\": "src/",
-            "Cache_client\\": "types/Cache_client/",
-            "Control_client\\": "types/Control_client/",
-            "Auth\\": "types/Auth/",
-            "GPBMetadata\\": "types/GPBMetadata"
-        },
-        "files": [
-            "src/Utilities/_DataValidation.php"
-        ],
-        "classmap": [
-            "src/Cache/CacheOperationTypes/CacheOperationTypes.php",
-            "src/Cache/Errors/Errors.php"
-        ]
+  "name": "momentohq/client-sdk-php",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Momento\\": "src/",
+      "Cache_client\\": "types/Cache_client/",
+      "Control_client\\": "types/Control_client/",
+      "Auth\\": "types/Auth/",
+      "GPBMetadata\\": "types/GPBMetadata"
     },
-    "autoload-dev": {
-        "psr-4": { "Momento\\Tests\\": "tests/" }
-    },
-    "require": {
-        "php": ">=7.4",
-        "ext-grpc": "*",
-        "firebase/php-jwt": "^6.3",
-        "google/protobuf": "3.21.5",
-        "grpc/grpc": "1.42.0"
-    },
-    "require-dev": {
-        "composer/composer" : "^2.4.1",
-        "phpunit/phpunit": "^9.5.23"
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true
+    "files": [
+      "src/Utilities/_DataValidation.php"
+    ],
+    "classmap": [
+      "src/Cache/CacheOperationTypes/CacheOperationTypes.php",
+      "src/Cache/Errors/Errors.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Momento\\Tests\\": "tests/"
     }
+  },
+  "require": {
+    "php": ">=8.0",
+    "ext-grpc": "*",
+    "firebase/php-jwt": "^6.3",
+    "google/protobuf": "3.21.5",
+    "grpc/grpc": "1.42.0"
+  },
+  "require-dev": {
+    "composer/composer": "^2.4.1",
+    "phpunit/phpunit": "^9.5.23"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  }
 }

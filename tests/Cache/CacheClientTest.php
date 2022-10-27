@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Momento\Tests\Cache;
 
@@ -137,9 +138,8 @@ class CacheClientTest extends TestCase
 
     public function testCreateCacheBadName()
     {
-        $response = $this->client->createCache(1);
-        $this->assertNotNull($response->asError(), "Expected error but got: $response");
-        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+        $this->expectException(TypeError::class);
+        $this->client->createCache(1);
     }
 
     public function testCreateCacheBadAuth()

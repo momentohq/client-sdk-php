@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Momento\Auth;
 
@@ -16,7 +17,7 @@ class EnvMomentoTokenProvider implements ICredentialProvider
     public function __construct(string $envVariableName)
     {
         $authToken = getenv($envVariableName);
-        if (isNullOrEmpty($authToken)) {
+        if ($authToken === false || isNullOrEmpty($authToken)) {
             throw new InvalidArgumentError("Environment variable $envVariableName is empty or null.");
         }
         $payload = AuthUtils::parseAuthToken($authToken);
