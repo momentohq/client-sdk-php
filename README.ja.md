@@ -23,7 +23,8 @@ Momento Serverless Cache の PHP クライアント SDK：従来のキャッシ�
 - 少なくとも PHP 8.0
 - grpc PHP エクステンション。 インストール方法はこちらの[gRPC docs](https://github.com/grpc/grpc/blob/v1.46.3/src/php/README.md)を参考にしてください。
 
-**IDE に関する注意事項**: [PhpStorm](https://www.jetbrains.com/phpstorm/)や[Microsoft Visual Studio Code](https://code.visualstudio.com/)の様な PHP 開発をサポートできる IDE が必要となります。
+**IDE に関する注意事項**: [PhpStorm](https://www.jetbrains.com/phpstorm/)
+や[Microsoft Visual Studio Code](https://code.visualstudio.com/)の様な PHP 開発をサポートできる IDE が必要となります。
 
 ### インストール
 
@@ -40,7 +41,7 @@ Momento Serverless Cache の PHP クライアント SDK：従来のキャッシ�
     }
   ],
   "require": {
-    "momentohq/client-sdk-php": "dev-main"
+    "momentohq/client-sdk-php": "0.2.0"
   }
 }
 ```
