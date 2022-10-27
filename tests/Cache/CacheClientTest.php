@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Momento\Tests\Cache;
 
@@ -137,9 +138,8 @@ class CacheClientTest extends TestCase
 
     public function testCreateCacheBadName()
     {
-        $response = $this->client->createCache(1);
-        $this->assertNotNull($response->asError(), "Expected error but got: $response");
-        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+        $this->expectException(TypeError::class);
+        $this->client->createCache(1);
     }
 
     public function testCreateCacheBadAuth()
@@ -1567,5 +1567,224 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $values = [null, null, null];
         $this->assertEquals($values, $response->asSuccess()->values());
+    }
+
+    // __toString() tests
+
+    public function testCacheSetToString_HappyPath()
+    {
+        $key = uniqid();
+        $value = "a short value";
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": key $key = $value", "$response");
+    }
+
+    public function testCacheSetToString_LongValues()
+    {
+        $key = str_repeat("k", 256);
+        $value = str_repeat("v", 256);
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+        $this->assertStringStartsWith(get_class($response) . ": key ", "$response");
+        $this->assertMatchesRegularExpression("/: key k+\.\.\. = v+\.\.\.$/", "$response");
+    }
+
+    public function testCacheGetToString_HappyPath()
+    {
+        $key = uniqid();
+        $value = "a short value";
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": $value", "$response");
+    }
+
+    public function testCacheGetToString_LongValue()
+    {
+        $key = uniqid();
+        $value = str_repeat("a", 256);
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertEquals($value, $response->asHit()->value());
+        $this->assertStringEndsWith("...", "$response");
+    }
+
+    public function testCacheListPopFrontToString_HappyPath()
+    {
+        $listName = uniqid();
+        $value = "a short value";
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->listPopFront($this->TEST_CACHE_NAME, $listName);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": $value", "$response");
+    }
+
+    public function testCacheListPopFrontToString_LongValue()
+    {
+        $listName = uniqid();
+        $value = str_repeat("a", 256);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->listPopFront($this->TEST_CACHE_NAME, $listName);
+        $this->assertNull($response->asError());
+        $this->assertEquals($value, $response->asHit()->value());
+        $this->assertStringEndsWith("...", "$response");
+    }
+
+    public function testCacheListPopBackToString_HappyPath()
+    {
+        $listName = uniqid();
+        $value = "a short value";
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->listPopBack($this->TEST_CACHE_NAME, $listName);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": $value", "$response");
+    }
+
+    public function testCacheListPopBackToString_LongValue()
+    {
+        $listName = uniqid();
+        $value = str_repeat("a", 256);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->listPopBack($this->TEST_CACHE_NAME, $listName);
+        $this->assertNull($response->asError());
+        $this->assertEquals($value, $response->asHit()->value());
+        $this->assertStringEndsWith("...", "$response");
+    }
+
+    public function testCacheListFetchToString_HappyPath()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
+        $this->assertNull($response->asError());
+        $this->assertCount(3, $response->asHit()->values());
+        $this->assertEquals(get_class($response) . ": 3 items", "$response");
+    }
+
+    public function testCacheListPushFrontToString_HappyPath()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": 1 items", "$response");
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": 2 items", "$response");
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": 3 items", "$response");
+    }
+
+    public function testCacheListPushBackToString_HappyPath()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": 1 items", "$response");
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": 2 items", "$response");
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": 3 items", "$response");
+    }
+
+    public function testCacheListLengthToString_HappyPath()
+    {
+        $listName = uniqid();
+        $value = uniqid();
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": 3", "$response");
+    }
+
+    public function testDictionaryGetToString_HappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field = uniqid();
+        $value = uniqid();
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, false);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->dictionaryGet($this->TEST_CACHE_NAME, $dictionaryName, $field);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals(get_class($response) . ": $value", "$response");
+    }
+
+    public function testDictionaryGetToString_LongValue()
+    {
+        $dictionaryName = uniqid();
+        $field = uniqid();
+        $value = str_repeat("a", 256);
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, false);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->dictionaryGet($this->TEST_CACHE_NAME, $dictionaryName, $field);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals($value, $response->asHit()->value());
+        $this->assertStringEndsWith("...", "$response");
+    }
+
+    public function testDictionaryFetchToString_HappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field = uniqid();
+        $value = uniqid();
+        for ($i = 0; $i < 5; $i++) {
+            $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, "$field-$i", $value, false);
+            $this->assertNull($response->asError());
+        }
+        $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals(get_class($response) . ": 5 items", "$response");
+    }
+
+    public function testDictionaryIncrementToString_HappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field = uniqid();
+        $response = $this->client->dictionarySet($this->TEST_CACHE_NAME, $dictionaryName, $field, "1", false);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": 2", "$response");
+
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, 10);
+        $this->assertNull($response->asError());
+        $this->assertEquals(get_class($response) . ": 12", "$response");
     }
 }

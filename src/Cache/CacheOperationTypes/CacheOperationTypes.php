@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Momento\Cache\CacheOperationTypes;
 
@@ -73,6 +74,7 @@ class CacheInfo
 abstract class ResponseBase
 {
     protected string $baseType;
+    protected int $valueSubstringLength = 32;
 
     public function __construct()
     {
@@ -107,6 +109,14 @@ abstract class ResponseBase
     protected function isMiss(): bool
     {
         return get_class($this) == "{$this->baseType}Miss";
+    }
+
+    protected function shortValue(string $value): string
+    {
+        if (strlen($value) <= $this->valueSubstringLength) {
+            return $value;
+        }
+        return mb_substr($value, 0, $this->valueSubstringLength) . "...";
     }
 }
 
@@ -280,7 +290,7 @@ class CacheSetResponseSuccess extends CacheSetResponse
 
     public function __toString()
     {
-        return get_class($this) . ": key {$this->key} = {$this->value}";
+        return get_class($this) . ": key {$this->shortValue($this->key)} = {$this->shortValue($this->value)}";
     }
 }
 
@@ -334,7 +344,7 @@ class CacheGetResponseHit extends CacheGetResponse
 
     public function __toString()
     {
-        return parent::__toString() . ": {$this->value}";
+        return parent::__toString() . ": {$this->shortValue($this->value)}";
     }
 }
 
@@ -472,6 +482,11 @@ class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse
     {
         return $this->listLength;
     }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": " . $this->listLength . " items";
+    }
 }
 
 class CacheListPushFrontResponseError extends CacheListPushFrontResponse
@@ -511,6 +526,11 @@ class CacheListPushBackResponseSuccess extends CacheListPushBackResponse
     public function listLength(): int
     {
         return $this->listLength;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": " . $this->listLength . " items";
     }
 }
 
@@ -563,7 +583,7 @@ class CacheListPopFrontResponseHit extends CacheListPopFrontResponse
 
     public function __toString()
     {
-        return parent::__toString() . ": {$this->value}";
+        return parent::__toString() . ": {$this->shortValue($this->value)}";
     }
 }
 
@@ -620,7 +640,7 @@ class CacheListPopBackResponseHit extends CacheListPopBackResponse
 
     public function __toString()
     {
-        return parent::__toString() . ": {$this->value}";
+        return parent::__toString() . ": {$this->shortValue($this->value)}";
     }
 }
 
@@ -811,9 +831,8 @@ class CacheDictionaryGetResponseHit extends CacheDictionaryGetResponse
 
     public function __toString()
     {
-        return parent::__toString() . ": " . $this->value;
+        return parent::__toString() . ": " . $this->shortValue($this->value);
     }
-
 }
 
 class CacheDictionaryGetResponseMiss extends CacheDictionaryGetResponse
@@ -896,6 +915,12 @@ class CacheDictionaryFetchResponseHit extends CacheDictionaryFetchResponse
     public function dictionary(): array
     {
         return $this->dictionary;
+    }
+
+    public function __toString()
+    {
+        $numItems = count($this->dictionary);
+        return parent::__toString() . ": $numItems items";
     }
 }
 
@@ -994,6 +1019,12 @@ class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResp
         }
         return $ret;
     }
+
+    public function __toString()
+    {
+        $numResponses = count($this->responsesList);
+        return parent::__toString() . ": $numResponses responses";
+    }
 }
 
 class CacheDictionaryGetBatchResponseError extends CacheDictionaryGetBatchResponse
@@ -1039,6 +1070,11 @@ class CacheDictionaryIncrementResponseSuccess extends CacheDictionaryIncrementRe
     public function string(): string
     {
         return "{$this->value}";
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": " . $this->value;
     }
 }
 

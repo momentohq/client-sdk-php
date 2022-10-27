@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Momento\Auth;
 
 use Momento\Auth\AuthUtils;
@@ -15,26 +17,26 @@ class EnvMomentoTokenProvider implements ICredentialProvider
     public function __construct(string $envVariableName)
     {
         $authToken = getenv($envVariableName);
-        if (isNullOrEmpty($authToken)) {
+        if ($authToken === false || isNullOrEmpty($authToken)) {
             throw new InvalidArgumentError("Environment variable $envVariableName is empty or null.");
         }
         $payload = AuthUtils::parseAuthToken($authToken);
         $this->authToken = $authToken;
-        $this->controlEndpoint = $payload["cp"];
-        $this->cacheEndpoint = $payload["c"];
+        $this->controlEndpoint = $payload->cp;
+        $this->cacheEndpoint = $payload->c;
     }
 
-    public function getAuthToken() : string
+    public function getAuthToken(): string
     {
         return $this->authToken;
     }
 
-    public function getCacheEndpoint() : string
+    public function getCacheEndpoint(): string
     {
         return $this->cacheEndpoint;
     }
 
-    public function getControlEndpoint() : string
+    public function getControlEndpoint(): string
     {
         return $this->controlEndpoint;
     }

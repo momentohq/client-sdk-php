@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Momento\Cache;
 
@@ -110,21 +111,21 @@ use function Momento\Utilities\validateValueName;
 class _ScsDataClient
 {
 
-    private static int $DEFAULT_DEADLINE_SECONDS = 5;
-    // TODO: is looks like PHP gRPC wants microsecond timeout values,
-    // but python's wanted seconds. Need to take a closer look to make sure
-    // this is accurate.
-    private static int $TIMEOUT_MULTIPLIER = 1000000;
-    private int $deadline_seconds;
+    private static int $DEFAULT_DEADLINE_MILLISECONDS = 5000;
+    private int $deadline_milliseconds;
+    // Used to convert deadline_milliseconds into microseconds for gRPC
+    private static int $TIMEOUT_MULTIPLIER = 1000;
     private int $defaultTtlSeconds;
     private _DataGrpcManager $grpcManager;
+    private int $timeout;
 
     public function __construct(string $authToken, string $endpoint, int $defaultTtlSeconds, ?int $operationTimeoutMs)
     {
         validateTtl($defaultTtlSeconds);
         validateOperationTimeout($operationTimeoutMs);
         $this->defaultTtlSeconds = $defaultTtlSeconds;
-        $this->deadline_seconds = $operationTimeoutMs ? $operationTimeoutMs / 1000.0 : self::$DEFAULT_DEADLINE_SECONDS;
+        $this->deadline_milliseconds = $operationTimeoutMs ? $operationTimeoutMs : self::$DEFAULT_DEADLINE_MILLISECONDS;
+        $this->timeout = $this->deadline_milliseconds * self::$TIMEOUT_MULTIPLIER;
         $this->grpcManager = new _DataGrpcManager($authToken, $endpoint);
     }
 
@@ -156,7 +157,7 @@ class _ScsDataClient
             $setRequest->setCacheBody($value);
             $setRequest->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->Set(
-                $setRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $setRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -174,7 +175,7 @@ class _ScsDataClient
             $getRequest = new _GetRequest();
             $getRequest->setCacheKey($key);
             $call = $this->grpcManager->client->Get(
-                $getRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $getRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
             $ecacheResult = $response->getResult();
@@ -199,7 +200,7 @@ class _ScsDataClient
             $deleteRequest = new _DeleteRequest();
             $deleteRequest->setCacheKey($key);
             $call = $this->grpcManager->client->Delete(
-                $deleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $deleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $this->processCall($call);
         } catch (SdkError $e) {
@@ -218,7 +219,7 @@ class _ScsDataClient
             $listFetchRequest = new _ListFetchRequest();
             $listFetchRequest->setListName($listName);
             $call = $this->grpcManager->client->ListFetch(
-                $listFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $listFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -250,7 +251,7 @@ class _ScsDataClient
                 $listPushFrontRequest->setTruncateBackToSize($truncateBackToSize);
             }
             $call = $this->grpcManager->client->ListPushFront(
-                $listPushFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $listPushFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -279,7 +280,7 @@ class _ScsDataClient
                 $listPushBackRequest->setTruncateFrontToSize($truncateFrontToSize);
             }
             $call = $this->grpcManager->client->ListPushBack(
-                $listPushBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $listPushBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -298,7 +299,7 @@ class _ScsDataClient
             $listPopFrontRequest = new _ListPopFrontRequest();
             $listPopFrontRequest->setListName($listName);
             $call = $this->grpcManager->client->ListPopFront(
-                $listPopFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $listPopFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -320,7 +321,7 @@ class _ScsDataClient
             $listPopBackRequest = new _ListPopBackRequest();
             $listPopBackRequest->setListName($listName);
             $call = $this->grpcManager->client->ListPopBack(
-                $listPopBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $listPopBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -343,7 +344,7 @@ class _ScsDataClient
             $listRemoveValueRequest->setListName($listName);
             $listRemoveValueRequest->setAllElementsWithValue($value);
             $call = $this->grpcManager->client->ListRemove(
-                $listRemoveValueRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $listRemoveValueRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $this->processCall($call);
         } catch (SdkError $e) {
@@ -362,7 +363,7 @@ class _ScsDataClient
             $listLengthRequest = new _ListLengthRequest();
             $listLengthRequest->setListName($listName);
             $call = $this->grpcManager->client->ListLength(
-                $listLengthRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $listLengthRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -393,7 +394,7 @@ class _ScsDataClient
                 $listEraseRequest->setAll($all);
             }
             $call = $this->grpcManager->client->ListErase(
-                $listEraseRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $listEraseRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $this->processCall($call);
         } catch (SdkError $e) {
@@ -418,7 +419,7 @@ class _ScsDataClient
             $dictionarySetRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
             $dictionarySetRequest->setRefreshTtl($refreshTtl);
             $dictionarySetRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionarySet($dictionarySetRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $call = $this->grpcManager->client->DictionarySet($dictionarySetRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionarySetResponseError($e);
@@ -445,7 +446,7 @@ class _ScsDataClient
             $dictionaryGetRequest = new _DictionaryGetRequest();
             $dictionaryGetRequest->setDictionaryName($dictionaryName);
             $dictionaryGetRequest->setFields([$field]);
-            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $dictionaryGetResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryGetResponseError($e);
@@ -473,7 +474,7 @@ class _ScsDataClient
             $dictionaryDeleteRequest->setDictionaryName($dictionaryName);
             $all = new All();
             $dictionaryDeleteRequest->setAll($all);
-            $call = $this->grpcManager->client->DictionaryDelete($dictionaryDeleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $call = $this->grpcManager->client->DictionaryDelete($dictionaryDeleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryDeleteResponseError($e);
@@ -490,7 +491,7 @@ class _ScsDataClient
             validateDictionaryName($dictionaryName);
             $dictionaryFetchRequest = new _DictionaryFetchRequest();
             $dictionaryFetchRequest->setDictionaryName($dictionaryName);
-            $call = $this->grpcManager->client->DictionaryFetch($dictionaryFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $call = $this->grpcManager->client->DictionaryFetch($dictionaryFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $dictionaryFetchResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryFetchResponseError($e);
@@ -523,7 +524,7 @@ class _ScsDataClient
             $dictionarySetBatchRequest->setRefreshTtl($refreshTtl);
             $dictionarySetBatchRequest->setItems($protoItems);
             $dictionarySetBatchRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionarySet($dictionarySetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $call = $this->grpcManager->client->DictionarySet($dictionarySetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionarySetBatchResponseError($e);
@@ -542,7 +543,7 @@ class _ScsDataClient
             $dictionaryGetBatchRequest = new _DictionaryGetRequest();
             $dictionaryGetBatchRequest->setDictionaryName($dictionaryName);
             $dictionaryGetBatchRequest->setFields($fields);
-            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]);
+            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $dictionaryGetBatchResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryGetBatchResponseError($e);
@@ -573,7 +574,7 @@ class _ScsDataClient
                 ->setRefreshTtl($refreshTtl)
                 ->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->DictionaryIncrement(
-                $dictionaryIncrementRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $dictionaryIncrementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -596,7 +597,7 @@ class _ScsDataClient
             $dictionaryRemoveFieldRequest->setDictionaryName($dictionaryName);
             $dictionaryRemoveFieldRequest->setSome($some);
             $call = $this->grpcManager->client->DictionaryDelete(
-                $dictionaryRemoveFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $dictionaryRemoveFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $this->processCall($call);
         } catch (SdkError $e) {
@@ -619,7 +620,7 @@ class _ScsDataClient
             $dictionaryRemoveFieldsRequest->setDictionaryName($dictionaryName);
             $dictionaryRemoveFieldsRequest->setSome($some);
             $call = $this->grpcManager->client->DictionaryDelete(
-                $dictionaryRemoveFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->deadline_seconds * self::$TIMEOUT_MULTIPLIER]
+                $dictionaryRemoveFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $this->processCall($call);
         } catch (SdkError $e) {

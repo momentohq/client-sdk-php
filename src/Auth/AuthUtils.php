@@ -1,27 +1,38 @@
 <?php
+declare(strict_types=1);
 
 namespace Momento\Auth;
 
+use Firebase\JWT\JWT;
 use Momento\Cache\Errors\InvalidArgumentError;
+
 
 class AuthUtils
 {
 
-    private static function throwBadAuthToken() {
+    private static function throwBadAuthToken()
+    {
         throw new InvalidArgumentError('Invalid Momento auth token.');
     }
 
-    public static function parseAuthToken(string $authToken) : array {
-        $exploded = explode (".", $authToken);
+    public static function parseAuthToken(string $authToken): object
+    {
+        $exploded = explode(".", $authToken);
         if (count($exploded) != 3) {
             self::throwBadAuthToken();
         }
-        list($header, $payload, $signature) = $exploded;
-        $token = json_decode(base64_decode($payload), true);
-        if ($token === null) {
+
+        try {
+            list($header, $payload, $signature) = $exploded;
+            $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($payload));
+        } catch (\Exception) {
             self::throwBadAuthToken();
         }
-        return $token;
+
+        if ($payload === null) {
+            self::throwBadAuthToken();
+        }
+        return $payload;
     }
 
 }
