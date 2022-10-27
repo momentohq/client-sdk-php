@@ -50,7 +50,7 @@ Add the repository and dependency to your project's `composer.json`:
     }
   ],
   "require": {
-    "momentohq/client-sdk-php": "dev-main"
+    "momentohq/client-sdk-php": "0.2.0"
   }
 }
 ```

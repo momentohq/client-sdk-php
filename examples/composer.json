@@ -6,6 +6,6 @@
     }
   ],
   "require": {
-    "momentohq/client-sdk-php": "dev-main"
+    "momentohq/client-sdk-php": "0.2.0"
   }
 }
