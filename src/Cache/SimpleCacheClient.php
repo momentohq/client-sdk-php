@@ -5,13 +5,13 @@ namespace Momento\Cache;
 
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponse;
 use Momento\Cache\CacheOperationTypes\CacheGetResponse;
@@ -22,6 +22,7 @@ use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetAddResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
@@ -170,5 +171,10 @@ class SimpleCacheClient
     public function dictionaryRemoveFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryRemoveFieldsResponse
     {
         return $this->dataClient->dictionaryRemoveFields($cacheName, $dictionaryName, $fields);
+    }
+
+    public function setAdd(string $cacheName, string $setName, string $element, bool $refreshTtl, ?int $ttlSeconds = null): CacheSetAddResponse
+    {
+        return $this->dataClient->setAdd($cacheName, $setName, $element, $refreshTtl, $ttlSeconds);
     }
 }

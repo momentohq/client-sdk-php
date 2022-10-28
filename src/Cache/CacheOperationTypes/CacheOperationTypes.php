@@ -1138,3 +1138,31 @@ class CacheDictionaryRemoveFieldsResponseError extends CacheDictionaryRemoveFiel
 {
     use ErrorBody;
 }
+
+abstract class CacheSetAddResponse extends ResponseBase
+{
+    public function asSuccess(): CacheSetAddResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheSetAddResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheSetAddResponseSuccess extends CacheSetAddResponse
+{
+}
+
+class CacheSetAddResponseError extends CacheSetAddResponse
+{
+    use ErrorBody;
+}
