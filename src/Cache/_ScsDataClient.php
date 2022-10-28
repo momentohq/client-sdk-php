@@ -21,6 +21,7 @@ use Cache_client\_ListPushBackRequest;
 use Cache_client\_ListPushFrontRequest;
 use Cache_client\_ListRange;
 use Cache_client\_ListRemoveRequest;
+use Cache_client\_SetFetchRequest;
 use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
 use Cache_client\ECacheResult;
@@ -92,6 +93,10 @@ use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheSetAddResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetAddResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetAddResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseError;
+use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseSuccess;
@@ -648,7 +653,7 @@ class _ScsDataClient
             $setAddRequest = new _SetUnionRequest();
             $setAddRequest->setSetName($setName);
             $setAddRequest->setRefreshTtl($refreshTt);
-            $setAddRequest->setRefreshTtl($ttlMillis);
+            $setAddRequest->setTtlMilliseconds($ttlMillis);
             $setAddRequest->setElements([$element]);
             $call = $this->grpcManager->client->SetUnion($setAddRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
@@ -658,5 +663,25 @@ class _ScsDataClient
             return new CacheSetAddResponseError(new UnknownError($e->getMessage()));
         }
         return new CacheSetAddResponseSuccess();
+    }
+
+    public function setFetch(string $cacheName, string $setName): CacheSetFetchResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSetName($setName);
+            $setFetchRequest = new _SetFetchRequest();
+            $setFetchRequest->setSetName($setName);
+            $call = $this->grpcManager->client->SetFetch($setFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $setFetchResponse = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheSetFetchResponseError($e);
+        } catch (Exception $e) {
+            return new CacheSetFetchResponseError(new UnknownError($e->getMessage()));
+        }
+        if ($setFetchResponse->hasFound()) {
+            return new CacheSetFetchResponseHit($setFetchResponse);
+        }
+        return new CacheSetFetchResponseMiss();
     }
 }

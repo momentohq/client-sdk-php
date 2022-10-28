@@ -23,6 +23,7 @@ use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetAddResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
@@ -176,5 +177,10 @@ class SimpleCacheClient
     public function setAdd(string $cacheName, string $setName, string $element, bool $refreshTtl, ?int $ttlSeconds = null): CacheSetAddResponse
     {
         return $this->dataClient->setAdd($cacheName, $setName, $element, $refreshTtl, $ttlSeconds);
+    }
+
+    public function setFetch(string $cacheName, string $setName): CacheSetFetchResponse
+    {
+        return $this->dataClient->setFetch($cacheName, $setName);
     }
 }
