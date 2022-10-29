@@ -21,7 +21,9 @@ use Cache_client\_ListPushBackRequest;
 use Cache_client\_ListPushFrontRequest;
 use Cache_client\_ListRange;
 use Cache_client\_ListRemoveRequest;
+use Cache_client\_SetFetchRequest;
 use Cache_client\_SetRequest;
+use Cache_client\_SetUnionRequest;
 use Cache_client\ECacheResult;
 use Exception;
 use Grpc\UnaryCall;
@@ -88,6 +90,13 @@ use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponseError;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheSetAddResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetAddResponseError;
+use Momento\Cache\CacheOperationTypes\CacheSetAddResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseError;
+use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseSuccess;
@@ -97,6 +106,7 @@ use Momento\Cache\Errors\UnknownError;
 use Momento\Utilities\_ErrorConverter;
 use function Momento\Utilities\validateCacheName;
 use function Momento\Utilities\validateDictionaryName;
+use function Momento\Utilities\validateElement;
 use function Momento\Utilities\validateFieldName;
 use function Momento\Utilities\validateFields;
 use function Momento\Utilities\validateFieldsKeys;
@@ -104,6 +114,7 @@ use function Momento\Utilities\validateItems;
 use function Momento\Utilities\validateListName;
 use function Momento\Utilities\validateOperationTimeout;
 use function Momento\Utilities\validateRange;
+use function Momento\Utilities\validateSetName;
 use function Momento\Utilities\validateTruncateSize;
 use function Momento\Utilities\validateTtl;
 use function Momento\Utilities\validateValueName;
@@ -631,4 +642,46 @@ class _ScsDataClient
         return new CacheDictionaryRemoveFieldsResponseSuccess();
     }
 
+    public function setAdd(string $cacheName, string $setName, string $element, bool $refreshTt, ?int $ttlSeconds = null): CacheSetAddResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSetName($setName);
+            validateElement($element);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            validateTtl($ttlMillis);
+            $setAddRequest = new _SetUnionRequest();
+            $setAddRequest->setSetName($setName);
+            $setAddRequest->setRefreshTtl($refreshTt);
+            $setAddRequest->setTtlMilliseconds($ttlMillis);
+            $setAddRequest->setElements([$element]);
+            $call = $this->grpcManager->client->SetUnion($setAddRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheSetAddResponseError($e);
+        } catch (Exception $e) {
+            return new CacheSetAddResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheSetAddResponseSuccess();
+    }
+
+    public function setFetch(string $cacheName, string $setName): CacheSetFetchResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSetName($setName);
+            $setFetchRequest = new _SetFetchRequest();
+            $setFetchRequest->setSetName($setName);
+            $call = $this->grpcManager->client->SetFetch($setFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $setFetchResponse = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheSetFetchResponseError($e);
+        } catch (Exception $e) {
+            return new CacheSetFetchResponseError(new UnknownError($e->getMessage()));
+        }
+        if ($setFetchResponse->hasFound()) {
+            return new CacheSetFetchResponseHit($setFetchResponse);
+        }
+        return new CacheSetFetchResponseMiss();
+    }
 }

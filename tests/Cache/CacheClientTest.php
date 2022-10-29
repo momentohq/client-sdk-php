@@ -5,7 +5,6 @@ namespace Momento\Tests\Cache;
 
 use Momento\Auth\AuthUtils;
 use Momento\Auth\EnvMomentoTokenProvider;
-use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\SimpleCacheClient;
 use PHPUnit\Framework\TestCase;
@@ -1786,5 +1785,131 @@ class CacheClientTest extends TestCase
         $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, 10);
         $this->assertNull($response->asError());
         $this->assertEquals(get_class($response) . ": 12", "$response");
+    }
+
+    public function testSetAddWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $setName = uniqid();
+        $element = uniqid();
+        $this->client->setAdd(null, $setName, $element, false);
+    }
+
+    public function testSetAddWithEmptyCacheName_ThrowsException()
+    {
+        $setName = uniqid();
+        $element = uniqid();
+        $response = $this->client->setAdd("", $setName, $element, false);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetAddWithNullSetName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $element = uniqid();
+        $this->client->setAdd($this->TEST_CACHE_NAME, null, $element, false);
+    }
+
+    public function testSetAddWithEmptySetName_ThrowsException()
+    {
+        $element = uniqid();
+        $response = $this->client->setAdd($this->TEST_CACHE_NAME, "", $element, false);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetAddWithNullElement_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $setName = uniqid();
+        $this->client->setAdd($this->TEST_CACHE_NAME, $setName, null, false);
+    }
+
+    public function testSetAddWithEmptyElement_ThrowsException()
+    {
+        $setName = uniqid();
+        $response = $this->client->setAdd($this->TEST_CACHE_NAME, $setName, "", false);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetFetchWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $setName = uniqid();
+        $this->client->setFetch(null, $setName);
+    }
+
+    public function testSetFetchWithEmptyCacheName_ThrowsException()
+    {
+        $setName = uniqid();
+        $response = $this->client->setFetch("", $setName);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetFetchWithNullSetName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setFetch($this->TEST_CACHE_NAME, null);
+    }
+
+    public function testSetFetchWithEmptySetName_ThrowsException()
+    {
+        $response = $this->client->setFetch($this->TEST_CACHE_NAME, "");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetAddSetFetch_HappyPath()
+    {
+        $setName = uniqid();
+        $element = uniqid();
+        $response = $this->client->setAdd($this->TEST_CACHE_NAME, $setName, $element, false);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals($element, $response->asHit()->stringSet()[0]);
+    }
+
+    public function testSetAddSetFetch_NoRefreshTtl()
+    {
+        $setName = uniqid();
+        $element = uniqid();
+        $response = $this->client->setAdd($this->TEST_CACHE_NAME, $setName, $element, false, 5);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        sleep(1);
+
+        $response = $this->client->setAdd($this->TEST_CACHE_NAME, $setName, $element, false, 10);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        sleep(4);
+
+        $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+    }
+
+    public function testSetAddSetFetch_RefreshTtl()
+    {
+        $setName = uniqid();
+        $element = uniqid();
+        $response = $this->client->setAdd($this->TEST_CACHE_NAME, $setName, $element, false, 2);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->setAdd($this->TEST_CACHE_NAME, $setName, $element, true, 10);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        sleep(2);
+
+        $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals($element, $response->asHit()->stringSet()[0]);
     }
 }
