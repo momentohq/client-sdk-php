@@ -109,7 +109,6 @@ use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateElement;
 use function Momento\Utilities\validateFieldName;
 use function Momento\Utilities\validateFields;
-use function Momento\Utilities\validateFieldsKeys;
 use function Momento\Utilities\validateItems;
 use function Momento\Utilities\validateListName;
 use function Momento\Utilities\validateOperationTimeout;
@@ -521,7 +520,6 @@ class _ScsDataClient
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
             validateItems($items);
-            validateFieldsKeys($items);
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $protoItems = [];
             foreach ($items as $field => $value) {
