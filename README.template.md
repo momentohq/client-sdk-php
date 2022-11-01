@@ -59,4 +59,11 @@ Coming soon!
 
 Coming soon!
 
+### Running Tests
+
+```bash
+docker build --tag php-test --build-arg token=<YOUR_AUTH_TOKEN> .
+docker run -d php-test
+```
+
 {{ ossFooter }}
