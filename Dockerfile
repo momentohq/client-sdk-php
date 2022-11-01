@@ -14,7 +14,8 @@ WORKDIR /app
 RUN composer install
 
 ARG token
+ARG cache_name
 ENV TEST_AUTH_TOKEN=$token
 ENV TEST_CACHE_NAME="php-integration-test-cache"
-
-CMD ["php", "vendor/phpunit/phpunit/phpunit", "--configuration ", "phpunit.xml"]
+ENV MOMENTO_AUTH_TOKEN=$token
+ENV CACHE_NAME=$cache_name
