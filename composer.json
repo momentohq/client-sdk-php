@@ -27,7 +27,8 @@
     "ext-grpc": "*",
     "firebase/php-jwt": "^6.3",
     "google/protobuf": "3.21.5",
-    "grpc/grpc": "1.42.0"
+    "grpc/grpc": "1.42.0",
+    "psr/simple-cache": "^3.0"
   },
   "require-dev": {
     "composer/composer": "^2.4.1",

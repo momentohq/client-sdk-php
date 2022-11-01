@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Momento\Utilities;
 
 use Momento\Cache\Errors\InvalidArgumentError;
+use Momento\Cache\Errors\InvalidArgumentException;
 
 if (!function_exists('validateTtl')) {
     function validateTtl(int $ttlSeconds): void
@@ -163,6 +164,21 @@ if (!function_exists('validateElement')) {
     {
         if (isNullOrEmpty($element)) {
             throw new InvalidArgumentError("Element must be a non-empty string");
+        }
+    }
+}
+
+if (!function_exists('validatePsr16Key')) {
+    function validatePsr16Key(string $key): void
+    {
+        $reserved = '/\{|\}|\(|\)|\/|\\\\|\@|\:/u';
+
+        if (isNullOrEmpty($key)) {
+            throw new InvalidArgumentException("Key must be a non-empty string");
+        }
+
+        if (preg_match($reserved, $key, $match) === 1) {
+            throw new InvalidArgumentException("Key must not contain the character {$match[0]}");
         }
     }
 }
