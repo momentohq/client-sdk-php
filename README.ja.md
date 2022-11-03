@@ -113,14 +113,6 @@ printBanner("*                       Momento Example End                      *"
 
 準備中です！
 
-### テストの実行方法
-
-```bash
-export DOCKER_COMMAND="php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml"
-docker build --tag php-test --build-arg token=<YOUR_AUTH_TOKEN> .
-docker run -d -it php-test bash -c $DOCKER_COMMAND
-```
-
 ---
 
 更なる詳細は私達のウェブサイト[https://jp.gomomento.com/](https://jp.gomomento.com/)をご確認ください！

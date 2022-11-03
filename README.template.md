@@ -59,12 +59,4 @@ Coming soon!
 
 Coming soon!
 
-### Running Tests
-
-```bash
-export DOCKER_COMMAND="php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml"
-docker build --tag php-test --build-arg token=<YOUR_AUTH_TOKEN> .
-docker run -d -it php-test bash -c $DOCKER_COMMAND
-```
-
 {{ ossFooter }}
