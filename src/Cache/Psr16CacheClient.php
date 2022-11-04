@@ -7,6 +7,7 @@ use DateInterval;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseBase;
 use Momento\Cache\Errors\CacheException;
+use Momento\Cache\Errors\NotImplementedException;
 use Psr\SimpleCache\CacheInterface;
 use function Momento\Utilities\validatePsr16Key;
 
@@ -14,26 +15,39 @@ class Psr16CacheClient implements CacheInterface
 {
 
     private SimpleCacheClient $momento;
-    // TODO: this needs to be, by spec, the longest duration possible supported
-    //   by our backend. Setting it to a day for now.
-    private const DEFAULT_TTL_SECONDS = 86400;
+    // PSR-16 spec requires a default of as close to "forever" as the engine allows.
+    // The below is set to a week and will be truncated as necessary for the cache
+    // backend in use.
+    private const DEFAULT_TTL_SECONDS = 604800;
     private const CACHE_NAME = "momento-psr16";
-    private const KEY_LIST_NAME = "momento-psr16-keys";
-    // Key metadata list TTL = 1 day
-    private const KEY_LIST_TTL = 86400;
-    // TODO: I hate this. More discussion below.
     private ?CacheException $lastError = null;
+    private bool $throwExceptions = true;
 
-    public function __construct(ICredentialProvider $authProvider, ?int $defaultTtlSeconds)
+    /**
+     * @param ICredentialProvider $authProvider
+     * @param int|null $defaultTtlSeconds
+     * @param bool|null $throwExceptions
+     */
+    public function __construct(ICredentialProvider $authProvider, ?int $defaultTtlSeconds, ?bool $throwExceptions = null)
     {
         $ttlSeconds = $defaultTtlSeconds ?? self::DEFAULT_TTL_SECONDS;
         $this->momento = new SimpleCacheClient($authProvider, $ttlSeconds);
+        if (!is_null($throwExceptions)) {
+            $this->throwExceptions = $throwExceptions;
+        }
         $response = $this->momento->createCache(self::CACHE_NAME);
         if ($error = $response->asError()) {
-            throw $this->cacheExceptionFromError($error);
+            $this->throwExceptions = true;
+            $this->handleCacheError($error);
         }
     }
 
+    /**
+     * Coverts a DateInterval object into seconds.
+     *
+     * @param DateInterval $di
+     * @return int
+     */
     public static function dateIntervalToSeconds(DateInterval $di): int
     {
         $secs = $di->days * 86400 + $di->h * 3600 + $di->i * 60 + $di->s;
@@ -43,37 +57,39 @@ class Psr16CacheClient implements CacheInterface
         return $secs;
     }
 
-    private function cacheExceptionFromError(ResponseBase $err): CacheException
+    /**
+     * Either throws or returns an exception derived from a cache client error response,
+     * depending on the value of the $throwExceptions property.
+     *
+     * @param ResponseBase $err
+     * @return void
+     */
+    private function handleCacheError(ResponseBase $err): void
     {
-        // TODO: think about adding "throw mode" a la https://packagist.org/packages/firehed/redis-psr16
-        return new CacheException($err->message(), 0, $err->innerException());
-    }
-
-    // TODO: keep this or delete/restore cache instead (which has issues with concurrency)
-    private function addKey(string $key): bool
-    {
-        $response = $this->momento->listPushFront(
-            self::CACHE_NAME, self::KEY_LIST_NAME, $key, true, self::KEY_LIST_TTL
-        );
-        if ($error = $response->asError()) {
-            $this->lastError = $this->cacheExceptionFromError($error);
-            return false;
+        $exception = new CacheException($err->message(), 0, $err->innerException());
+        if ($this->throwExceptions) {
+            throw $exception;
         }
-        return true;
+        $this->lastError = $exception;
     }
 
-    private function removeKey(string $key): bool
+    /**
+     * If the $throwExceptions property is set to false, exceptions handled by the
+     * handleCacheError method are stored in a $lastError property. This method allows
+     * access to the exceptions, optionally clearing the property when the error is
+     * returned.
+     *
+     * If $throwExceptions is true, this method will always reurn null as the property will
+     * never be set.
+     *
+     * @param bool $clear_error
+     * @return CacheException|null
+     */
+    public function getLastError(bool $clear_error = true): CacheException|null
     {
-        $response = $this->momento->listRemoveValue(self::CACHE_NAME, self::KEY_LIST_NAME, $key);
-        if ($error = $response->asError()) {
-            $this->lastError = $this->cacheExceptionFromError($error);
-            return false;
+        if (!$this->throwExceptions) {
+            return null;
         }
-        return true;
-    }
-
-    public function getLastError($clear_error = true): CacheException|null
-    {
         $error = $this->lastError;
         if ($clear_error) {
             $this->lastError = null;
@@ -88,12 +104,8 @@ class Psr16CacheClient implements CacheInterface
     {
         validatePsr16Key($key);
         $response = $this->momento->get(self::CACHE_NAME, $key);
-        // TODO: How do we handle errors here!?
-        //   From the PSR:
-        //   If it is not possible to return the exact saved value for any reason,
-        //   implementing libraries MUST respond with a cache miss rather than corrupted data
         if ($error = $response->asError()) {
-            $this->lastError = $this->cacheExceptionFromError($error);
+            $this->handleCacheError($error);
             return $default;
         } elseif ($response->asMiss()) {
             return $default;
@@ -122,10 +134,10 @@ class Psr16CacheClient implements CacheInterface
 
         $response = $this->momento->set(self::CACHE_NAME, $key, serialize($value), $ttl);
         if ($error = $response->asError()) {
-            $this->lastError = $this->cacheExceptionFromError($error);
+            $this->handleCacheError($error);
             return false;
         }
-        return $this->addKey($key);
+        return true;
     }
 
     /**
@@ -136,38 +148,20 @@ class Psr16CacheClient implements CacheInterface
         validatePsr16Key($key);
         $response = $this->momento->delete(self::CACHE_NAME, $key);
         if ($error = $response->asError()) {
-            $this->lastError = $this->cacheExceptionFromError($error);
-            return false;
-        }
-        return $this->removeKey($key);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function clear(): bool
-    {
-        $response = $this->momento->listFetch(self::CACHE_NAME, self::KEY_LIST_NAME);
-        if ($error = $response->asError()) {
-            $this->lastError = $this->cacheExceptionFromError($error);
-            return false;
-        } elseif ($response->asMiss()) {
-            $this->lastError = new CacheException("Got a cache miss for the list of keys to clear.");
-            return false;
-        }
-        // it is possible (likely) that we're tracking keys that have already expired from the cache,
-        // so error handling is a little loose here to avoid false negatives.
-        foreach ($response->asHit()->values() as $key) {
-            if ($this->delete($key) === false) {
-                return false;
-            };
-        }
-        $response = $this->momento->listErase(self::CACHE_NAME, self::KEY_LIST_NAME);
-        if ($error = $response->asError()) {
-            $this->lastError = $this->cacheExceptionFromError($error);
+            $this->handleCacheError($error);
             return false;
         }
         return true;
+    }
+
+    /**
+     * The clear method is currently unimplemented.
+     *
+     * @throws NotImplementedException
+     */
+    public function clear(): bool
+    {
+        throw new NotImplementedException("The clear() method is not currently implemented.");
     }
 
     /**

@@ -177,3 +177,7 @@ class CacheException extends \RuntimeException implements \Psr\SimpleCache\Cache
 class InvalidArgumentException extends \InvalidArgumentException implements \Psr\SimpleCache\InvalidArgumentException
 {
 }
+
+class NotImplementedException extends CacheException
+{
+}
