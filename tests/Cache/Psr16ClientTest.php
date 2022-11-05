@@ -8,6 +8,7 @@ use http\Exception\RuntimeException;
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Errors\InvalidArgumentException;
+use Momento\Cache\Errors\NotImplementedException;
 use Momento\Cache\Psr16CacheClient;
 use Momento\Cache\SimpleCacheClient;
 
@@ -137,17 +138,8 @@ class Psr16ClientTest extends \PHPUnit\Framework\TestCase
 
     public function testClear()
     {
-        $keys = ["abc", "def", "ghi", "jkl"];
-        foreach ($keys as $key) {
-            $this->assertTrue($this->client->set($key, "myValue"));
-        }
-        foreach ($keys as $key) {
-            $this->assertTrue($this->client->has($key));
-        }
+        $this->expectException(NotImplementedException::class);
         $this->assertTrue($this->client->clear());
-        foreach ($keys as $key) {
-            $this->assertFalse($this->client->has($key));
-        }
     }
 
     public function testGetMultiple_HappyPath()

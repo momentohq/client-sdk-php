@@ -28,10 +28,13 @@ use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
+use Momento\Utilities\LoggingHelper;
+use Monolog\Logger;
 
 class SimpleCacheClient
 {
 
+    public Logger $logger;
     private _ScsControlClient $controlClient;
     private _ScsDataClient $dataClient;
 
@@ -44,7 +47,10 @@ class SimpleCacheClient
         ICredentialProvider $authProvider, int $defaultTtlSeconds, ?int $dataClientOperationTimeoutMs = null
     )
     {
-        $this->controlClient = new _ScsControlClient($authProvider->getAuthToken(), $authProvider->getControlEndpoint());
+        $this->logger = LoggingHelper::getStderrLogger("SimpleCacheClient");
+        $this->controlClient = new _ScsControlClient(
+            $authProvider->getAuthToken(), $authProvider->getControlEndpoint()
+        );
         $this->dataClient = new _ScsDataClient(
             $authProvider->getAuthToken(),
             $authProvider->getCacheEndpoint(),
