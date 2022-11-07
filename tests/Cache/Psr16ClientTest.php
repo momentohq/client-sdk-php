@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Momento\Tests\Cache;
 
 use DateTime;
-use http\Exception\RuntimeException;
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Errors\InvalidArgumentException;

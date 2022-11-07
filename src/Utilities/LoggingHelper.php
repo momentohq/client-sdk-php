@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Momento\Utilities;
 
 use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger;
@@ -13,7 +14,7 @@ class LoggingHelper
     public static function getStreamLogger(
         string  $name,
         string  $stream,
-        Level   $logLevel,
+        ?Level  $logLevel = Level::Debug,
         ?string $outputFormat = null
     ): Logger
     {
@@ -27,28 +28,19 @@ class LoggingHelper
         return $logger;
     }
 
-    public static function getStderrLogger(
-        string $name, string $outputFormat = "[%datetime%] %channel%.%level_name%: %message%\n"
-    ): Logger
-    {
-        $stream = "php://stderr";
-        return self::getStreamLogger($name, $stream, Level::Debug, $outputFormat);
-    }
-
-    public static function getFileLogger(
-        string  $name,
-        string  $filename,
-        ?Level  $logLevel = Level::Debug,
-        ?string $outputFormat = null
-    ): Logger
-    {
-        return self::getStreamLogger($name, $filename, $logLevel, $outputFormat);
-    }
-
     public static function getMinimalLogger(string $name): Logger
     {
         $outputFormat = "%channel%: %message%\n";
-        return self::getStderrLogger($name, $outputFormat);
+        $stream = "php://stderr";
+        return self::getStreamLogger($name, $stream, outputFormat: $outputFormat);
+    }
+
+    public static function getNullLogger(string $name): Logger
+    {
+        $logger = new Logger($name);
+        $nullHandler = new NullHandler();
+        $logger->pushHandler($nullHandler);
+        return $logger;
     }
 
 }

@@ -47,7 +47,7 @@ class SimpleCacheClient
         ICredentialProvider $authProvider, int $defaultTtlSeconds, ?int $dataClientOperationTimeoutMs = null
     )
     {
-        $this->logger = LoggingHelper::getStderrLogger("SimpleCacheClient");
+        $this->logger = LoggingHelper::getNullLogger("SimpleCacheClient");
         $this->controlClient = new _ScsControlClient(
             $authProvider->getAuthToken(), $authProvider->getControlEndpoint()
         );
