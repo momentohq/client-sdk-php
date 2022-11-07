@@ -51,9 +51,53 @@ Here is an example to get you started:
 {{ usageExampleCode }}
 ```
 
+In addition to the `SimpleCacheClient` client library shown in the example above, a PHP PSR-16 "SimpleCache"
+implementation is also included in the SDK. See the [PSR-16 client README](README-PSR16.md) for more details.
+
 ### Error Handling
 
-Coming soon!
+Errors that occur in calls to `SimpleCacheClient` methods are surfaced to developers as part of the return values of
+the calls, as opposed to by throwing exceptions. This makes them more visible, and allows your IDE to be more
+helpful in ensuring that you've handled the ones you care about. (For more on our philosophy about this, see our
+blog post on why [Exceptions are bugs](https://www.gomomento.com/blog/exceptions-are-bugs). And send us any
+feedback you have!)
+
+The preferred way of interpreting the return values from SimpleCacheClient methods is
+using [Pattern matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching).
+Here's a quick example:
+
+```php
+$getResponse = $client->get(CACHE_NAME, KEY);
+if ($hitResponse = $getResponse->asHit())
+{
+    print "Looked up value: {$hitResponse->value()}\n");
+} else {
+    // you can handle other cases via pattern matching in `else if` blocks, or a default case
+    // via the `else` block.  For each return value your IDE should be able to give you code
+    // completion indicating the other possible "as" methods; in this case, `$getResponse->asMiss()`
+    // and `$getResponse->asError()`.
+}
+```
+
+Using this approach, you get a type-safe `hitResponse` object in the case of a cache hit. But if the cache read
+results in a Miss or an error, you'll also get a type-safe object that you can use to get more info about what happened.
+
+In cases where you get an error response, `Error` types will always include an `ErrorCode` that you can use to check
+the error type:
+
+```php
+$getResponse = $client->get(CACHE_NAME, KEY);
+if ($errorResponse = $getResponse->asError())
+{
+    if ($errorResponse->errorCode() == MomentoErrorCode.TIMEOUT_ERROR) {
+       // this would represent a client-side timeout, and you could fall back to your original data source
+    }
+}
+```
+
+Note that, outside of SimpleCacheClient responses, exceptions can occur and should be handled as usual. For example,
+trying to instantiate a SimpleCacheClient with an invalid authentication token will result in an
+IllegalArgumentException being thrown.
 
 ### Tuning
 
