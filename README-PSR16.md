@@ -1,6 +1,6 @@
 # Momento PSR-16 Client Library
 
-The Momento PSR-16 client library, `Psr16SImpleCache`, implements the [PHP PSR-16 common interface for caching
+The Momento PSR-16 client library, `Psr16SimpleCache`, implements the [PHP PSR-16 common interface for caching
 libraries](https://www.php-fig.org/psr/psr-16/) for the Momento Serverless Cache. Note that the client library
 is under development and may be subject to backward-incompatible changes.
 
@@ -25,9 +25,10 @@ full [PSR-16 library example](https://github.com/momentohq/client-sdk-php/blob/m
 
 ### Implementation Notes
 
-- Please note that this library is under active development and may be subject to backward-incompatible changes. In
-  addition, the `clear()` function defined in the PSR-16 specification is currently unimplemented in this client
-  library (but is coming soon, so stay tuned!).
+- Please note that this library is under active development and may be subject to backward-incompatible changes.
+- The `clear()` function defined in the PSR-16 specification is currently unimplemented in this client
+  library and throws a `Momento\Cache\Errors\NotImplementedException` if called. It is coming soon, though, so stay
+  tuned!
 - The `getMultiple()`, `setMultiple()`, and `deleteMultiple()` functionality is currently implemented client-side and
-  may exhibit slower performance that expected. These methods will be replaced with calls to server-side implementations
-  when they are available.
+  may exhibit slower performance than expected. These methods will be replaced with calls to server-side implementations
+  in the near future.
