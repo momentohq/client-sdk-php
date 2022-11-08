@@ -24,7 +24,7 @@ use Momento\Cache\Errors\UnknownError;
 trait ErrorBody
 {
     private SdkError $innerException;
-    private int $errorCode;
+    private string $errorCode;
     private string $message;
 
     public function __construct(SdkError $error)
@@ -40,7 +40,7 @@ trait ErrorBody
         return $this->innerException;
     }
 
-    public function errorCode(): int
+    public function errorCode(): string
     {
         return $this->errorCode;
     }
