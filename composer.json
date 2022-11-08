@@ -28,7 +28,7 @@
     "firebase/php-jwt": "^6.3",
     "google/protobuf": "3.21.5",
     "grpc/grpc": "1.42.0",
-    "monolog/monolog": "^3.2",
+    "monolog/monolog": "^2.5",
     "psr/simple-cache": "^3.0"
   },
   "require-dev": {
