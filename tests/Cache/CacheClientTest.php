@@ -26,8 +26,10 @@ class CacheClientTest extends TestCase
     {
         $this->authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
 
-        $this->TEST_CACHE_NAME = getenv("TEST_CACHE_NAME");
-        if (!$this->TEST_CACHE_NAME) {
+        try {
+            $this->TEST_CACHE_NAME = getenv("TEST_CACHE_NAME");
+        } catch (TypeError) {
+            // getenv returned false
             throw new RuntimeException(
                 "Integration tests require TEST_CACHE_NAME env var; see README for more details."
             );

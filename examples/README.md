@@ -10,6 +10,15 @@
 
 ## Running the example
 
+The Docker way:
+
+```bash
+# You can reference php commands to run various examples below.
+export DOCKER_COMMAND="php example.php"
+docker build --tag php-example --build-arg token=<YOUR_AUTH_TOKEN> --build-arg cache_name=<YOUR_CACHE_NAME> ../
+docker run -d -w /app/examples -it php-test bash -c $DOCKER_COMMAND
+```
+
 Run `composer update` to install the prerequisites.
 
 Set required environment variables:
