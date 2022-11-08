@@ -8,6 +8,5 @@ RUN pecl install grpc
 RUN docker-php-ext-enable grpc
 
 WORKDIR /app
-COPY composer.json composer.lock ./
-RUN composer install
 COPY . ./
+RUN composer install
