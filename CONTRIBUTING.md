@@ -26,5 +26,5 @@ docker build --tag php-test .
 ```bash
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
 export TEXT_CACHE_NAME=<YOUR_CACHE_NAME>
-./devrun-integration-tests.sh
+./dev-run-integration-tests.sh
 ```
