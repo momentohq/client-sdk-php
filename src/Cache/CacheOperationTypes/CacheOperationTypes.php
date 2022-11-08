@@ -13,6 +13,7 @@ use Cache_client\_ListPopBackResponse;
 use Cache_client\_ListPopFrontResponse;
 use Cache_client\_ListPushBackResponse;
 use Cache_client\_ListPushFrontResponse;
+use Cache_client\_SetFetchResponse;
 use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
 use Control_client\_ListCachesResponse;
@@ -1135,6 +1136,95 @@ class CacheDictionaryRemoveFieldsResponseSuccess extends CacheDictionaryRemoveFi
 }
 
 class CacheDictionaryRemoveFieldsResponseError extends CacheDictionaryRemoveFieldsResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheSetAddResponse extends ResponseBase
+{
+    public function asSuccess(): CacheSetAddResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheSetAddResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheSetAddResponseSuccess extends CacheSetAddResponse
+{
+}
+
+class CacheSetAddResponseError extends CacheSetAddResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheSetFetchResponse extends ResponseBase
+{
+
+    public function asHit(): CacheSetFetchResponseHit|null
+    {
+        if ($this->isHit()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asMiss(): CacheSetFetchResponseMiss|null
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheSetFetchResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheSetFetchResponseHit extends CacheSetFetchResponse
+{
+    private array $stringSet;
+
+    public function __construct(_SetFetchResponse $response)
+    {
+        parent::__construct();
+        foreach ($response->getFound()->getElements() as $element) {
+            $this->stringSet[] = $element;
+        }
+    }
+
+    public function stringSet(): array
+    {
+        return $this->stringSet;
+    }
+
+    public function __toString()
+    {
+        $numElements = count($this->stringSet);
+        return parent::__toString() . ": $numElements elements";
+    }
+}
+
+class CacheSetFetchResponseMiss extends CacheSetFetchResponse
+{
+}
+
+class CacheSetFetchResponseError extends CacheSetFetchResponse
 {
     use ErrorBody;
 }

@@ -148,3 +148,21 @@ if (!function_exists('validateRange')) {
         }
     }
 }
+
+if (!function_exists('validateSetName')) {
+    function validateSetName(string $setName): void
+    {
+        if (isNullOrEmpty($setName)) {
+            throw new InvalidArgumentError("Set name must be a non-empty string");
+        }
+    }
+}
+
+if (!function_exists('validateElement')) {
+    function validateElement(string $element): void
+    {
+        if (isNullOrEmpty($element)) {
+            throw new InvalidArgumentError("Element must be a non-empty string");
+        }
+    }
+}
