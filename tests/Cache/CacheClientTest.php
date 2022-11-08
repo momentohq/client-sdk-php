@@ -17,7 +17,7 @@ use TypeError;
 class CacheClientTest extends TestCase
 {
     private EnvMomentoTokenProvider $authProvider;
-    private string $TEST_CACHE_NAME;
+    private mixed $TEST_CACHE_NAME;
     private string $BAD_AUTH_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJpbnRlZ3JhdGlvbiIsImNwIjoiY29udHJvbC5jZWxsLWFscGhhLWRldi5wcmVwcm9kLmEubW9tZW50b2hxLmNvbSIsImMiOiJjYWNoZS5jZWxsLWFscGhhLWRldi5wcmVwcm9kLmEubW9tZW50b2hxLmNvbSJ9.gdghdjjfjyehhdkkkskskmmls76573jnajhjjjhjdhnndy";
     private int $DEFAULT_TTL_SECONDS = 10;
     private SimpleCacheClient $client;
