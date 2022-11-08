@@ -2,7 +2,7 @@ name: On push to main
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   test:
@@ -19,7 +19,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.0'
           extensions: grpc
           tools: composer
 
