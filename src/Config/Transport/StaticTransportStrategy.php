@@ -1,18 +1,20 @@
 <?php
+declare(strict_types=1);
 
 namespace Momento\Config\Transport;
 
 use Momento\Config\Transport\IGrpcConfiguration;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 class StaticTransportStrategy implements ITransportStrategy
 {
     private ?int $maxConcurrentRequests;
     private ?IGrpcConfiguration $grpcConfig;
-    private ?Logger $logger;
+    private ?LoggerInterface $logger;
 
     public function __construct(
-        ?int $maxConcurrentRequests = null, ?IGrpcConfiguration $grpcConfig = null, ?Logger $logger = null
+        ?int $maxConcurrentRequests = null, ?IGrpcConfiguration $grpcConfig = null, ?LoggerInterface $logger = null
     )
     {
         $this->maxConcurrentRequests = $maxConcurrentRequests;

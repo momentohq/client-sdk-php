@@ -29,35 +29,42 @@ use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
 use Momento\Config\IConfiguration;
-use Momento\Utilities\LoggingHelper;
-use Monolog\Logger;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 
-class SimpleCacheClient
+class SimpleCacheClient implements LoggerAwareInterface
 {
 
-    public Logger $logger;
+    protected IConfiguration $configuration;
+    protected LoggerInterface $logger;
     private _ScsControlClient $controlClient;
     private _ScsDataClient $dataClient;
 
     /**
-     * @param ICredentialProvider $authProvider : Momento credential provider
-     * @param int $defaultTtlSeconds : Default Time to Live for the item in Cache
-     * @param ?int $dataClientOperationTimeoutMs : msecs after which requests should be cancelled due to timeout
+     * @param IConfiguration $configuration
+     * @param ICredentialProvider $authProvider
+     * @param int $defaultTtlSeconds
      */
     public function __construct(
         IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds
     )
     {
-        $this->logger = LoggingHelper::getNullLogger("SimpleCacheClient");
+        $this->configuration = $configuration;
+        $this->setLogger($this->configuration->getLogger());
         $this->controlClient = new _ScsControlClient(
-            $authProvider->getAuthToken(), $authProvider->getControlEndpoint()
+            $this->logger, $authProvider->getAuthToken(), $authProvider->getControlEndpoint()
         );
         $this->dataClient = new _ScsDataClient(
+            $this->configuration,
             $authProvider->getAuthToken(),
             $authProvider->getCacheEndpoint(),
-            $defaultTtlSeconds,
-            $dataClientOperationTimeoutMs
+            $defaultTtlSeconds
         );
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     public function createCache(string $cacheName): CreateCacheResponse

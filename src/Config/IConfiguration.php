@@ -4,11 +4,11 @@ declare(strict_types=1);
 namespace Momento\Config;
 
 use Momento\Config\Transport\ITransportStrategy;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 interface IConfiguration
 {
-    public function getLogger(): ?Logger;
+    public function getLogger(): ?LoggerInterface;
 
     public function getTransportStrategy(): ?ITransportStrategy;
 }

@@ -8,13 +8,16 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
+use Psr\Log\NullLogger;
 
 class LoggingHelper
 {
     public static function getStreamLogger(
         string  $name,
         string  $stream,
-        ?Level  $logLevel = Level::Debug,
+        ?string $logLevel = LogLevel::DEBUG,
         ?string $outputFormat = null
     ): Logger
     {
@@ -35,12 +38,9 @@ class LoggingHelper
         return self::getStreamLogger($name, $stream, outputFormat: $outputFormat);
     }
 
-    public static function getNullLogger(string $name): Logger
+    public static function getNullLogger(string $name): LoggerInterface
     {
-        $logger = new Logger($name);
-        $nullHandler = new NullHandler();
-        $logger->pushHandler($nullHandler);
-        return $logger;
+        return new NullLogger();
     }
 
 }

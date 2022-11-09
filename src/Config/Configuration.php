@@ -1,23 +1,24 @@
 <?php
+declare(strict_types=1);
 
 namespace Momento\Config;
 
 use Momento\Config\Transport\ITransportStrategy;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 class Configuration implements IConfiguration
 {
 
-    private ?Logger $logger;
+    private ?LoggerInterface $logger;
     private ?ITransportStrategy $transportStrategy;
 
-    public function __construct(?Logger $logger, ?ITransportStrategy $transportStrategy)
+    public function __construct(?LoggerInterface $logger, ?ITransportStrategy $transportStrategy)
     {
         $this->logger = $logger;
         $this->transportStrategy = $transportStrategy;
     }
 
-    public function getLogger(): Logger|null
+    public function getLogger(): LoggerInterface|null
     {
         return $this->logger;
     }
@@ -27,7 +28,7 @@ class Configuration implements IConfiguration
         return $this->transportStrategy;
     }
 
-    public function withLogger(Logger $logger): IConfiguration
+    public function withLogger(LoggerInterface $logger): IConfiguration
     {
         return new Configuration($logger, $this->transportStrategy);
     }

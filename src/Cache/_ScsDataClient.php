@@ -103,7 +103,10 @@ use Momento\Cache\CacheOperationTypes\CacheSetResponseSuccess;
 use Momento\Cache\Errors\InternalServerError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
+use Momento\Config\IConfiguration;
 use Momento\Utilities\_ErrorConverter;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 use function Momento\Utilities\validateCacheName;
 use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateElement;
@@ -119,7 +122,7 @@ use function Momento\Utilities\validateTruncateSize;
 use function Momento\Utilities\validateTtl;
 use function Momento\Utilities\validateValueName;
 
-class _ScsDataClient
+class _ScsDataClient implements LoggerAwareInterface
 {
 
     private static int $DEFAULT_DEADLINE_MILLISECONDS = 5000;
@@ -128,16 +131,27 @@ class _ScsDataClient
     private static int $TIMEOUT_MULTIPLIER = 1000;
     private int $defaultTtlSeconds;
     private _DataGrpcManager $grpcManager;
+    private LoggerInterface $logger;
     private int $timeout;
 
-    public function __construct(string $authToken, string $endpoint, int $defaultTtlSeconds, ?int $operationTimeoutMs)
+    public function __construct(IConfiguration $configuration, string $authToken, string $endpoint, int $defaultTtlSeconds)
     {
         validateTtl($defaultTtlSeconds);
+        $operationTimeoutMs = $configuration
+            ->getTransportStrategy()
+            ->getGrpcConfig()
+            ->getDeadline();
         validateOperationTimeout($operationTimeoutMs);
         $this->defaultTtlSeconds = $defaultTtlSeconds;
-        $this->deadline_milliseconds = $operationTimeoutMs ? $operationTimeoutMs : self::$DEFAULT_DEADLINE_MILLISECONDS;
+        $this->deadline_milliseconds = $operationTimeoutMs ?? self::$DEFAULT_DEADLINE_MILLISECONDS;
         $this->timeout = $this->deadline_milliseconds * self::$TIMEOUT_MULTIPLIER;
         $this->grpcManager = new _DataGrpcManager($authToken, $endpoint);
+        $this->setLogger($configuration->getLogger());
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     private function ttlToMillis(?int $ttl = null): int

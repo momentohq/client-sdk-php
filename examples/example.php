@@ -5,13 +5,9 @@ require "vendor/autoload.php";
 
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\SimpleCacheClient;
+use Momento\Config\Configurations;
 use Momento\Utilities\LoggingHelper;
-use Monolog\Logger;
-
-
-$conf = \Momento\Config\Configurations::laptop();
-print_r($conf);
-exit;
+use Psr\Log\LoggerInterface;
 
 $CACHE_NAME = getenv("CACHE_NAME");
 if (!$CACHE_NAME) {
@@ -23,7 +19,7 @@ $KEY = "MyKey";
 $VALUE = "MyValue";
 $logger = LoggingHelper::getMinimalLogger("example.php");
 
-function printBanner(string $message, Logger $logger): void
+function printBanner(string $message, LoggerInterface $logger): void
 {
     $line = "******************************************************************";
     $logger->info($line);
@@ -34,7 +30,8 @@ function printBanner(string $message, Logger $logger): void
 printBanner("*                      Momento Example Start                     *", $logger);
 // Setup
 $authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
-$client = new SimpleCacheClient($authProvider, $ITEM_DEFAULT_TTL_SECONDS);
+$configuration = Configurations::laptop($logger);
+$client = new SimpleCacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 
 // Ensure test cache exists
 $response = $client->createCache($CACHE_NAME);
