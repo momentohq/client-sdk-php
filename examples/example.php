@@ -1,23 +1,32 @@
 <?php
+declare(strict_types=1);
 
 require "vendor/autoload.php";
 
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\SimpleCacheClient;
+use Momento\Utilities\LoggingHelper;
+use Monolog\Logger;
 
-$MOMENTO_AUTH_TOKEN = getenv("MOMENTO_AUTH_TOKEN");
 $CACHE_NAME = getenv("CACHE_NAME");
+if (!$CACHE_NAME) {
+    print "Error: Environment variable CACHE_NAME was not found.\n";
+    exit;
+}
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 $KEY = "MyKey";
 $VALUE = "MyValue";
+$logger = LoggingHelper::getMinimalLogger("example.php");
 
-function printBanner(string $message): void
+function printBanner(string $message, Logger $logger): void
 {
     $line = "******************************************************************";
-    print "$line\n$message\n$line\n";
+    $logger->info($line);
+    $logger->info($message);
+    $logger->info($line);
 }
 
-printBanner("*                      Momento Example Start                     *");
+printBanner("*                      Momento Example Start                     *", $logger);
 // Setup
 $authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
 $client = new SimpleCacheClient($authProvider, $ITEM_DEFAULT_TTL_SECONDS);
@@ -25,22 +34,22 @@ $client = new SimpleCacheClient($authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 // Ensure test cache exists
 $response = $client->createCache($CACHE_NAME);
 if ($response->asSuccess()) {
-    print "Created cache " . $CACHE_NAME . "\n";
+    $logger->info("Created cache " . $CACHE_NAME . "\n");
 } elseif ($response->asError()) {
-    print "Error creating cache: " . $response->asError()->message() . "\n";
+    $logger->info("Error creating cache: " . $response->asError()->message() . "\n");
     exit;
 } elseif ($response->asAlreadyExists()) {
-    print "Cache " . $CACHE_NAME . " already exists.\n";
+    $logger->info("Cache " . $CACHE_NAME . " already exists.\n");
 }
 
 // List cache
 $response = $client->listCaches();
 if ($response->asSuccess()) {
     while (true) {
-        print "SUCCESS: List caches: \n";
+        $logger->info("SUCCESS: List caches: \n");
         foreach ($response->asSuccess()->caches() as $cache) {
             $cacheName = $cache->name();
-            print "$cacheName\n";
+            $logger->info("$cacheName\n");
         }
         $nextToken = $response->asSuccess()->nextToken();
         if (!$nextToken) {
@@ -48,32 +57,32 @@ if ($response->asSuccess()) {
         }
         $response = $client->listCaches($nextToken);
     }
-    print "\n";
+    $logger->info("\n");
 } elseif ($response->asError()) {
-    print "Error listing cache: " . $response->asError()->message() . "\n";
+    $logger->info("Error listing cache: " . $response->asError()->message() . "\n");
     exit;
 }
 
 // Set
-print "Setting key: $KEY to value: $VALUE\n";
+$logger->info("Setting key: $KEY to value: $VALUE\n");
 $response = $client->set($CACHE_NAME, $KEY, $VALUE);
 if ($response->asSuccess()) {
-    print "SUCCESS: - Set key: " . $KEY . " value: " . $VALUE . " cache: " . $CACHE_NAME . "\n";
+    $logger->info("SUCCESS: - Set key: " . $KEY . " value: " . $VALUE . " cache: " . $CACHE_NAME . "\n");
 } elseif ($response->asError()) {
-    print "Error setting key: " . $response->asError()->message() . "\n";
+    $logger->info("Error setting key: " . $response->asError()->message() . "\n");
     exit;
 }
 
 // Get
-print "Getting value for key: $KEY\n";
+$logger->info("Getting value for key: $KEY\n");
 $response = $client->get($CACHE_NAME, $KEY);
 if ($response->asHit()) {
-    print "SUCCESS: - Get key: " . $KEY . " value: " . $response->asHit()->value() . " cache: " . $CACHE_NAME . "\n";
+    $logger->info("SUCCESS: - Get key: " . $KEY . " value: " . $response->asHit()->value() . " cache: " . $CACHE_NAME . "\n");
 } elseif ($response->asMiss()) {
-    print "Get operation was a MISS\n";
+    $logger->info("Get operation was a MISS\n");
 } elseif ($response->asError()) {
-    print "Error getting cache: " . $response->asError()->message() . "\n";
+    $logger->info("Error getting cache: " . $response->asError()->message() . "\n");
     exit;
 }
 
-printBanner("*                       Momento Example End                      *");
+printBanner("*                       Momento Example End                      *", $logger);

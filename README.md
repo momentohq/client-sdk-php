@@ -39,6 +39,11 @@ as [PhpStorm](https://www.jetbrains.com/phpstorm/) or [Microsoft Visual Studio C
 
 Check out full working code in [the examples directory](examples/) of this repository!
 
+In addition to the primary Momento `SimpleCacheClient` library used in most of the examples, a PHP PSR-16
+implementation and corresponding example are also included in the SDK. See the PSR-16 client [README](README-PSR16.md)
+and [example](https://github.com/momentohq/client-sdk-php/blob/psr16-library/examples/psr16-example.php) for more
+details.
+
 ### Installation
 
 Install composer [as described on the composer website](https://getcomposer.org/doc/00-intro.md).
@@ -69,25 +74,34 @@ Here is an example to get you started:
 
 ```php
 <?php
+declare(strict_types=1);
 
 require "vendor/autoload.php";
 
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\SimpleCacheClient;
+use Momento\Utilities\LoggingHelper;
+use Monolog\Logger;
 
-$MOMENTO_AUTH_TOKEN = getenv("MOMENTO_AUTH_TOKEN");
 $CACHE_NAME = getenv("CACHE_NAME");
+if (!$CACHE_NAME) {
+    print "Error: Environment variable CACHE_NAME was not found.\n";
+    exit;
+}
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 $KEY = "MyKey";
 $VALUE = "MyValue";
+$logger = LoggingHelper::getMinimalLogger("example.php");
 
-function printBanner(string $message): void
+function printBanner(string $message, Logger $logger): void
 {
     $line = "******************************************************************";
-    print "$line\n$message\n$line\n";
+    $logger->info($line);
+    $logger->info($message);
+    $logger->info($line);
 }
 
-printBanner("*                      Momento Example Start                     *");
+printBanner("*                      Momento Example Start                     *", $logger);
 // Setup
 $authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
 $client = new SimpleCacheClient($authProvider, $ITEM_DEFAULT_TTL_SECONDS);
@@ -95,22 +109,22 @@ $client = new SimpleCacheClient($authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 // Ensure test cache exists
 $response = $client->createCache($CACHE_NAME);
 if ($response->asSuccess()) {
-    print "Created cache " . $CACHE_NAME . "\n";
+    $logger->info("Created cache " . $CACHE_NAME . "\n");
 } elseif ($response->asError()) {
-    print "Error creating cache: " . $response->asError()->message() . "\n";
+    $logger->info("Error creating cache: " . $response->asError()->message() . "\n");
     exit;
 } elseif ($response->asAlreadyExists()) {
-    print "Cache " . $CACHE_NAME . " already exists.\n";
+    $logger->info("Cache " . $CACHE_NAME . " already exists.\n");
 }
 
 // List cache
 $response = $client->listCaches();
 if ($response->asSuccess()) {
     while (true) {
-        print "SUCCESS: List caches: \n";
+        $logger->info("SUCCESS: List caches: \n");
         foreach ($response->asSuccess()->caches() as $cache) {
             $cacheName = $cache->name();
-            print "$cacheName\n";
+            $logger->info("$cacheName\n");
         }
         $nextToken = $response->asSuccess()->nextToken();
         if (!$nextToken) {
@@ -118,41 +132,81 @@ if ($response->asSuccess()) {
         }
         $response = $client->listCaches($nextToken);
     }
-    print "\n";
+    $logger->info("\n");
 } elseif ($response->asError()) {
-    print "Error listing cache: " . $response->asError()->message() . "\n";
+    $logger->info("Error listing cache: " . $response->asError()->message() . "\n");
     exit;
 }
 
 // Set
-print "Setting key: $KEY to value: $VALUE\n";
+$logger->info("Setting key: $KEY to value: $VALUE\n");
 $response = $client->set($CACHE_NAME, $KEY, $VALUE);
 if ($response->asSuccess()) {
-    print "SUCCESS: - Set key: " . $KEY . " value: " . $VALUE . " cache: " . $CACHE_NAME . "\n";
+    $logger->info("SUCCESS: - Set key: " . $KEY . " value: " . $VALUE . " cache: " . $CACHE_NAME . "\n");
 } elseif ($response->asError()) {
-    print "Error setting key: " . $response->asError()->message() . "\n";
+    $logger->info("Error setting key: " . $response->asError()->message() . "\n");
     exit;
 }
 
 // Get
-print "Getting value for key: $KEY\n";
+$logger->info("Getting value for key: $KEY\n");
 $response = $client->get($CACHE_NAME, $KEY);
 if ($response->asHit()) {
-    print "SUCCESS: - Get key: " . $KEY . " value: " . $response->asHit()->value() . " cache: " . $CACHE_NAME . "\n";
+    $logger->info("SUCCESS: - Get key: " . $KEY . " value: " . $response->asHit()->value() . " cache: " . $CACHE_NAME . "\n");
 } elseif ($response->asMiss()) {
-    print "Get operation was a MISS\n";
+    $logger->info("Get operation was a MISS\n");
 } elseif ($response->asError()) {
-    print "Error getting cache: " . $response->asError()->message() . "\n";
+    $logger->info("Error getting cache: " . $response->asError()->message() . "\n");
     exit;
 }
 
-printBanner("*                       Momento Example End                      *");
+printBanner("*                       Momento Example End                      *", $logger);
 
 ```
 
 ### Error Handling
 
-Coming soon!
+Errors that occur in calls to `SimpleCacheClient` methods are surfaced to developers as part of the return values of
+the calls, as opposed to by throwing exceptions. This makes them more visible, and allows your IDE to be more
+helpful in ensuring that you've handled the ones you care about. (For more on our philosophy about this, see our
+blog post on why [Exceptions are bugs](https://www.gomomento.com/blog/exceptions-are-bugs). And send us any
+feedback you have!)
+
+The preferred way of interpreting the return values from `SimpleCacheClient` methods is
+using `as` methods to match and handle the specific response type. Here's a quick example:
+
+```php
+$getResponse = $client->get($CACHE_NAME, $KEY);
+if ($hitResponse = $getResponse->asHit())
+{
+    print "Looked up value: {$hitResponse->value()}\n");
+} else {
+    // you can handle other cases via pattern matching in `else if` blocks, or a default case
+    // via the `else` block.  For each return value your IDE should be able to give you code
+    // completion indicating the other possible "as" methods; in this case, `$getResponse->asMiss()`
+    // and `$getResponse->asError()`.
+}
+```
+
+Using this approach, you get a type-safe `hitResponse` object in the case of a cache hit. But if the cache read
+results in a Miss or an error, you'll also get a type-safe object that you can use to get more info about what happened.
+
+In cases where you get an error response, it will always include an `ErrorCode` that you can use to check
+the error type:
+
+```php
+$getResponse = $client->get($CACHE_NAME, $KEY);
+if ($errorResponse = $getResponse->asError())
+{
+    if ($errorResponse->errorCode() == MomentoErrorCode::TIMEOUT_ERROR) {
+       // this would represent a client-side timeout, and you could fall back to your original data source
+    }
+}
+```
+
+Note that, outside of `SimpleCacheClient` responses, exceptions can occur and should be handled as usual. For example,
+trying to instantiate a `SimpleCacheClient` with an invalid authentication token will result in an
+`IllegalArgumentException` being thrown.
 
 ### Tuning
 
