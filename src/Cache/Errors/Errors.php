@@ -167,3 +167,17 @@ class UnknownServiceError extends SdkError
     public string $errorCode = MomentoErrorCode::UNKNOWN_SERVICE_ERROR;
     public string $messageWrapper = 'Service returned an unknown response; please contact us at support@momentohq.com';
 }
+
+// PSR-16 Exceptions
+
+class CacheException extends \RuntimeException implements \Psr\SimpleCache\CacheException
+{
+}
+
+class InvalidArgumentException extends \InvalidArgumentException implements \Psr\SimpleCache\InvalidArgumentException
+{
+}
+
+class NotImplementedException extends CacheException
+{
+}
