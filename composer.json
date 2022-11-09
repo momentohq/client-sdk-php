@@ -29,6 +29,7 @@
     "google/protobuf": "3.21.5",
     "grpc/grpc": "1.42.0",
     "monolog/monolog": "^2.5",
+    "psr/log": "^3.0",
     "psr/simple-cache": "^3.0"
   },
   "require-dev": {

@@ -28,6 +28,7 @@ use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
+use Momento\Config\IConfiguration;
 use Momento\Utilities\LoggingHelper;
 use Monolog\Logger;
 
@@ -44,7 +45,7 @@ class SimpleCacheClient
      * @param ?int $dataClientOperationTimeoutMs : msecs after which requests should be cancelled due to timeout
      */
     public function __construct(
-        ICredentialProvider $authProvider, int $defaultTtlSeconds, ?int $dataClientOperationTimeoutMs = null
+        IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds
     )
     {
         $this->logger = LoggingHelper::getNullLogger("SimpleCacheClient");

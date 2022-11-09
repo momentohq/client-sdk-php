@@ -8,6 +8,11 @@ use Momento\Cache\SimpleCacheClient;
 use Momento\Utilities\LoggingHelper;
 use Monolog\Logger;
 
+
+$conf = \Momento\Config\Configurations::laptop();
+print_r($conf);
+exit;
+
 $CACHE_NAME = getenv("CACHE_NAME");
 if (!$CACHE_NAME) {
     print "Error: Environment variable CACHE_NAME was not found.\n";
