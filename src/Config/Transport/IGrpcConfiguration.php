@@ -5,7 +5,7 @@ namespace Momento\Config\Transport;
 
 interface IGrpcConfiguration
 {
-    public function getDeadline(): ?int;
+    public function getDeadlineMilliseconds(): ?int;
 
-    public function withDeadline(int $deadline): IGrpcConfiguration;
+    public function withDeadlineMilliseconds(int $deadline): IGrpcConfiguration;
 }

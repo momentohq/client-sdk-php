@@ -137,12 +137,12 @@ class _ScsDataClient implements LoggerAwareInterface
     public function __construct(IConfiguration $configuration, string $authToken, string $endpoint, int $defaultTtlSeconds)
     {
         validateTtl($defaultTtlSeconds);
+        $this->defaultTtlSeconds = $defaultTtlSeconds;
         $operationTimeoutMs = $configuration
             ->getTransportStrategy()
             ->getGrpcConfig()
-            ->getDeadline();
+            ->getDeadlineMilliseconds();
         validateOperationTimeout($operationTimeoutMs);
-        $this->defaultTtlSeconds = $defaultTtlSeconds;
         $this->deadline_milliseconds = $operationTimeoutMs ?? self::$DEFAULT_DEADLINE_MILLISECONDS;
         $this->timeout = $this->deadline_milliseconds * self::$TIMEOUT_MULTIPLIER;
         $this->grpcManager = new _DataGrpcManager($authToken, $endpoint);

@@ -6,20 +6,20 @@ namespace Momento\Config\Transport;
 class StaticGrpcConfiguration implements IGrpcConfiguration
 {
 
-    private ?int $deadline;
+    private ?int $deadlineMilliseconds;
 
-    public function __construct(?int $deadline = null)
+    public function __construct(?int $deadlineMilliseconds = null)
     {
-        $this->deadline = $deadline;
+        $this->deadlineMilliseconds = $deadlineMilliseconds;
     }
 
-    public function getDeadline(): int|null
+    public function getDeadlineMilliseconds(): int|null
     {
-        return $this->deadline;
+        return $this->deadlineMilliseconds;
     }
 
-    public function withDeadline(int $deadline): StaticGrpcConfiguration
+    public function withDeadlineMilliseconds(int $deadlineMilliseconds): StaticGrpcConfiguration
     {
-        return new StaticGrpcConfiguration($deadline);
+        return new StaticGrpcConfiguration($deadlineMilliseconds);
     }
 }
