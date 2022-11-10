@@ -7,5 +7,5 @@ interface IGrpcConfiguration
 {
     public function getDeadlineMilliseconds(): ?int;
 
-    public function withDeadlineMilliseconds(int $deadline): IGrpcConfiguration;
+    public function withDeadlineMilliseconds(int $deadlineMilliseconds): IGrpcConfiguration;
 }
