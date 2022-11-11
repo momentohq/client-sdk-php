@@ -6,6 +6,12 @@
     }
   ],
   "require": {
-    "momentohq/client-sdk-php": "*@dev"
+    "momentohq/client-sdk-php": "*@dev",
+    "monolog/monolog": "^2.5"
+  },
+  "config": {
+    "platform": {
+      "php": "8.0"
+    }
   }
 }

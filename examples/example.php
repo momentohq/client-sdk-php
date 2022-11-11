@@ -5,8 +5,10 @@ require "vendor/autoload.php";
 
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\SimpleCacheClient;
-use Momento\Config\Configurations;
-use Momento\Utilities\LoggingHelper;
+use Momento\Config\Configurations\Laptop;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 
 $CACHE_NAME = getenv("CACHE_NAME");
@@ -17,7 +19,24 @@ if (!$CACHE_NAME) {
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 $KEY = "MyKey";
 $VALUE = "MyValue";
-$logger = LoggingHelper::getMinimalLogger("example.php");
+
+// Setup
+$authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
+
+// Use your favorite PSR-3 logger.
+$logger = new Logger("example");
+$streamHandler = new StreamHandler("php://stderr");
+$formatter = new LineFormatter("%message%\n");
+$streamHandler->setFormatter($formatter);
+$logger->pushHandler($streamHandler);
+
+// Or use the build-in minimal logger, equivalent to the above Monolog configuration.
+//$logger = \Momento\Utilities\LoggingHelper::getMinimalLogger();
+// Or discard all log messages.
+//$logger = \Momento\Utilities\LoggingHelper::getNullLogger();
+
+$configuration = Laptop::latest($logger);
+$client = new SimpleCacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 
 function printBanner(string $message, LoggerInterface $logger): void
 {
@@ -28,10 +47,6 @@ function printBanner(string $message, LoggerInterface $logger): void
 }
 
 printBanner("*                      Momento Example Start                     *", $logger);
-// Setup
-$authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
-$configuration = Configurations::laptop($logger);
-$client = new SimpleCacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 
 // Ensure test cache exists
 $response = $client->createCache($CACHE_NAME);
