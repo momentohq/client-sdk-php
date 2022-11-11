@@ -120,7 +120,8 @@ class CacheClientTest extends TestCase
     public function testNegativeRequestTimeout()
     {
         $this->expectExceptionMessage("Request timeout must be greater than zero.");
-        $client = new SimpleCacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS, -1);
+        $configuration = $this->getConfigurationWithDeadline(-1);
+        $client = new SimpleCacheClient($configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
     public function testZeroRequestTimeout()
