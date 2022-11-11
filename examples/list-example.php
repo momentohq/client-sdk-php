@@ -31,7 +31,7 @@ $formatter = new LineFormatter("%message%\n");
 $streamHandler->setFormatter($formatter);
 $logger->pushHandler($streamHandler);
 
-// Or use the build-in minimal logger, equivalent to the above Monolog configuration.
+// Or use the built-in minimal logger, equivalent to the above Monolog configuration.
 //$logger = \Momento\Utilities\LoggingHelper::getMinimalLogger();
 // Or discard all log messages.
 //$logger = \Momento\Utilities\LoggingHelper::getNullLogger();
