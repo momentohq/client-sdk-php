@@ -10,6 +10,10 @@ use Momento\Cache\Errors\InvalidArgumentException;
 use Momento\Cache\Errors\NotImplementedException;
 use Momento\Cache\Psr16CacheClient;
 use Momento\Cache\SimpleCacheClient;
+use Momento\Config\Configuration;
+use Momento\Config\Transport\StaticGrpcConfiguration;
+use Momento\Config\Transport\StaticTransportStrategy;
+use Psr\Log\NullLogger;
 
 /**
  * @covers Psr16CacheClient
@@ -22,16 +26,20 @@ class Psr16ClientTest extends \PHPUnit\Framework\TestCase
 
     public function setUp(): void
     {
+        $logger = new NullLogger();
+        $grpcConfiguration = new StaticGrpcConfiguration(5000);
+        $transportStrategy = new StaticTransportStrategy(null, $grpcConfiguration);
+        $configuration = new Configuration($logger, $transportStrategy);
         $authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
 
         // Ensure test cache exists
-        $createCacheClient = new SimpleCacheClient($authProvider, $this->DEFAULT_TTL_SECONDS);
+        $createCacheClient = new SimpleCacheClient($configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
         $setUpCreateResponse = $createCacheClient->createCache($this->TEST_CACHE_NAME);
         if ($setUpError = $setUpCreateResponse->asError()) {
             throw $setUpError->innerException();
         }
 
-        $this->client = new Psr16CacheClient($authProvider, $this->DEFAULT_TTL_SECONDS);
+        $this->client = new Psr16CacheClient($configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
     public function testDateIntervalToSeconds()

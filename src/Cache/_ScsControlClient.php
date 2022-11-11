@@ -22,16 +22,25 @@ use Momento\Cache\Errors\AlreadyExistsError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Utilities\_ErrorConverter;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 use function Momento\Utilities\validateCacheName;
 
-class _ScsControlClient
+class _ScsControlClient implements LoggerAwareInterface
 {
 
     private _ControlGrpcManager $grpcManager;
+    private LoggerInterface $logger;
 
-    public function __construct(string $authToken, string $endpoint)
+    public function __construct(LoggerInterface $logger, string $authToken, string $endpoint)
     {
         $this->grpcManager = new _ControlGrpcManager($authToken, $endpoint);
+        $this->setLogger($logger);
+    }
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
     }
 
     private function processCall(UnaryCall $call): mixed

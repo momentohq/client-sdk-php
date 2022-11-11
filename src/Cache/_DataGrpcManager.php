@@ -6,6 +6,9 @@ namespace Momento\Cache;
 use Cache_client\ScsClient;
 use Grpc\Channel;
 use Grpc\ChannelCredentials;
+use Grpc\Interceptor;
+use Momento\Cache\Interceptors\AgentInterceptor;
+use Momento\Cache\Interceptors\AuthorizationInterceptor;
 
 class _DataGrpcManager
 {
@@ -14,15 +17,13 @@ class _DataGrpcManager
 
     public function __construct(string $authToken, string $endpoint)
     {
-        $options = [
-            "update_metadata" => function ($metadata) use ($authToken) {
-                $metadata["authorization"] = [$authToken];
-                $metadata["agent"] = ["php:0.1"];
-                return $metadata;
-            }
-        ];
-
+        $options = [];
         $channel = new Channel($endpoint, ["credentials" => ChannelCredentials::createSsl()]);
+        $interceptors = [
+            new AuthorizationInterceptor($authToken),
+            new AgentInterceptor(),
+        ];
+        $channel = Interceptor::intercept($channel, $interceptors);
         $this->client = new ScsClient($endpoint, $options, $channel);
     }
 }

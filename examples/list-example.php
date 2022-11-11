@@ -4,25 +4,50 @@ require "vendor/autoload.php";
 
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\SimpleCacheClient;
+use Momento\Config\Configurations\Laptop;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
-$MOMENTO_AUTH_TOKEN = getenv("MOMENTO_AUTH_TOKEN");
 $CACHE_NAME = getenv("CACHE_NAME");
+$CACHE_NAME = getenv("CACHE_NAME");
+if (!$CACHE_NAME) {
+    print "Error: Environment variable CACHE_NAME was not found.\n";
+    exit;
+}
 $LIST_NAME = "example-list";
 $PUSH_FRONT_VALUE = "MyPushFrontValue";
 $PUSH_BACK_VALUE = "MyPushBackValue";
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 
-function printBanner(string $message): void
-{
-    $line = "******************************************************************";
-    print "$line\n$message\n$line\n";
-}
-
-printBanner("*                      Momento Example Start                     *");
-
 // Setup
 $authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
-$client = new SimpleCacheClient($authProvider, $ITEM_DEFAULT_TTL_SECONDS);
+
+// Use your favorite PSR-3 logger.
+$logger = new Logger("example");
+$streamHandler = new StreamHandler("php://stderr");
+$formatter = new LineFormatter("%message%\n");
+$streamHandler->setFormatter($formatter);
+$logger->pushHandler($streamHandler);
+
+// Or use the built-in minimal logger, equivalent to the above Monolog configuration.
+//$logger = \Momento\Utilities\LoggingHelper::getMinimalLogger();
+// Or discard all log messages.
+//$logger = \Momento\Utilities\LoggingHelper::getNullLogger();
+
+$configuration = Laptop::latest($logger);
+$client = new SimpleCacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
+
+function printBanner(string $message, LoggerInterface $logger): void
+{
+    $line = "******************************************************************";
+    $logger->info($line);
+    $logger->info($message);
+    $logger->info($line);
+}
+
+printBanner("*                      Momento Example Start                     *", $logger);
 
 // Ensure test cache exists
 $response = $client->createCache($CACHE_NAME);
@@ -95,4 +120,4 @@ if ($response->asHit()) {
     print "Error popping a value from back: " . $response->asError()->message() . "\n";
     exit;
 }
-printBanner("*                       Momento Example End                      *");
+printBanner("*                       Momento Example End                      *", $logger);
