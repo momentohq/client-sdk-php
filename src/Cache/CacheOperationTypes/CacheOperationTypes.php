@@ -1012,7 +1012,7 @@ class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResp
         $ret = [];
         foreach ($this->responsesList as $response) {
             if ($response->asHit()) {
-                $ret[] = $response->asHit()->value();
+                $ret[] = $response->asHit()->valueString();
             }
             if ($response->asMiss()) {
                 $ret[] = null;
