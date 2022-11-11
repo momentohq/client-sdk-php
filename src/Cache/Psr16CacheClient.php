@@ -8,6 +8,7 @@ use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseBase;
 use Momento\Cache\Errors\CacheException;
 use Momento\Cache\Errors\NotImplementedException;
+use Momento\Config\IConfiguration;
 use Psr\SimpleCache\CacheInterface;
 use function Momento\Utilities\validatePsr16Key;
 
@@ -24,14 +25,20 @@ class Psr16CacheClient implements CacheInterface
     private bool $throwExceptions = true;
 
     /**
+     * @param IConfiguration $configuration
      * @param ICredentialProvider $authProvider
      * @param int|null $defaultTtlSeconds
      * @param bool|null $throwExceptions
      */
-    public function __construct(ICredentialProvider $authProvider, ?int $defaultTtlSeconds, ?bool $throwExceptions = null)
+    public function __construct(
+        IConfiguration      $configuration,
+        ICredentialProvider $authProvider,
+        ?int                $defaultTtlSeconds,
+        ?bool               $throwExceptions = null
+    )
     {
         $ttlSeconds = $defaultTtlSeconds ?? self::DEFAULT_TTL_SECONDS;
-        $this->momento = new SimpleCacheClient($authProvider, $ttlSeconds);
+        $this->momento = new SimpleCacheClient($configuration, $authProvider, $ttlSeconds);
         if (!is_null($throwExceptions)) {
             $this->throwExceptions = $throwExceptions;
         }
