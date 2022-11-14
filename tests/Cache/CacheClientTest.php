@@ -500,7 +500,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $values = $response->asHit()->valuesString();
+        $values = $response->asHit()->valuesArray();
         $this->assertNotEmpty($values);
         $this->assertCount(1, $values);
         $this->assertContains($value, $values);
@@ -513,7 +513,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $values = $response->asHit()->valuesString();
+        $values = $response->asHit()->valuesArray();
         $this->assertNotEmpty($values);
         $this->assertEquals([$value2, $value], $values);
     }
@@ -552,7 +552,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertCount(2, $response->asHit()->valuesString());
+        $this->assertCount(2, $response->asHit()->valuesArray());
     }
 
     public function testListPushFront_TruncateList()
@@ -576,7 +576,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals([$value3, $value2], $response->asHit()->valuesString());
+        $this->assertEquals([$value3, $value2], $response->asHit()->valuesArray());
     }
 
     public function testListPushFront_TruncateList_NegativeValue()
@@ -601,7 +601,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $values = $response->asHit()->valuesString();
+        $values = $response->asHit()->valuesArray();
         $this->assertNotEmpty($values);
         $this->assertCount(1, $values);
         $this->assertContains($value, $values);
@@ -614,7 +614,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $values = $response->asHit()->valuesString();
+        $values = $response->asHit()->valuesArray();
         $this->assertNotEmpty($values);
         $this->assertEquals([$value, $value2], $values);
     }
@@ -653,7 +653,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertCount(2, $response->asHit()->valuesString());
+        $this->assertCount(2, $response->asHit()->valuesArray());
     }
 
     public function testListPushBack_TruncateList()
@@ -677,7 +677,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals([$value2, $value3], $response->asHit()->valuesString());
+        $this->assertEquals([$value2, $value3], $response->asHit()->valuesArray());
     }
 
     public function testListPushBack_TruncateList_NegativeValue()
@@ -711,7 +711,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($values, $response->asHit()->valuesString());
+        $this->assertEquals($values, $response->asHit()->valuesArray());
         while ($val = array_shift($values)) {
             $response = $this->client->listPopFront($this->TEST_CACHE_NAME, $listName);
             $this->assertNull($response->asError());
@@ -766,7 +766,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($values, $response->asHit()->valuesString());
+        $this->assertEquals($values, $response->asHit()->valuesArray());
 
         while ($val = array_pop($values)) {
             $response = $this->client->listPopBack($this->TEST_CACHE_NAME, $listName);
@@ -825,7 +825,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
         $expectedValues = $values;
         array_push($expectedValues, $valueToRemove, $valueToRemove);
-        $this->assertEquals($expectedValues, $response->asHit()->valuesString());
+        $this->assertEquals($expectedValues, $response->asHit()->valuesArray());
 
         $response = $this->client->listRemoveValue($this->TEST_CACHE_NAME, $listName, $valueToRemove);
         $this->assertNull($response->asError());
@@ -834,7 +834,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($values, $response->asHit()->valuesString());
+        $this->assertEquals($values, $response->asHit()->valuesArray());
     }
 
     public function testListRemoveValues_ValueNotPresent()
@@ -852,7 +852,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($values, $response->asHit()->valuesString());
+        $this->assertEquals($values, $response->asHit()->valuesArray());
 
         $response = $this->client->listRemoveValue($this->TEST_CACHE_NAME, $listName, "i-am-not-in-the-list");
         $this->assertNull($response->asError());
@@ -861,7 +861,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($values, $response->asHit()->valuesString());
+        $this->assertEquals($values, $response->asHit()->valuesArray());
     }
 
     public function testListLength_HappyPath()
@@ -939,7 +939,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals(array_slice($values, 2), $response->asHit()->valuesString());
+        $this->assertEquals(array_slice($values, 2), $response->asHit()->valuesArray());
     }
 
     public function testListEraseRange_LargeCountValue()
@@ -966,7 +966,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals([$values[0]], $response->asHit()->valuesString());
+        $this->assertEquals([$values[0]], $response->asHit()->valuesArray());
     }
 
     public function testListErase_MissingList()
@@ -1698,7 +1698,7 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
         $this->assertNull($response->asError());
-        $this->assertCount(3, $response->asHit()->valuesString());
+        $this->assertCount(3, $response->asHit()->valuesArray());
         $this->assertEquals("$response", get_class($response) . ": 3 items");
     }
 

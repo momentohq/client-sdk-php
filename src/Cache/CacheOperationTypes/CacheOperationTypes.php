@@ -430,7 +430,7 @@ class CacheListFetchResponseHit extends CacheListFetchResponse
         }
     }
 
-    public function valuesString(): array
+    public function valuesArray(): array
     {
         return $this->values;
     }
