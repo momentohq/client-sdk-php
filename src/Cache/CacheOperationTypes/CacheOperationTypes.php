@@ -17,7 +17,6 @@ use Cache_client\_SetFetchResponse;
 use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
 use Control_client\_ListCachesResponse;
-use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 
@@ -284,7 +283,7 @@ class CacheSetResponseSuccess extends CacheSetResponse
         return $this->key;
     }
 
-    public function value(): string
+    public function valueString(): string
     {
         return $this->value;
     }
@@ -338,7 +337,7 @@ class CacheGetResponseHit extends CacheGetResponse
         $this->value = $grpcGetResponse->getCacheBody();
     }
 
-    public function value(): string
+    public function valueString(): string
     {
         return $this->value;
     }
@@ -430,7 +429,7 @@ class CacheListFetchResponseHit extends CacheListFetchResponse
         }
     }
 
-    public function values(): array
+    public function valuesArray(): array
     {
         return $this->values;
     }
@@ -577,7 +576,7 @@ class CacheListPopFrontResponseHit extends CacheListPopFrontResponse
         $this->value = $response->getFound()->getFront();
     }
 
-    public function value(): string
+    public function valueString(): string
     {
         return $this->value;
     }
@@ -634,7 +633,7 @@ class CacheListPopBackResponseHit extends CacheListPopBackResponse
         $this->value = $response->getFound()->getBack();
     }
 
-    public function value(): string
+    public function valueString(): string
     {
         return $this->value;
     }
@@ -825,7 +824,7 @@ class CacheDictionaryGetResponseHit extends CacheDictionaryGetResponse
         }
     }
 
-    public function value(): string
+    public function valueString(): string
     {
         return $this->value;
     }
@@ -1007,12 +1006,12 @@ class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResp
         }
     }
 
-    public function values(): array
+    public function valuesArray(): array
     {
         $ret = [];
         foreach ($this->responsesList as $response) {
             if ($response->asHit()) {
-                $ret[] = $response->asHit()->value();
+                $ret[] = $response->asHit()->valueString();
             }
             if ($response->asMiss()) {
                 $ret[] = null;
@@ -1063,14 +1062,9 @@ class CacheDictionaryIncrementResponseSuccess extends CacheDictionaryIncrementRe
         $this->value = $response->getValue();
     }
 
-    public function value(): int
+    public function valueInt(): int
     {
         return $this->value;
-    }
-
-    public function string(): string
-    {
-        return "{$this->value}";
     }
 
     public function __toString()
@@ -1208,7 +1202,7 @@ class CacheSetFetchResponseHit extends CacheSetFetchResponse
         }
     }
 
-    public function stringSet(): array
+    public function valueArray(): array
     {
         return $this->stringSet;
     }

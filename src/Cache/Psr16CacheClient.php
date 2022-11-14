@@ -118,7 +118,7 @@ class Psr16CacheClient implements CacheInterface
             return $default;
         }
         $hit = $response->asHit();
-        return unserialize($hit->value());
+        return unserialize($hit->valueString());
     }
 
     /**
