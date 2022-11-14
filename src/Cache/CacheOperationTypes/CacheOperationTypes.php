@@ -17,7 +17,6 @@ use Cache_client\_SetFetchResponse;
 use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
 use Control_client\_ListCachesResponse;
-use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 
@@ -1066,11 +1065,6 @@ class CacheDictionaryIncrementResponseSuccess extends CacheDictionaryIncrementRe
     public function valueInt(): int
     {
         return $this->value;
-    }
-
-    public function valueString(): string
-    {
-        return "{$this->value}";
     }
 
     public function __toString()
