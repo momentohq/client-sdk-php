@@ -901,25 +901,25 @@ abstract class CacheDictionaryFetchResponse extends ResponseBase
 
 class CacheDictionaryFetchResponseHit extends CacheDictionaryFetchResponse
 {
-    private array $dictionary;
+    private array $fieldValueDictionary;
 
     public function __construct(_DictionaryFetchResponse $response)
     {
         parent::__construct();
         $items = $response->getFound()->getItems();
         foreach ($items as $item) {
-            $this->dictionary[$item->getField()] = $item->getValue();
+            $this->fieldValueDictionary[$item->getField()] = $item->getValue();
         }
     }
 
-    public function dictionary(): array
+    public function fieldValueDictionary(): array
     {
-        return $this->dictionary;
+        return $this->fieldValueDictionary;
     }
 
     public function __toString()
     {
-        $numItems = count($this->dictionary);
+        $numItems = count($this->fieldValueDictionary);
         return parent::__toString() . ": $numItems items";
     }
 }
