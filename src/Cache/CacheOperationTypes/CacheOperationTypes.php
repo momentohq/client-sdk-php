@@ -754,9 +754,9 @@ class CacheListEraseResponseError extends CacheListEraseResponse
     use ErrorBody;
 }
 
-abstract class CacheDictionarySetResponse extends ResponseBase
+abstract class CacheDictionarySetFieldResponse extends ResponseBase
 {
-    public function asSuccess(): CacheDictionarySetResponseSuccess|null
+    public function asSuccess(): CacheDictionarySetFieldResponseSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -764,7 +764,7 @@ abstract class CacheDictionarySetResponse extends ResponseBase
         return null;
     }
 
-    public function asError(): CacheDictionarySetResponseError|null
+    public function asError(): CacheDictionarySetFieldResponseError|null
     {
         if ($this->isError()) {
             return $this;
@@ -773,18 +773,18 @@ abstract class CacheDictionarySetResponse extends ResponseBase
     }
 }
 
-class CacheDictionarySetResponseSuccess extends CacheDictionarySetResponse
+class CacheDictionarySetFieldResponseSuccess extends CacheDictionarySetFieldResponse
 {
 }
 
-class CacheDictionarySetResponseError extends CacheDictionarySetResponse
+class CacheDictionarySetFieldResponseError extends CacheDictionarySetFieldResponse
 {
     use ErrorBody;
 }
 
-abstract class CacheDictionaryGetResponse extends ResponseBase
+abstract class CacheDictionaryGetFieldResponse extends ResponseBase
 {
-    public function asHit(): CacheDictionaryGetResponseHit|null
+    public function asHit(): CacheDictionaryGetFieldResponseHit|null
     {
         if ($this->isHit()) {
             return $this;
@@ -792,7 +792,7 @@ abstract class CacheDictionaryGetResponse extends ResponseBase
         return null;
     }
 
-    public function asMiss(): CacheDictionaryGetResponseMiss|null
+    public function asMiss(): CacheDictionaryGetFieldResponseMiss|null
     {
         if ($this->isMiss()) {
             return $this;
@@ -800,7 +800,7 @@ abstract class CacheDictionaryGetResponse extends ResponseBase
         return null;
     }
 
-    public function asError(): CacheDictionaryGetResponseError|null
+    public function asError(): CacheDictionaryGetFieldResponseError|null
     {
         if ($this->isError()) {
             return $this;
@@ -809,7 +809,7 @@ abstract class CacheDictionaryGetResponse extends ResponseBase
     }
 }
 
-class CacheDictionaryGetResponseHit extends CacheDictionaryGetResponse
+class CacheDictionaryGetFieldResponseHit extends CacheDictionaryGetFieldResponse
 {
     private string $value;
 
@@ -835,11 +835,11 @@ class CacheDictionaryGetResponseHit extends CacheDictionaryGetResponse
     }
 }
 
-class CacheDictionaryGetResponseMiss extends CacheDictionaryGetResponse
+class CacheDictionaryGetFieldResponseMiss extends CacheDictionaryGetFieldResponse
 {
 }
 
-class CacheDictionaryGetResponseError extends CacheDictionaryGetResponse
+class CacheDictionaryGetFieldResponseError extends CacheDictionaryGetFieldResponse
 {
     use ErrorBody;
 }
@@ -933,9 +933,9 @@ class CacheDictionaryFetchResponseError extends CacheDictionaryFetchResponse
     use ErrorBody;
 }
 
-abstract class CacheDictionarySetBatchResponse extends ResponseBase
+abstract class CacheDictionarySetFieldsResponse extends ResponseBase
 {
-    public function asSuccess(): CacheDictionarySetBatchResponseSuccess|null
+    public function asSuccess(): CacheDictionarySetFieldsResponseSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -943,7 +943,7 @@ abstract class CacheDictionarySetBatchResponse extends ResponseBase
         return null;
     }
 
-    public function asError(): CacheDictionarySetBatchResponseError|null
+    public function asError(): CacheDictionarySetFieldsResponseError|null
     {
         if ($this->isError()) {
             return $this;
@@ -952,18 +952,18 @@ abstract class CacheDictionarySetBatchResponse extends ResponseBase
     }
 }
 
-class CacheDictionarySetBatchResponseSuccess extends CacheDictionarySetBatchResponse
+class CacheDictionarySetFieldsResponseSuccess extends CacheDictionarySetFieldsResponse
 {
 }
 
-class CacheDictionarySetBatchResponseError extends CacheDictionarySetBatchResponse
+class CacheDictionarySetFieldsResponseError extends CacheDictionarySetFieldsResponse
 {
     use ErrorBody;
 }
 
-abstract class CacheDictionaryGetBatchResponse extends ResponseBase
+abstract class CacheDictionaryGetFieldsResponse extends ResponseBase
 {
-    public function asSuccess(): CacheDictionaryGetBatchResponseSuccess|null
+    public function asSuccess(): CacheDictionaryGetFieldsResponseSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -971,7 +971,7 @@ abstract class CacheDictionaryGetBatchResponse extends ResponseBase
         return null;
     }
 
-    public function asError(): CacheDictionaryGetBatchResponseError|null
+    public function asError(): CacheDictionaryGetFieldsResponseError|null
     {
         if ($this->isError()) {
             return $this;
@@ -980,7 +980,7 @@ abstract class CacheDictionaryGetBatchResponse extends ResponseBase
     }
 }
 
-class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResponse
+class CacheDictionaryGetFieldsResponseSuccess extends CacheDictionaryGetFieldsResponse
 {
     private array $responsesList = [];
 
@@ -990,18 +990,18 @@ class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResp
             parent::__construct();
             foreach ($responses->getFound()->getItems() as $response) {
                 if ($response->getResult() == ECacheResult::Hit) {
-                    $this->responsesList[] = new CacheDictionaryGetResponseHit(null, $response->getCacheBody());
+                    $this->responsesList[] = new CacheDictionaryGetFieldResponseHit(null, $response->getCacheBody());
                 }
                 if ($response->getResult() == ECacheResult::Miss) {
-                    $this->responsesList[] = new CacheDictionaryGetResponseMiss();
+                    $this->responsesList[] = new CacheDictionaryGetFieldResponseMiss();
                 } else {
-                    $this->responsesList[] = new CacheDictionaryGetResponseError(new UnknownError(strval($response->getResult())));
+                    $this->responsesList[] = new CacheDictionaryGetFieldResponseError(new UnknownError(strval($response->getResult())));
                 }
             }
         }
         if (is_null($responses) && !is_null($numRequested)) {
             foreach (range(0, $numRequested - 1) as $ignored) {
-                $this->responsesList[] = new CacheDictionaryGetResponseMiss();
+                $this->responsesList[] = new CacheDictionaryGetFieldResponseMiss();
             }
         }
     }
@@ -1027,7 +1027,7 @@ class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResp
     }
 }
 
-class CacheDictionaryGetBatchResponseError extends CacheDictionaryGetBatchResponse
+class CacheDictionaryGetFieldsResponseError extends CacheDictionaryGetFieldsResponse
 {
     use ErrorBody;
 }
@@ -1134,9 +1134,9 @@ class CacheDictionaryRemoveFieldsResponseError extends CacheDictionaryRemoveFiel
     use ErrorBody;
 }
 
-abstract class CacheSetAddResponse extends ResponseBase
+abstract class CacheSetAddElementResponse extends ResponseBase
 {
-    public function asSuccess(): CacheSetAddResponseSuccess|null
+    public function asSuccess(): CacheSetAddElementResponseSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1144,7 +1144,7 @@ abstract class CacheSetAddResponse extends ResponseBase
         return null;
     }
 
-    public function asError(): CacheSetAddResponseError|null
+    public function asError(): CacheSetAddElementResponseError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1153,11 +1153,11 @@ abstract class CacheSetAddResponse extends ResponseBase
     }
 }
 
-class CacheSetAddResponseSuccess extends CacheSetAddResponse
+class CacheSetAddElementResponseSuccess extends CacheSetAddElementResponse
 {
 }
 
-class CacheSetAddResponseError extends CacheSetAddResponse
+class CacheSetAddElementResponseError extends CacheSetAddElementResponse
 {
     use ErrorBody;
 }

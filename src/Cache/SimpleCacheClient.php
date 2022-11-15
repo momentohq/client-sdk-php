@@ -8,12 +8,14 @@ use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\CacheGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheListLengthResponse;
@@ -22,6 +24,7 @@ use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetAddResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponse;
@@ -141,12 +144,12 @@ class SimpleCacheClient implements LoggerAwareInterface
         return $this->dataClient->listErase($cacheName, $listName, $beginIndex, $count);
     }
 
-    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetResponse
+    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldResponse
     {
         return $this->dataClient->dictionarySet($cacheName, $dictionaryName, $field, $value, $refreshTtl, $ttlSeconds);
     }
 
-    public function dictionaryGetField(string $cacheName, string $dictionaryName, string $field): CacheDictionaryGetResponse
+    public function dictionaryGetField(string $cacheName, string $dictionaryName, string $field): CacheDictionaryGetFieldResponse
     {
         return $this->dataClient->dictionaryGet($cacheName, $dictionaryName, $field);
     }
@@ -161,12 +164,12 @@ class SimpleCacheClient implements LoggerAwareInterface
         return $this->dataClient->dictionaryFetch($cacheName, $dictionaryName);
     }
 
-    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetBatchResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldsResponse
     {
         return $this->dataClient->dictionarySetBatch($cacheName, $dictionaryName, $items, $refreshTtl, $ttlSeconds);
     }
 
-    public function dictionaryGetFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetBatchResponse
+    public function dictionaryGetFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetFieldsResponse
     {
         return $this->dataClient->dictionaryGetBatch($cacheName, $dictionaryName, $fields);
     }
@@ -188,7 +191,7 @@ class SimpleCacheClient implements LoggerAwareInterface
         return $this->dataClient->dictionaryRemoveFields($cacheName, $dictionaryName, $fields);
     }
 
-    public function setAddElement(string $cacheName, string $setName, string $element, bool $refreshTtl, ?int $ttlSeconds = null): CacheSetAddResponse
+    public function setAddElement(string $cacheName, string $setName, string $element, bool $refreshTtl, ?int $ttlSeconds = null): CacheSetAddElementResponse
     {
         return $this->dataClient->setAdd($cacheName, $setName, $element, $refreshTtl, $ttlSeconds);
     }
