@@ -576,7 +576,7 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheDictionaryGetBatchResponseError(new UnknownError($e->getMessage()));
         }
         if ($dictionaryGetBatchResponse->hasFound()) {
-            return new CacheDictionaryGetBatchResponseSuccess($dictionaryGetBatchResponse);
+            return new CacheDictionaryGetBatchResponseSuccess($dictionaryGetBatchResponse, fields: $fields);
         }
         return new CacheDictionaryGetBatchResponseSuccess(null, count($fields));
     }

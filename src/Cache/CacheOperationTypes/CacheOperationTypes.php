@@ -983,14 +983,18 @@ abstract class CacheDictionaryGetBatchResponse extends ResponseBase
 class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResponse
 {
     private array $responsesList = [];
+    private array $fieldsValuesList = [];
 
-    public function __construct(_DictionaryGetResponse $responses = null, ?int $numRequested = null)
+    public function __construct(_DictionaryGetResponse $responses = null, ?int $numRequested = null, ?array $fields = null)
     {
         if (!is_null($responses) && is_null($numRequested)) {
+            $counter = 0;
             parent::__construct();
             foreach ($responses->getFound()->getItems() as $response) {
                 if ($response->getResult() == ECacheResult::Hit) {
                     $this->responsesList[] = new CacheDictionaryGetResponseHit(null, $response->getCacheBody());
+                    $this->fieldsValuesList[$fields[$counter]] = $response->getCacheBody();
+                    $counter++;
                 }
                 if ($response->getResult() == ECacheResult::Miss) {
                     $this->responsesList[] = new CacheDictionaryGetResponseMiss();
@@ -1018,6 +1022,11 @@ class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResp
             }
         }
         return $ret;
+    }
+
+    public function fieldsValuesArray(): array
+    {
+        return $this->fieldsValuesList;
     }
 
     public function __toString()
