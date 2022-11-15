@@ -430,7 +430,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheListEraseResponseSuccess();
     }
 
-    public function dictionarySet(string $cacheName, string $dictionaryName, string $field, string $value, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldResponse
+    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldResponse
     {
         try {
             validateCacheName($cacheName);
@@ -462,7 +462,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return $singletonPair;
     }
 
-    public function dictionaryGet(string $cacheName, string $dictionaryName, string $field): CacheDictionaryGetFieldResponse
+    public function dictionaryGetField(string $cacheName, string $dictionaryName, string $field): CacheDictionaryGetFieldResponse
     {
         try {
             validateCacheName($cacheName);
@@ -529,7 +529,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryFetchResponseMiss();
     }
 
-    public function dictionarySetBatch(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldsResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldsResponse
     {
         try {
             validateCacheName($cacheName);
@@ -559,7 +559,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionarySetFieldsResponseSuccess();
     }
 
-    public function dictionaryGetBatch(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetFieldsResponse
+    public function dictionaryGetFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetFieldsResponse
     {
         try {
             validateCacheName($cacheName);
@@ -656,7 +656,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryRemoveFieldsResponseSuccess();
     }
 
-    public function setAdd(string $cacheName, string $setName, string $element, bool $refreshTt, ?int $ttlSeconds = null): CacheSetAddElementResponse
+    public function setAddElement(string $cacheName, string $setName, string $element, bool $refreshTt, ?int $ttlSeconds = null): CacheSetAddElementResponse
     {
         try {
             validateCacheName($cacheName);
