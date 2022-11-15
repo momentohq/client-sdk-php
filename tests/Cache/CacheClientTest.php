@@ -1594,7 +1594,7 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $values = [$value1, $value2, $value3];
-        $this->assertEquals($values, $response->asSuccess()->fieldsValuesArray());
+        $this->assertEquals($values, $response->asSuccess()->fieldValueDictionary());
     }
 
     public function testDictionaryGetBatchDictionaryMissing_HappyPath()
