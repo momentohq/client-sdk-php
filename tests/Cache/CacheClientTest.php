@@ -1576,6 +1576,27 @@ class CacheClientTest extends TestCase
         $this->assertEquals($values, $response->asSuccess()->valuesArray());
     }
 
+    public function testDictionaryGetBatchFieldsValuesArray_HappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field1 = uniqid();
+        $field2 = uniqid();
+        $field3 = uniqid();
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $value3 = uniqid();
+        $items = [$field1 => $value1, $field2 => $value2, $field3 => $value3];
+        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $values = [$value1, $value2, $value3];
+        $this->assertEquals($values, $response->asSuccess()->fieldsValuesArray());
+    }
+
     public function testDictionaryGetBatchDictionaryMissing_HappyPath()
     {
         $dictionaryName = uniqid();
