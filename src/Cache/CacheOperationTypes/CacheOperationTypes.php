@@ -983,7 +983,7 @@ abstract class CacheDictionaryGetBatchResponse extends ResponseBase
 class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResponse
 {
     private array $responsesList = [];
-    private array $fieldsValuesList = [];
+    private array $fieldValueDictionary = [];
 
     public function __construct(_DictionaryGetResponse $responses = null, ?int $numRequested = null, ?array $fields = null)
     {
@@ -993,7 +993,7 @@ class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResp
             foreach ($responses->getFound()->getItems() as $response) {
                 if ($response->getResult() == ECacheResult::Hit) {
                     $this->responsesList[] = new CacheDictionaryGetResponseHit(null, $response->getCacheBody());
-                    $this->fieldsValuesList[$fields[$counter]] = $response->getCacheBody();
+                    $this->fieldValueDictionary[$fields[$counter]] = $response->getCacheBody();
                     $counter++;
                 }
                 if ($response->getResult() == ECacheResult::Miss) {
@@ -1024,9 +1024,9 @@ class CacheDictionaryGetBatchResponseSuccess extends CacheDictionaryGetBatchResp
         return $ret;
     }
 
-    public function fieldsValuesArray(): array
+    public function fieldValueDictionary(): array
     {
-        return $this->fieldsValuesList;
+        return $this->fieldValueDictionary;
     }
 
     public function __toString()
