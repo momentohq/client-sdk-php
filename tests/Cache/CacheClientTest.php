@@ -1370,7 +1370,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($response->asHit()->fieldValueDictionary(), $contentDictionary);
+        $this->assertEquals($response->asHit()->valuesDictionary(), $contentDictionary);
     }
 
     public function testDictionaryFetchDictionaryDoesNotExist_Noop()
