@@ -472,22 +472,22 @@ class _ScsDataClient implements LoggerAwareInterface
             $dictionaryGetFieldRequest->setDictionaryName($dictionaryName);
             $dictionaryGetFieldRequest->setFields([$field]);
             $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $dictionaryGetResponse = $this->processCall($call);
+            $dictionaryGetFieldResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryGetFieldResponseError($e);
         } catch (Exception $e) {
             return new CacheDictionaryGetFieldResponseError(new UnknownError($e->getMessage()));
         }
-        if ($dictionaryGetResponse->hasMissing()) {
+        if ($dictionaryGetFieldResponse->hasMissing()) {
             return new CacheDictionaryGetFieldResponseMiss();
         }
-        if ($dictionaryGetResponse->getFound()->getItems()->count() == 0) {
+        if ($dictionaryGetFieldResponse->getFound()->getItems()->count() == 0) {
             return new CacheDictionaryGetFieldResponseError(new UnknownError("_DictionaryGetResponseResponse contained no data but was found"));
         }
-        if ($dictionaryGetResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
+        if ($dictionaryGetFieldResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
             return new CacheDictionaryGetFieldResponseMiss();
         }
-        return new CacheDictionaryGetFieldResponseHit($dictionaryGetResponse);
+        return new CacheDictionaryGetFieldResponseHit($dictionaryGetFieldResponse);
     }
 
     public function dictionaryDelete(string $cacheName, string $dictionaryName): CacheDictionaryDeleteResponse
@@ -529,7 +529,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryFetchResponseMiss();
     }
 
-    public function dictionarySetBatch(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldsResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldsResponse
     {
         try {
             validateCacheName($cacheName);
@@ -569,14 +569,14 @@ class _ScsDataClient implements LoggerAwareInterface
             $dictionaryGetFieldsRequest->setDictionaryName($dictionaryName);
             $dictionaryGetFieldsRequest->setFields($fields);
             $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $dictionaryGetBatchResponse = $this->processCall($call);
+            $dictionaryGetFieldsResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryGetFieldsResponseError($e);
         } catch (Exception $e) {
             return new CacheDictionaryGetFieldsResponseError(new UnknownError($e->getMessage()));
         }
-        if ($dictionaryGetBatchResponse->hasFound()) {
-            return new CacheDictionaryGetFieldsResponseSuccess($dictionaryGetBatchResponse, fields: $fields);
+        if ($dictionaryGetFieldsResponse->hasFound()) {
+            return new CacheDictionaryGetFieldsResponseSuccess($dictionaryGetFieldsResponse, fields: $fields);
         }
         return new CacheDictionaryGetFieldsResponseSuccess(null, count($fields));
     }

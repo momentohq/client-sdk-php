@@ -982,8 +982,8 @@ abstract class CacheDictionaryGetFieldsResponse extends ResponseBase
 
 class CacheDictionaryGetFieldsResponseSuccess extends CacheDictionaryGetFieldsResponse
 {
-    private array $responsesList = [];
-    private array $fieldValueDictionary = [];
+    private array $responses = [];
+    private array $valuesDictionary = [];
 
     public function __construct(_DictionaryGetResponse $responses = null, ?int $numRequested = null, ?array $fields = null)
     {
@@ -992,46 +992,37 @@ class CacheDictionaryGetFieldsResponseSuccess extends CacheDictionaryGetFieldsRe
             parent::__construct();
             foreach ($responses->getFound()->getItems() as $response) {
                 if ($response->getResult() == ECacheResult::Hit) {
-                    $this->responsesList[] = new CacheDictionaryGetFieldResponseHit(null, $response->getCacheBody());
-                    $this->fieldValueDictionary[$fields[$counter]] = $response->getCacheBody();
+                    $this->responses[] = new CacheDictionaryGetFieldResponseHit(null, $response->getCacheBody());
+                    $this->valuesDictionary[$fields[$counter]] = $response->getCacheBody();
                     $counter++;
                 }
                 if ($response->getResult() == ECacheResult::Miss) {
-                    $this->responsesList[] = new CacheDictionaryGetFieldResponseMiss();
+                    $this->responses[] = new CacheDictionaryGetFieldResponseMiss();
                 } else {
-                    $this->responsesList[] = new CacheDictionaryGetFieldResponseError(new UnknownError(strval($response->getResult())));
+                    $this->responses[] = new CacheDictionaryGetFieldResponseError(new UnknownError(strval($response->getResult())));
                 }
             }
         }
         if (is_null($responses) && !is_null($numRequested)) {
             foreach (range(0, $numRequested - 1) as $ignored) {
-                $this->responsesList[] = new CacheDictionaryGetFieldResponseMiss();
+                $this->responses[] = new CacheDictionaryGetFieldResponseMiss();
             }
         }
     }
 
-    public function valuesArray(): array
+    public function responses(): array
     {
-        $ret = [];
-        foreach ($this->responsesList as $response) {
-            if ($response->asHit()) {
-                $ret[] = $response->asHit()->valueString();
-            }
-            if ($response->asMiss()) {
-                $ret[] = null;
-            }
-        }
-        return $ret;
+        return $this->responses;
     }
 
-    public function fieldValueDictionary(): array
+    public function valuesDictionary(): array
     {
-        return $this->fieldValueDictionary;
+        return $this->valuesDictionary;
     }
 
     public function __toString()
     {
-        $numResponses = count($this->responsesList);
+        $numResponses = count($this->responses());
         return parent::__toString() . ": $numResponses responses";
     }
 }

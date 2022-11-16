@@ -1573,7 +1573,10 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $values = [$value1, $value2, null];
-        $this->assertEquals($values, $response->asSuccess()->valuesArray());
+        $counter = 0;
+        foreach ($response->asSuccess() as $response) {
+            $this->assertEquals($values[$counter], $response->valueString());
+        }
     }
 
     public function testDictionaryGetBatchFieldsValuesArray_HappyPath()
@@ -1586,15 +1589,14 @@ class CacheClientTest extends TestCase
         $value2 = uniqid();
         $value3 = uniqid();
         $items = [$field1 => $value1, $field2 => $value2, $field3 => $value3];
-        $response = $this->client->dictionarySetBatch($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionaryGetBatch($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
+        $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $values = [$value1, $value2, $value3];
-        $this->assertEquals($values, $response->asSuccess()->fieldValueDictionary());
+        $this->assertEquals($items, $response->asSuccess()->valuesDictionary());
     }
 
     public function testDictionaryGetFieldsDictionaryMissing_HappyPath()
@@ -1606,8 +1608,9 @@ class CacheClientTest extends TestCase
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $values = [null, null, null];
-        $this->assertEquals($values, $response->asSuccess()->valuesArray());
+        foreach ($response->asSuccess() as $response) {
+            $this->assertNull($response->valueString());
+        }
     }
 
     // __toString() tests
