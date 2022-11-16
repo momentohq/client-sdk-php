@@ -712,7 +712,11 @@ class _ScsDataClient implements LoggerAwareInterface
             validateElement($element);
             $setRemoveElementRequest = new _SetDifferenceRequest();
             $setRemoveElementRequest->setSetName($setName);
-            $setRemoveElementRequest->setSubtrahend(new _Set($element));
+            $subtrahend = new _Subtrahend();
+            $set = new _Set();
+            $set->setElements([$element]);
+            $subtrahend->setSet($set);
+            $setRemoveElementRequest->setSubtrahend($subtrahend);
             $call = $this->grpcManager->client->SetDifference($setRemoveElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
