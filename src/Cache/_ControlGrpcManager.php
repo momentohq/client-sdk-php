@@ -6,6 +6,10 @@ namespace Momento\Cache;
 use Grpc\Channel;
 use Grpc\ChannelCredentials;
 use Control_client\ScsControlClient;
+use Grpc\Interceptor;
+use Momento\Auth\ICredentialProvider;
+use Momento\Cache\Interceptors\AgentInterceptor;
+use Momento\Cache\Interceptors\AuthorizationInterceptor;
 
 
 class _ControlGrpcManager
@@ -13,17 +17,20 @@ class _ControlGrpcManager
 
     public ScsControlClient $client;
 
-    public function __construct(string $authToken, string $endpoint)
+    public function __construct(ICredentialProvider $authProvider)
     {
-        $options = [
-            "update_metadata" => function ($metadata) use ($authToken) {
-                $metadata["authorization"] = [$authToken];
-                $metadata["agent"] = ["php:0.1"];
-                return $metadata;
-            }
+        $endpoint = $authProvider->getControlProxyEndpoint() ?? $authProvider->getControlEndpoint();
+        $channelArgs = ["credentials" => ChannelCredentials::createSsl()];
+        if ($authProvider->getControlProxyEndpoint()) {
+            $channelArgs["grpc.ssl_target_name_override"] = $authProvider->getControlEndpoint();
+        }
+        $channel = new Channel($endpoint, $channelArgs);
+        $interceptors = [
+            new AuthorizationInterceptor($authProvider->getAuthToken()),
+            new AgentInterceptor(),
         ];
-
-        $channel = new Channel($endpoint, ["credentials" => ChannelCredentials::createSsl()]);
+        $channel = Interceptor::intercept($channel, $interceptors);
+        $options = [];
         $this->client = new ScsControlClient($endpoint, $options, $channel);
     }
 

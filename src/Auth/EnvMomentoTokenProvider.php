@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Momento\Auth;
 
-use Momento\Auth\AuthUtils;
 use Momento\Cache\Errors\InvalidArgumentError;
 use function \Momento\Utilities\isNullOrEmpty;
 
@@ -39,5 +38,15 @@ class EnvMomentoTokenProvider implements ICredentialProvider
     public function getControlEndpoint(): string
     {
         return $this->controlEndpoint;
+    }
+
+    public function getControlProxyEndpoint(): string|null
+    {
+        return null;
+    }
+
+    public function getCacheProxyEndpoint(): string|null
+    {
+        return null;
     }
 }

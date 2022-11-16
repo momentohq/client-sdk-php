@@ -4,6 +4,7 @@ declare(strict_types=1);
 require "vendor/autoload.php";
 
 use Momento\Auth\EnvMomentoTokenProvider;
+use Momento\Auth\EnvMomentoTokenProxyProvider;
 use Momento\Cache\SimpleCacheClient;
 use Momento\Config\Configurations\Laptop;
 use Monolog\Formatter\LineFormatter;
@@ -21,7 +22,11 @@ $KEY = "MyKey";
 $VALUE = "MyValue";
 
 // Setup
-$authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
+$authProvider = new EnvMomentoTokenProxyProvider(
+    "MOMENTO_AUTH_TOKEN",
+    "momento-control:4443",
+    "momento-cache:4444"
+);
 
 // Use your favorite PSR-3 logger.
 $logger = new Logger("example");
