@@ -5,6 +5,8 @@ namespace Momento\Tests\Cache;
 
 use Momento\Auth\AuthUtils;
 use Momento\Auth\EnvMomentoTokenProvider;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseMiss;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\SimpleCacheClient;
 use Momento\Config\Configuration;
@@ -1565,17 +1567,21 @@ class CacheClientTest extends TestCase
         $value1 = uniqid();
         $value2 = uniqid();
         $items = [$field1 => $value1, $field2 => $value2];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 600);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $values = [$value1, $value2, null];
         $counter = 0;
-        foreach ($response->asSuccess() as $response) {
-            $this->assertEquals($values[$counter], $response->valueString());
+        foreach ($response->asSuccess()->responses() as $response) {
+            if ($counter == 2) {
+                $this->assertEquals(CacheDictionaryGetFieldResponseMiss::class, get_class($response));
+            } else {
+                $this->assertEquals(CacheDictionaryGetFieldResponseHit::class, get_class($response));
+            }
+            $counter++;
         }
     }
 
@@ -1608,8 +1614,8 @@ class CacheClientTest extends TestCase
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        foreach ($response->asSuccess() as $response) {
-            $this->assertNull($response->valueString());
+        foreach ($response->asSuccess()->responses() as $response) {
+            $this->assertEquals(CacheDictionaryGetFieldResponseMiss::class, $response);
         }
     }
 

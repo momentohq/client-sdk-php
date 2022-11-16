@@ -995,8 +995,7 @@ class CacheDictionaryGetFieldsResponseSuccess extends CacheDictionaryGetFieldsRe
                     $this->responses[] = new CacheDictionaryGetFieldResponseHit(null, $response->getCacheBody());
                     $this->valuesDictionary[$fields[$counter]] = $response->getCacheBody();
                     $counter++;
-                }
-                if ($response->getResult() == ECacheResult::Miss) {
+                } else if ($response->getResult() == ECacheResult::Miss) {
                     $this->responses[] = new CacheDictionaryGetFieldResponseMiss();
                 } else {
                     $this->responses[] = new CacheDictionaryGetFieldResponseError(new UnknownError(strval($response->getResult())));
