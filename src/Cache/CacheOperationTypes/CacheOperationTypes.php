@@ -908,7 +908,7 @@ class CacheDictionaryFetchResponseHit extends CacheDictionaryFetchResponse
         parent::__construct();
         $items = $response->getFound()->getItems();
         foreach ($items as $item) {
-            $this->$valuesDictionary[$item->getField()] = $item->getValue();
+            $this->valuesDictionary[$item->getField()] = $item->getValue();
         }
     }
 
