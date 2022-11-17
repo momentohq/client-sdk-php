@@ -996,13 +996,13 @@ class CacheDictionaryGetFieldsResponseHit extends CacheDictionaryGetFieldsRespon
 
     public function __construct(_DictionaryGetResponse $responses, ?array $fields = null)
     {
-        $counter = 0;
         parent::__construct();
+        $counter = 0;
         foreach ($responses->getFound()->getItems() as $response) {
             if ($response->getResult() == ECacheResult::Hit) {
                 $this->responses[] = new CacheDictionaryGetFieldResponseHit(null, $response->getCacheBody());
                 $this->valuesDictionary[$fields[$counter]] = $response->getCacheBody();
-            } else if ($response->getResult() == ECacheResult::Miss) {
+            } elseif ($response->getResult() == ECacheResult::Miss) {
                 $this->responses[] = new CacheDictionaryGetFieldResponseMiss();
             } else {
                 $this->responses[] = new CacheDictionaryGetFieldResponseError(new UnknownError(strval($response->getResult())));
