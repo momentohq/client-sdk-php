@@ -5,6 +5,8 @@ namespace Momento\Tests\Cache;
 
 use Momento\Auth\AuthUtils;
 use Momento\Auth\EnvMomentoTokenProvider;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseMiss;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\SimpleCacheClient;
 use Momento\Config\Configuration;
@@ -36,7 +38,7 @@ class CacheClientTest extends TestCase
         } catch (TypeError) {
             // getenv returned false
             throw new RuntimeException(
-                "Integration testS require TEST_CACHE_NAME env var; see README for more details."
+                "Integration tests require TEST_CACHE_NAME env var; see README for more details."
             );
         }
 
@@ -105,7 +107,7 @@ class CacheClientTest extends TestCase
         $client = new SimpleCacheClient($this->configuration, $this->authProvider, -1);
     }
 
-    // Client initialization testS
+    // Client initialization tests
 
     public function testNonJwtTokens()
     {
@@ -131,7 +133,7 @@ class CacheClientTest extends TestCase
         $client = new SimpleCacheClient($configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
-    // Create cache testS
+    // Create cache tests
 
     public function testCreateCacheAlreadyExists()
     {
@@ -169,7 +171,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
     }
 
-    // Delete cache testS
+    // Delete cache tests
 
     public function testDeleteCacheSucceeds()
     {
@@ -216,7 +218,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
     }
 
-    // List caches testS
+    // List caches tests
     public function testListCaches()
     {
         $cacheName = uniqid();
@@ -258,7 +260,7 @@ class CacheClientTest extends TestCase
         $this->markTestSkipped("pagination not yet implemented");
     }
 
-    // Setting and getting testS
+    // Setting and getting tests
     public function testCacheHit()
     {
         $key = uniqid();
@@ -336,7 +338,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
     }
 
-    // Set testS
+    // Set tests
 
     public function testSetWithNonexistentCache()
     {
@@ -398,7 +400,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
     }
 
-    // Get testS
+    // Get tests
     public function testGetNonexistentCache()
     {
         $cacheName = uniqid();
@@ -443,7 +445,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::TIMEOUT_ERROR, $response->asError()->errorCode());
     }
 
-    // Delete testS
+    // Delete tests
 
     public function testDeleteNonexistentKey()
     {
@@ -485,7 +487,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
     }
 
-    // List API testS
+    // List API tests
 
     public function testListPushFrontFetchHappyPath()
     {
@@ -976,7 +978,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
     }
 
-    // Dictionary testS
+    // Dictionary tests
     public function testDictionary_IsMissing()
     {
         $dictionaryName = uniqid();
@@ -1368,7 +1370,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($response->asHit()->dictionary(), $contentDictionary);
+        $this->assertEquals($response->asHit()->valuesDictionary(), $contentDictionary);
     }
 
     public function testDictionaryFetchDictionaryDoesNotExist_Noop()
@@ -1565,15 +1567,42 @@ class CacheClientTest extends TestCase
         $value1 = uniqid();
         $value2 = uniqid();
         $items = [$field1 => $value1, $field2 => $value2];
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 600);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $counter = 0;
+        foreach ($response->asHit()->responses() as $response) {
+            if ($counter == 2) {
+                $this->assertEquals(CacheDictionaryGetFieldResponseMiss::class, get_class($response));
+            } else {
+                $this->assertEquals(CacheDictionaryGetFieldResponseHit::class, get_class($response));
+            }
+            $counter++;
+        }
+    }
+
+    public function testDictionaryGetBatchFieldsValuesArray_HappyPath()
+    {
+        $dictionaryName = uniqid();
+        $field1 = uniqid();
+        $field2 = uniqid();
+        $field3 = uniqid();
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $value3 = uniqid();
+        $items = [$field1 => $value1, $field2 => $value2, $field3 => $value3];
         $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $values = [$value1, $value2, null];
-        $this->assertEquals($values, $response->asSuccess()->valuesArray());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals($items, $response->asHit()->valuesDictionary());
     }
 
     public function testDictionaryGetFieldsDictionaryMissing_HappyPath()
@@ -1584,12 +1613,32 @@ class CacheClientTest extends TestCase
         $field3 = uniqid();
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $values = [null, null, null];
-        $this->assertEquals($values, $response->asSuccess()->valuesArray());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        foreach ($response->asHit()->responses() as $response) {
+            $this->assertEquals(CacheDictionaryGetFieldResponseMiss::class, $response);
+        }
     }
 
-    // __toString() testS
+    public function testDictionaryGetBatchFieldsValuesArray_MixedPath()
+    {
+        $dictionaryName = uniqid();
+        $field1 = "key1";
+        $field2 = "key2";
+        $field3 = "key3";
+        $value1 = "val1";
+        $value3 = "val3";
+        $items = [$field1 => $value1, $field3 => $value3];
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
+        $this->assertEquals($items, $response->asHit()->valuesDictionary());
+    }
+
+    // __toString() tests
 
     public function testCacheSetToString_HappyPath()
     {

@@ -46,7 +46,8 @@ use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponseSuccess;
@@ -445,12 +446,12 @@ class _ScsDataClient implements LoggerAwareInterface
             validateValueName($value);
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             validateTtl($ttlMillis);
-            $dictionarySetRequest = new _DictionarySetRequest();
-            $dictionarySetRequest->setDictionaryName($dictionaryName);
-            $dictionarySetRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
-            $dictionarySetRequest->setRefreshTtl($refreshTtl);
-            $dictionarySetRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionarySet($dictionarySetRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $dictionarySetFieldRequest = new _DictionarySetRequest();
+            $dictionarySetFieldRequest->setDictionaryName($dictionaryName);
+            $dictionarySetFieldRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
+            $dictionarySetFieldRequest->setRefreshTtl($refreshTtl);
+            $dictionarySetFieldRequest->setTtlMilliseconds($ttlMillis);
+            $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionarySetFieldResponseError($e);
@@ -474,26 +475,26 @@ class _ScsDataClient implements LoggerAwareInterface
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
             validateFieldName($field);
-            $dictionaryGetRequest = new _DictionaryGetRequest();
-            $dictionaryGetRequest->setDictionaryName($dictionaryName);
-            $dictionaryGetRequest->setFields([$field]);
-            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $dictionaryGetResponse = $this->processCall($call);
+            $dictionaryGetFieldRequest = new _DictionaryGetRequest();
+            $dictionaryGetFieldRequest->setDictionaryName($dictionaryName);
+            $dictionaryGetFieldRequest->setFields([$field]);
+            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $dictionaryGetFieldResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryGetFieldResponseError($e);
         } catch (Exception $e) {
             return new CacheDictionaryGetFieldResponseError(new UnknownError($e->getMessage()));
         }
-        if ($dictionaryGetResponse->hasMissing()) {
+        if ($dictionaryGetFieldResponse->hasMissing()) {
             return new CacheDictionaryGetFieldResponseMiss();
         }
-        if ($dictionaryGetResponse->getFound()->getItems()->count() == 0) {
+        if ($dictionaryGetFieldResponse->getFound()->getItems()->count() == 0) {
             return new CacheDictionaryGetFieldResponseError(new UnknownError("_DictionaryGetResponseResponse contained no data but was found"));
         }
-        if ($dictionaryGetResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
+        if ($dictionaryGetFieldResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
             return new CacheDictionaryGetFieldResponseMiss();
         }
-        return new CacheDictionaryGetFieldResponseHit($dictionaryGetResponse);
+        return new CacheDictionaryGetFieldResponseHit($dictionaryGetFieldResponse);
     }
 
     public function dictionaryDelete(string $cacheName, string $dictionaryName): CacheDictionaryDeleteResponse
@@ -550,12 +551,12 @@ class _ScsDataClient implements LoggerAwareInterface
                 $fieldValuePair->setValue($value);
                 $protoItems[] = $fieldValuePair;
             }
-            $dictionarySetBatchRequest = new _DictionarySetRequest();
-            $dictionarySetBatchRequest->setDictionaryName($dictionaryName);
-            $dictionarySetBatchRequest->setRefreshTtl($refreshTtl);
-            $dictionarySetBatchRequest->setItems($protoItems);
-            $dictionarySetBatchRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionarySet($dictionarySetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $dictionarySetFieldsRequest = new _DictionarySetRequest();
+            $dictionarySetFieldsRequest->setDictionaryName($dictionaryName);
+            $dictionarySetFieldsRequest->setRefreshTtl($refreshTtl);
+            $dictionarySetFieldsRequest->setItems($protoItems);
+            $dictionarySetFieldsRequest->setTtlMilliseconds($ttlMillis);
+            $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionarySetFieldsResponseError($e);
@@ -571,20 +572,21 @@ class _ScsDataClient implements LoggerAwareInterface
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
             validateItems($fields);
-            $dictionaryGetBatchRequest = new _DictionaryGetRequest();
-            $dictionaryGetBatchRequest->setDictionaryName($dictionaryName);
-            $dictionaryGetBatchRequest->setFields($fields);
-            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $dictionaryGetBatchResponse = $this->processCall($call);
+            $dictionaryGetFieldsRequest = new _DictionaryGetRequest();
+            $dictionaryGetFieldsRequest->setDictionaryName($dictionaryName);
+            $dictionaryGetFieldsRequest->setFields($fields);
+            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $dictionaryGetFieldsResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryGetFieldsResponseError($e);
         } catch (Exception $e) {
             return new CacheDictionaryGetFieldsResponseError(new UnknownError($e->getMessage()));
         }
-        if ($dictionaryGetBatchResponse->hasFound()) {
-            return new CacheDictionaryGetFieldsResponseSuccess($dictionaryGetBatchResponse);
+        if ($dictionaryGetFieldsResponse->hasFound()) {
+            return new CacheDictionaryGetFieldsResponseHit($dictionaryGetFieldsResponse, fields: $fields);
         }
-        return new CacheDictionaryGetFieldsResponseSuccess(null, count($fields));
+        return new CacheDictionaryGetFieldsResponseMiss();
+
     }
 
     public function dictionaryIncrement(
@@ -670,12 +672,12 @@ class _ScsDataClient implements LoggerAwareInterface
             validateElement($element);
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             validateTtl($ttlMillis);
-            $setAddRequest = new _SetUnionRequest();
-            $setAddRequest->setSetName($setName);
-            $setAddRequest->setRefreshTtl($refreshTt);
-            $setAddRequest->setTtlMilliseconds($ttlMillis);
-            $setAddRequest->setElements([$element]);
-            $call = $this->grpcManager->client->SetUnion($setAddRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $setAddElementRequest = new _SetUnionRequest();
+            $setAddElementRequest->setSetName($setName);
+            $setAddElementRequest->setRefreshTtl($refreshTt);
+            $setAddElementRequest->setTtlMilliseconds($ttlMillis);
+            $setAddElementRequest->setElements([$element]);
+            $call = $this->grpcManager->client->SetUnion($setAddElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheSetAddElementResponseError($e);
