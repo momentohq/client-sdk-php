@@ -21,6 +21,9 @@ use Cache_client\_ListPushBackRequest;
 use Cache_client\_ListPushFrontRequest;
 use Cache_client\_ListRange;
 use Cache_client\_ListRemoveRequest;
+use Cache_client\_SetDifferenceRequest;
+use Cache_client\_SetDifferenceRequest\_Subtrahend;
+use Cache_client\_SetDifferenceRequest\_Subtrahend\_Set;
 use Cache_client\_SetFetchRequest;
 use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
@@ -37,13 +40,14 @@ use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetBatchResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseHit;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponseSuccess;
@@ -53,12 +57,12 @@ use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetBatchResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldsResponse;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldsResponseError;
+use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldsResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseHit;
@@ -90,13 +94,16 @@ use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponseError;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheSetAddResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetAddResponseError;
-use Momento\Cache\CacheOperationTypes\CacheSetAddResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponseError;
+use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponseError;
+use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseSuccess;
@@ -430,7 +437,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheListEraseResponseSuccess();
     }
 
-    public function dictionarySet(string $cacheName, string $dictionaryName, string $field, string $value, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetResponse
+    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldResponse
     {
         try {
             validateCacheName($cacheName);
@@ -439,19 +446,19 @@ class _ScsDataClient implements LoggerAwareInterface
             validateValueName($value);
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             validateTtl($ttlMillis);
-            $dictionarySetRequest = new _DictionarySetRequest();
-            $dictionarySetRequest->setDictionaryName($dictionaryName);
-            $dictionarySetRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
-            $dictionarySetRequest->setRefreshTtl($refreshTtl);
-            $dictionarySetRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionarySet($dictionarySetRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $dictionarySetFieldRequest = new _DictionarySetRequest();
+            $dictionarySetFieldRequest->setDictionaryName($dictionaryName);
+            $dictionarySetFieldRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
+            $dictionarySetFieldRequest->setRefreshTtl($refreshTtl);
+            $dictionarySetFieldRequest->setTtlMilliseconds($ttlMillis);
+            $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionarySetResponseError($e);
+            return new CacheDictionarySetFieldResponseError($e);
         } catch (Exception $e) {
-            return new CacheDictionarySetResponseError(new UnknownError($e->getMessage()));
+            return new CacheDictionarySetFieldResponseError(new UnknownError($e->getMessage()));
         }
-        return new CacheDictionarySetResponseSuccess();
+        return new CacheDictionarySetFieldResponseSuccess();
     }
 
     private function toSingletonFieldValuePair(string $field, string $value): _DictionaryFieldValuePair
@@ -462,32 +469,32 @@ class _ScsDataClient implements LoggerAwareInterface
         return $singletonPair;
     }
 
-    public function dictionaryGet(string $cacheName, string $dictionaryName, string $field): CacheDictionaryGetResponse
+    public function dictionaryGetField(string $cacheName, string $dictionaryName, string $field): CacheDictionaryGetFieldResponse
     {
         try {
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
             validateFieldName($field);
-            $dictionaryGetRequest = new _DictionaryGetRequest();
-            $dictionaryGetRequest->setDictionaryName($dictionaryName);
-            $dictionaryGetRequest->setFields([$field]);
-            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $dictionaryGetResponse = $this->processCall($call);
+            $dictionaryGetFieldRequest = new _DictionaryGetRequest();
+            $dictionaryGetFieldRequest->setDictionaryName($dictionaryName);
+            $dictionaryGetFieldRequest->setFields([$field]);
+            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $dictionaryGetFieldResponse = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionaryGetResponseError($e);
+            return new CacheDictionaryGetFieldResponseError($e);
         } catch (Exception $e) {
-            return new CacheDictionaryGetResponseError(new UnknownError($e->getMessage()));
+            return new CacheDictionaryGetFieldResponseError(new UnknownError($e->getMessage()));
         }
-        if ($dictionaryGetResponse->hasMissing()) {
-            return new CacheDictionaryGetResponseMiss();
+        if ($dictionaryGetFieldResponse->hasMissing()) {
+            return new CacheDictionaryGetFieldResponseMiss();
         }
-        if ($dictionaryGetResponse->getFound()->getItems()->count() == 0) {
-            return new CacheDictionaryGetResponseError(new UnknownError("_DictionaryGetResponseResponse contained no data but was found"));
+        if ($dictionaryGetFieldResponse->getFound()->getItems()->count() == 0) {
+            return new CacheDictionaryGetFieldResponseError(new UnknownError("_DictionaryGetResponseResponse contained no data but was found"));
         }
-        if ($dictionaryGetResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
-            return new CacheDictionaryGetResponseMiss();
+        if ($dictionaryGetFieldResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
+            return new CacheDictionaryGetFieldResponseMiss();
         }
-        return new CacheDictionaryGetResponseHit($dictionaryGetResponse);
+        return new CacheDictionaryGetFieldResponseHit($dictionaryGetFieldResponse);
     }
 
     public function dictionaryDelete(string $cacheName, string $dictionaryName): CacheDictionaryDeleteResponse
@@ -529,7 +536,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryFetchResponseMiss();
     }
 
-    public function dictionarySetBatch(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetBatchResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldsResponse
     {
         try {
             validateCacheName($cacheName);
@@ -544,41 +551,42 @@ class _ScsDataClient implements LoggerAwareInterface
                 $fieldValuePair->setValue($value);
                 $protoItems[] = $fieldValuePair;
             }
-            $dictionarySetBatchRequest = new _DictionarySetRequest();
-            $dictionarySetBatchRequest->setDictionaryName($dictionaryName);
-            $dictionarySetBatchRequest->setRefreshTtl($refreshTtl);
-            $dictionarySetBatchRequest->setItems($protoItems);
-            $dictionarySetBatchRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionarySet($dictionarySetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $dictionarySetFieldsRequest = new _DictionarySetRequest();
+            $dictionarySetFieldsRequest->setDictionaryName($dictionaryName);
+            $dictionarySetFieldsRequest->setRefreshTtl($refreshTtl);
+            $dictionarySetFieldsRequest->setItems($protoItems);
+            $dictionarySetFieldsRequest->setTtlMilliseconds($ttlMillis);
+            $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionarySetBatchResponseError($e);
+            return new CacheDictionarySetFieldsResponseError($e);
         } catch (Exception $e) {
-            return new CacheDictionarySetBatchResponseError(new UnknownError($e->getMessage()));
+            return new CacheDictionarySetFieldsResponseError(new UnknownError($e->getMessage()));
         }
-        return new CacheDictionarySetBatchResponseSuccess();
+        return new CacheDictionarySetFieldsResponseSuccess();
     }
 
-    public function dictionaryGetBatch(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetBatchResponse
+    public function dictionaryGetFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetFieldsResponse
     {
         try {
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
             validateItems($fields);
-            $dictionaryGetBatchRequest = new _DictionaryGetRequest();
-            $dictionaryGetBatchRequest->setDictionaryName($dictionaryName);
-            $dictionaryGetBatchRequest->setFields($fields);
-            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetBatchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $dictionaryGetBatchResponse = $this->processCall($call);
+            $dictionaryGetFieldsRequest = new _DictionaryGetRequest();
+            $dictionaryGetFieldsRequest->setDictionaryName($dictionaryName);
+            $dictionaryGetFieldsRequest->setFields($fields);
+            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $dictionaryGetFieldsResponse = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionaryGetBatchResponseError($e);
+            return new CacheDictionaryGetFieldsResponseError($e);
         } catch (Exception $e) {
-            return new CacheDictionaryGetBatchResponseError(new UnknownError($e->getMessage()));
+            return new CacheDictionaryGetFieldsResponseError(new UnknownError($e->getMessage()));
         }
-        if ($dictionaryGetBatchResponse->hasFound()) {
-            return new CacheDictionaryGetBatchResponseSuccess($dictionaryGetBatchResponse);
+        if ($dictionaryGetFieldsResponse->hasFound()) {
+            return new CacheDictionaryGetFieldsResponseHit($dictionaryGetFieldsResponse, fields: $fields);
         }
-        return new CacheDictionaryGetBatchResponseSuccess(null, count($fields));
+        return new CacheDictionaryGetFieldsResponseMiss();
+
     }
 
     public function dictionaryIncrement(
@@ -656,7 +664,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryRemoveFieldsResponseSuccess();
     }
 
-    public function setAdd(string $cacheName, string $setName, string $element, bool $refreshTt, ?int $ttlSeconds = null): CacheSetAddResponse
+    public function setAddElement(string $cacheName, string $setName, string $element, bool $refreshTt, ?int $ttlSeconds = null): CacheSetAddElementResponse
     {
         try {
             validateCacheName($cacheName);
@@ -664,19 +672,19 @@ class _ScsDataClient implements LoggerAwareInterface
             validateElement($element);
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             validateTtl($ttlMillis);
-            $setAddRequest = new _SetUnionRequest();
-            $setAddRequest->setSetName($setName);
-            $setAddRequest->setRefreshTtl($refreshTt);
-            $setAddRequest->setTtlMilliseconds($ttlMillis);
-            $setAddRequest->setElements([$element]);
-            $call = $this->grpcManager->client->SetUnion($setAddRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $setAddElementRequest = new _SetUnionRequest();
+            $setAddElementRequest->setSetName($setName);
+            $setAddElementRequest->setRefreshTtl($refreshTt);
+            $setAddElementRequest->setTtlMilliseconds($ttlMillis);
+            $setAddElementRequest->setElements([$element]);
+            $call = $this->grpcManager->client->SetUnion($setAddElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheSetAddResponseError($e);
+            return new CacheSetAddElementResponseError($e);
         } catch (Exception $e) {
-            return new CacheSetAddResponseError(new UnknownError($e->getMessage()));
+            return new CacheSetAddElementResponseError(new UnknownError($e->getMessage()));
         }
-        return new CacheSetAddResponseSuccess();
+        return new CacheSetAddElementResponseSuccess();
     }
 
     public function setFetch(string $cacheName, string $setName): CacheSetFetchResponse
@@ -697,5 +705,27 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheSetFetchResponseHit($setFetchResponse);
         }
         return new CacheSetFetchResponseMiss();
+    }
+
+    public function setRemoveElement(string $cacheName, string $setName, string $element): CacheSetRemoveElementResponse {
+        try {
+            validateCacheName($cacheName);
+            validateSetName($setName);
+            validateElement($element);
+            $setRemoveElementRequest = new _SetDifferenceRequest();
+            $setRemoveElementRequest->setSetName($setName);
+            $subtrahend = new _Subtrahend();
+            $set = new _Set();
+            $set->setElements([$element]);
+            $subtrahend->setSet($set);
+            $setRemoveElementRequest->setSubtrahend($subtrahend);
+            $call = $this->grpcManager->client->SetDifference($setRemoveElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheSetRemoveElementResponseError($e);
+        } catch (Exception $e) {
+            return new CacheSetRemoveElementResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheSetRemoveElementResponseSuccess();
     }
 }
