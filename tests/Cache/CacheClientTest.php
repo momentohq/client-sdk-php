@@ -1619,6 +1619,25 @@ class CacheClientTest extends TestCase
         }
     }
 
+    public function testDictionaryGetBatchFieldsValuesArray_MixedPath()
+    {
+        $dictionaryName = uniqid();
+        $field1 = "key1";
+        $field2 = "key2";
+        $field3 = "key3";
+        $value1 = "val1";
+        $value3 = "val3";
+        $items = [$field1 => $value1, $field3 => $value3];
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
+        $this->assertEquals($items, $response->asHit()->valuesDictionary());
+    }
+
     // __toString() tests
 
     public function testCacheSetToString_HappyPath()

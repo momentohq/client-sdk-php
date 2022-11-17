@@ -1002,12 +1002,12 @@ class CacheDictionaryGetFieldsResponseHit extends CacheDictionaryGetFieldsRespon
             if ($response->getResult() == ECacheResult::Hit) {
                 $this->responses[] = new CacheDictionaryGetFieldResponseHit(null, $response->getCacheBody());
                 $this->valuesDictionary[$fields[$counter]] = $response->getCacheBody();
-                $counter++;
             } else if ($response->getResult() == ECacheResult::Miss) {
                 $this->responses[] = new CacheDictionaryGetFieldResponseMiss();
             } else {
                 $this->responses[] = new CacheDictionaryGetFieldResponseError(new UnknownError(strval($response->getResult())));
             }
+            $counter++;
         }
     }
 
