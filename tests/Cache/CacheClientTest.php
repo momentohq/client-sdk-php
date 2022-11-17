@@ -1933,4 +1933,90 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
         $this->assertEquals($element, $response->asHit()->valueArray()[0]);
     }
+
+    public function testSetRemoveElementWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $setName = uniqid();
+        $element = uniqid();
+        $this->client->setRemoveElement(null, $setName, $element);
+    }
+
+    public function testSetRemoveElementWithEmptyCacheName_ThrowsException()
+    {
+        $setName = uniqid();
+        $element = uniqid();
+        $response = $this->client->setRemoveElement("", $setName, $element);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetRemoveElementWithNullSetName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $element = uniqid();
+        $this->client->setRemoveElement($this->TEST_CACHE_NAME, null, $element);
+    }
+
+    public function testSetRemoveElementWithEmptySetName_ThrowsException()
+    {
+        $element = uniqid();
+        $response = $this->client->setRemoveElement($this->TEST_CACHE_NAME, "", $element);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetRemoveElementWithNullElement_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $setName = uniqid();
+        $this->client->setRemoveElement($this->TEST_CACHE_NAME, $setName, null);
+    }
+
+    public function testSetRemoveElementWithEmptyElement_ThrowsException()
+    {
+        $setName = uniqid();
+        $response = $this->client->setRemoveElement($this->TEST_CACHE_NAME, $setName, "");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetRemoveElement_HappyPath() 
+    {
+        $setName = uniqid();
+        $element = uniqid();
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, false);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        
+        $response = $this->client->setRemoveElement($this->TEST_CACHE_NAME, $setName, uniqid());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals($element, $response->asHit()->valueArray()[0]);
+
+        $response = $this->client->setRemoveElement($this->TEST_CACHE_NAME, $setName, $element);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+    }
+
+    public function testSetRemoveElement_SetIsMissingElement_Noop()
+    {
+        $setName = uniqid();
+
+        $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+
+        $response = $this->client->setRemoveElement($this->TEST_CACHE_NAME, $setName, uniqid());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        
+        $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+    }
 }
