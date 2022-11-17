@@ -31,6 +31,7 @@ use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
 use Momento\Config\IConfiguration;
+use Momento\Logging\ILoggerFactory;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
@@ -38,6 +39,7 @@ class SimpleCacheClient implements LoggerAwareInterface
 {
 
     protected IConfiguration $configuration;
+    protected ILoggerFactory $loggerFactory;
     protected LoggerInterface $logger;
     private _ScsControlClient $controlClient;
     private _ScsDataClient $dataClient;
@@ -52,8 +54,9 @@ class SimpleCacheClient implements LoggerAwareInterface
     )
     {
         $this->configuration = $configuration;
-        $this->setLogger($this->configuration->getLogger());
-        $this->controlClient = new _ScsControlClient($this->logger, $authProvider);
+        $this->loggerFactory = $configuration->getLoggerFactory();
+        $this->setLogger($this->loggerFactory->getLogger(get_class($this)));
+        $this->controlClient = new _ScsControlClient($this->loggerFactory, $authProvider);
         $this->dataClient = new _ScsDataClient(
             $this->configuration,
             $authProvider,

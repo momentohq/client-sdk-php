@@ -15,13 +15,13 @@ use Momento\Cache\CacheOperationTypes\CreateCacheResponseSuccess;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponseError;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponseSuccess;
-use Momento\Cache\CacheOperationTypes\ListCacheResponseError;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponseError;
 use Momento\Cache\CacheOperationTypes\ListCachesResponseSuccess;
 use Momento\Cache\Errors\AlreadyExistsError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
+use Momento\Logging\ILoggerFactory;
 use Momento\Utilities\_ErrorConverter;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -31,12 +31,14 @@ class _ScsControlClient implements LoggerAwareInterface
 {
 
     private _ControlGrpcManager $grpcManager;
+    private ILoggerFactory $loggerFactory;
     private LoggerInterface $logger;
 
-    public function __construct(LoggerInterface $logger, ICredentialProvider $authProvider)
+    public function __construct(ILoggerFactory $loggerFactory, ICredentialProvider $authProvider)
     {
         $this->grpcManager = new _ControlGrpcManager($authProvider);
-        $this->setLogger($logger);
+        $this->loggerFactory = $loggerFactory;
+        $this->setLogger($this->loggerFactory->getLogger(get_class($this)));
     }
 
     public function setLogger(LoggerInterface $logger): void

@@ -13,6 +13,7 @@ use Momento\Cache\SimpleCacheClient;
 use Momento\Config\Configuration;
 use Momento\Config\Transport\StaticGrpcConfiguration;
 use Momento\Config\Transport\StaticTransportStrategy;
+use Momento\Logging\NullLoggerFactory;
 use Psr\Log\NullLogger;
 
 /**
@@ -26,10 +27,10 @@ class Psr16ClientTest extends \PHPUnit\Framework\TestCase
 
     public function setUp(): void
     {
-        $logger = new NullLogger();
+        $loggerFactory = new NullLoggerFactory();
         $grpcConfiguration = new StaticGrpcConfiguration(5000);
         $transportStrategy = new StaticTransportStrategy(null, $grpcConfiguration);
-        $configuration = new Configuration($logger, $transportStrategy);
+        $configuration = new Configuration($loggerFactory, $transportStrategy);
         $authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
 
         // Ensure test cache exists

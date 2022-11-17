@@ -56,6 +56,8 @@ Here is an example to get you started:
 {{ usageExampleCode }}
 ```
 
+For more details about `SimpleCacheClient` logging, please take a look at [README-logging.md](README-logging.md).
+
 ### Error Handling
 
 Errors that occur in calls to `SimpleCacheClient` methods are surfaced to developers as part of the return values of

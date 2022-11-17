@@ -6,10 +6,7 @@ require "vendor/autoload.php";
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\Psr16CacheClient;
 use Momento\Config\Configurations\Laptop;
-use Momento\Utilities\LoggingHelper;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
+use Momento\Logging\StderrLoggerFactory;
 use Psr\Log\LoggerInterface;
 
 $CACHE_NAME = getenv("CACHE_NAME");
@@ -23,21 +20,9 @@ $VALUE = "MyValue";
 
 // Setup
 $authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
-
-// Use your favorite PSR-3 logger.
-$logger = new Logger("example");
-$streamHandler = new StreamHandler("php://stderr");
-$formatter = new LineFormatter("%message%\n");
-$streamHandler->setFormatter($formatter);
-$logger->pushHandler($streamHandler);
-
-// Or use the built-in minimal logger, equivalent to the above Monolog configuration.
-//$logger = \Momento\Utilities\LoggingHelper::getMinimalLogger();
-// Or discard all log messages.
-//$logger = \Momento\Utilities\LoggingHelper::getNullLogger();
-
-$configuration = Laptop::latest($logger);
+$configuration = Laptop::latest()->withLoggerFactory(new StderrLoggerFactory());
 $client = new Psr16CacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
+$logger = $configuration->getLoggerFactory()->getLogger("ex:");
 
 function printBanner(string $message, LoggerInterface $logger): void
 {

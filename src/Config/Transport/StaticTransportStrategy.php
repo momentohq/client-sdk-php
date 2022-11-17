@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Momento\Config\Transport;
 
 use Momento\Config\Transport\IGrpcConfiguration;
+use Momento\Logging\ILoggerFactory;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 
@@ -11,15 +12,17 @@ class StaticTransportStrategy implements ITransportStrategy
 {
     private ?int $maxConcurrentRequests;
     private ?IGrpcConfiguration $grpcConfig;
-    private ?LoggerInterface $logger;
+    private ?ILoggerFactory $loggerFactory;
 
     public function __construct(
-        ?int $maxConcurrentRequests = null, ?IGrpcConfiguration $grpcConfig = null, ?LoggerInterface $logger = null
+        ?int                $maxConcurrentRequests = null,
+        ?IGrpcConfiguration $grpcConfig = null,
+        ?ILoggerFactory     $loggerFactory = null
     )
     {
         $this->maxConcurrentRequests = $maxConcurrentRequests;
         $this->grpcConfig = $grpcConfig;
-        $this->logger = $logger;
+        $this->loggerFactory = $loggerFactory;
     }
 
     public function getMaxConcurrentRequests(): ?int
@@ -32,20 +35,20 @@ class StaticTransportStrategy implements ITransportStrategy
         return $this->grpcConfig;
     }
 
-    public function withLogger(Logger $logger): StaticTransportStrategy
+    public function withLoggerFactory(ILoggerFactory $loggerFactory): StaticTransportStrategy
     {
-        return new StaticTransportStrategy($this->maxConcurrentRequests, $this->grpcConfig, $logger);
+        return new StaticTransportStrategy($this->maxConcurrentRequests, $this->grpcConfig, $loggerFactory);
     }
 
     public function withGrpcConfig(IGrpcConfiguration $grpcConfig): StaticTransportStrategy
     {
-        return new StaticTransportStrategy($this->maxConcurrentRequests, $grpcConfig, $this->logger);
+        return new StaticTransportStrategy($this->maxConcurrentRequests, $grpcConfig, $this->loggerFactory);
     }
 
-    public function withClientTimeout(int $clientTimeout)
+    public function withClientTimeout(int $clientTimeout): StaticTransportStrategy
     {
         return new StaticTransportStrategy(
-            $this->maxConcurrentRequests, $this->grpcConfig->withDeadline($clientTimeout), $this->logger
+            $this->maxConcurrentRequests, $this->grpcConfig->withDeadline($clientTimeout), $this->loggerFactory
         );
     }
 }

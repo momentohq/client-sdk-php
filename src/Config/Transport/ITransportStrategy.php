@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Momento\Config\Transport;
 
 use Momento\Config\Transport\IGrpcConfiguration;
+use Momento\Logging\ILoggerFactory;
 use Monolog\Logger;
 
 interface ITransportStrategy
@@ -12,7 +13,7 @@ interface ITransportStrategy
 
     public function getGrpcConfig(): ?IGrpcConfiguration;
 
-    public function withLogger(Logger $logger);
+    public function withLoggerFactory(ILoggerFactory $loggerFactory);
 
     public function withGrpcConfig(IGrpcConfiguration $grpcConfig);
 
