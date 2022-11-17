@@ -43,7 +43,8 @@ use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseHit;
+use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseMiss;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponseSuccess;
@@ -576,9 +577,10 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheDictionaryGetFieldsResponseError(new UnknownError($e->getMessage()));
         }
         if ($dictionaryGetFieldsResponse->hasFound()) {
-            return new CacheDictionaryGetFieldsResponseSuccess($dictionaryGetFieldsResponse, fields: $fields);
+            return new CacheDictionaryGetFieldsResponseHit($dictionaryGetFieldsResponse, fields: $fields);
         }
-        return new CacheDictionaryGetFieldsResponseSuccess(null, count($fields));
+        return new CacheDictionaryGetFieldsResponseMiss();
+
     }
 
     public function dictionaryIncrement(

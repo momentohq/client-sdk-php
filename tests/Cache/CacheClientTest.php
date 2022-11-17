@@ -1573,9 +1573,9 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
         $counter = 0;
-        foreach ($response->asSuccess()->responses() as $response) {
+        foreach ($response->asHit()->responses() as $response) {
             if ($counter == 2) {
                 $this->assertEquals(CacheDictionaryGetFieldResponseMiss::class, get_class($response));
             } else {
@@ -1601,8 +1601,8 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertEquals($items, $response->asSuccess()->valuesDictionary());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals($items, $response->asHit()->valuesDictionary());
     }
 
     public function testDictionaryGetFieldsDictionaryMissing_HappyPath()
@@ -1613,8 +1613,8 @@ class CacheClientTest extends TestCase
         $field3 = uniqid();
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        foreach ($response->asSuccess()->responses() as $response) {
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        foreach ($response->asHit()->responses() as $response) {
             $this->assertEquals(CacheDictionaryGetFieldResponseMiss::class, $response);
         }
     }
