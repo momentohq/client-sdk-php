@@ -1227,3 +1227,31 @@ class CacheSetFetchResponseError extends CacheSetFetchResponse
 {
     use ErrorBody;
 }
+
+abstract class CacheSetRemoveElementResponse extends ResponseBase
+{
+    public function asSuccess(): CacheSetRemoveElementResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheSetRemoveElementResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheSetRemoveElementResponseSuccess extends CacheSetRemoveElementResponse
+{
+}
+
+class CacheSetRemoveElementResponseError extends CacheSetRemoveElementResponse
+{
+    use ErrorBody;
+}

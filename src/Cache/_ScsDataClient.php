@@ -21,6 +21,9 @@ use Cache_client\_ListPushBackRequest;
 use Cache_client\_ListPushFrontRequest;
 use Cache_client\_ListRange;
 use Cache_client\_ListRemoveRequest;
+use Cache_client\_SetDifferenceRequest;
+use Cache_client\_SetDifferenceRequest\_Subtrahend;
+use Cache_client\_SetDifferenceRequest\_Subtrahend\_Set;
 use Cache_client\_SetFetchRequest;
 use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
@@ -98,6 +101,9 @@ use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponseError;
+use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheSetResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetResponseSuccess;
@@ -699,5 +705,27 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheSetFetchResponseHit($setFetchResponse);
         }
         return new CacheSetFetchResponseMiss();
+    }
+
+    public function setRemoveElement(string $cacheName, string $setName, string $element): CacheSetRemoveElementResponse {
+        try {
+            validateCacheName($cacheName);
+            validateSetName($setName);
+            validateElement($element);
+            $setRemoveElementRequest = new _SetDifferenceRequest();
+            $setRemoveElementRequest->setSetName($setName);
+            $subtrahend = new _Subtrahend();
+            $set = new _Set();
+            $set->setElements([$element]);
+            $subtrahend->setSet($set);
+            $setRemoveElementRequest->setSubtrahend($subtrahend);
+            $call = $this->grpcManager->client->SetDifference($setRemoveElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheSetRemoveElementResponseError($e);
+        } catch (Exception $e) {
+            return new CacheSetRemoveElementResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheSetRemoveElementResponseSuccess();
     }
 }
