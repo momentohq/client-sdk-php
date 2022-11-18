@@ -23,6 +23,7 @@ use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetResponse;
@@ -199,8 +200,13 @@ class SimpleCacheClient implements LoggerAwareInterface
         return $this->dataClient->setFetch($cacheName, $setName);
     }
 
-    public function setRemoveElement(string $cacheName, string $setName, string $element): CacheSetRemoveElementResponse 
+    public function setRemoveElement(string $cacheName, string $setName, string $element): CacheSetRemoveElementResponse
     {
         return $this->dataClient->setRemoveElement($cacheName, $setName, $element);
+    }
+
+    public function setDelete(string $cacheName, string $setName): CacheSetDeleteResponse
+    {
+        return $this->dataClient->setDelete($cacheName, $setName);
     }
 }
