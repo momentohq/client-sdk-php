@@ -11,7 +11,7 @@ interface ICredentialProvider
 
     public function getCacheEndpoint(): string;
 
-    public function getControlProxyEndpoint(): string|null;
+    public function getTrustedControlEndpointCertificateName(): string|null;
 
-    public function getCacheProxyEndpoint(): string|null;
+    public function getTrustedCacheEndpointCertificateName(): string|null;
 }

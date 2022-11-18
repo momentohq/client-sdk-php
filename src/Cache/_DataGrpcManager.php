@@ -18,10 +18,10 @@ class _DataGrpcManager
 
     public function __construct(ICredentialProvider $authProvider)
     {
-        $endpoint = $authProvider->getCacheProxyEndpoint() ?? $authProvider->getCacheEndpoint();
+        $endpoint = $authProvider->getCacheEndpoint();
         $channelArgs = ["credentials" => ChannelCredentials::createSsl()];
-        if ($authProvider->getCacheProxyEndpoint()) {
-            $channelArgs["grpc.ssl_target_name_override"] = $authProvider->getCacheEndpoint();
+        if ($authProvider->getTrustedCacheEndpointCertificateName()) {
+            $channelArgs["grpc.ssl_target_name_override"] = $authProvider->getTrustedCacheEndpointCertificateName();
         }
         $channel = new Channel($endpoint, $channelArgs);
         $interceptors = [

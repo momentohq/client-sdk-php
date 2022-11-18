@@ -19,10 +19,10 @@ class _ControlGrpcManager
 
     public function __construct(ICredentialProvider $authProvider)
     {
-        $endpoint = $authProvider->getControlProxyEndpoint() ?? $authProvider->getControlEndpoint();
+        $endpoint = $authProvider->getControlEndpoint();
         $channelArgs = ["credentials" => ChannelCredentials::createSsl()];
-        if ($authProvider->getControlProxyEndpoint()) {
-            $channelArgs["grpc.ssl_target_name_override"] = $authProvider->getControlEndpoint();
+        if ($authProvider->getTrustedControlEndpointCertificateName()) {
+            $channelArgs["grpc.ssl_target_name_override"] = $authProvider->getTrustedControlEndpointCertificateName();
         }
         $channel = new Channel($endpoint, $channelArgs);
         $interceptors = [
