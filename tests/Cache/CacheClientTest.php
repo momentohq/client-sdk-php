@@ -2128,5 +2128,9 @@ class CacheClientTest extends TestCase
         $response = $this->client->setDelete($this->TEST_CACHE_NAME, $setName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got ${response}.");
+
+        $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got ${response}.");
     }
 }
