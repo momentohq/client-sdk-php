@@ -52,13 +52,10 @@ class SimpleCacheClient implements LoggerAwareInterface
     {
         $this->configuration = $configuration;
         $this->setLogger($this->configuration->getLogger());
-        $this->controlClient = new _ScsControlClient(
-            $this->logger, $authProvider->getAuthToken(), $authProvider->getControlEndpoint()
-        );
+        $this->controlClient = new _ScsControlClient($this->logger, $authProvider);
         $this->dataClient = new _ScsDataClient(
             $this->configuration,
-            $authProvider->getAuthToken(),
-            $authProvider->getCacheEndpoint(),
+            $authProvider,
             $defaultTtlSeconds
         );
     }
