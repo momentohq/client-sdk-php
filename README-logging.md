@@ -34,7 +34,7 @@ called:
 
 ```php
 $myLogger = new My\Favorite\Logger("channel_name");
-$loggerFactory = new \Momento\Logging\PassthroughLoggerFactory($myLogger);
+$loggerFactory = new Momento\Logging\PassthroughLoggerFactory($myLogger);
 $authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
 // All logging internal to the Momento client will use this factory to gain
 // access to a reference to $myLogger.
@@ -55,7 +55,7 @@ class MonologFactory implements \Momento\Logging\ILoggerFactory
         $streamHandler = new Monolog\Handler\StreamHandler("php://stderr", Monolog\Logger::WARNING);
         $formatter = new Monolog\Formatter\LineFormatter("[%channel%] %message%\n");
         $streamHandler->setFormatter($formatter);
-        $logger->pushHandler($streamHandler, Monolog\Level::Warning);
+        $logger->pushHandler($streamHandler);
         return $logger;
     }
 }
