@@ -14,6 +14,7 @@ use Momento\Config\Configurations;
 use Momento\Config\IConfiguration;
 use Momento\Config\Transport\StaticGrpcConfiguration;
 use Momento\Config\Transport\StaticTransportStrategy;
+use Momento\Logging\NullLoggerFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use RuntimeException;
@@ -64,10 +65,10 @@ class CacheClientTest extends TestCase
 
     private function getConfigurationWithDeadline(int $deadline)
     {
-        $logger = new NullLogger();
+        $loggerFactory = new NullLoggerFactory();
         $grpcConfig = new StaticGrpcConfiguration($deadline);
-        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $logger);
-        return new Configuration($logger, $transportStrategy);
+        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory);
+        return new Configuration($loggerFactory, $transportStrategy);
     }
 
     // Happy path test

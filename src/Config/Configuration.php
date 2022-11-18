@@ -4,23 +4,24 @@ declare(strict_types=1);
 namespace Momento\Config;
 
 use Momento\Config\Transport\ITransportStrategy;
-use Psr\Log\LoggerInterface;
+use Momento\Logging\ILoggerFactory;
+use Momento\Logging\NullLoggerFactory;
 
 class Configuration implements IConfiguration
 {
 
-    private ?LoggerInterface $logger;
+    private ?ILoggerFactory $loggerFactory;
     private ?ITransportStrategy $transportStrategy;
 
-    public function __construct(?LoggerInterface $logger, ?ITransportStrategy $transportStrategy)
+    public function __construct(?ILoggerFactory $loggerFactory, ?ITransportStrategy $transportStrategy)
     {
-        $this->logger = $logger;
+        $this->loggerFactory = $loggerFactory ?? new NullLoggerFactory();
         $this->transportStrategy = $transportStrategy;
     }
 
-    public function getLogger(): LoggerInterface|null
+    public function getLoggerFactory(): ILoggerFactory|null
     {
-        return $this->logger;
+        return $this->loggerFactory;
     }
 
     public function getTransportStrategy(): ITransportStrategy|null
@@ -28,13 +29,13 @@ class Configuration implements IConfiguration
         return $this->transportStrategy;
     }
 
-    public function withLogger(LoggerInterface $logger): IConfiguration
+    public function withLoggerFactory(ILoggerFactory $loggerFactory): IConfiguration
     {
-        return new Configuration($logger, $this->transportStrategy);
+        return new Configuration($loggerFactory, $this->transportStrategy);
     }
 
     public function withTransportStrategy(ITransportStrategy $transportStrategy): IConfiguration
     {
-        return new Configuration($this->logger, $transportStrategy);
+        return new Configuration($this->loggerFactory, $transportStrategy);
     }
 }

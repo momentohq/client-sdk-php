@@ -158,7 +158,7 @@ class _ScsDataClient implements LoggerAwareInterface
         $this->deadline_milliseconds = $operationTimeoutMs ?? self::$DEFAULT_DEADLINE_MILLISECONDS;
         $this->timeout = $this->deadline_milliseconds * self::$TIMEOUT_MULTIPLIER;
         $this->grpcManager = new _DataGrpcManager($authProvider);
-        $this->setLogger($configuration->getLogger());
+        $this->setLogger($configuration->getLoggerFactory()->getLogger(get_class($this)));
     }
 
     public function setLogger(LoggerInterface $logger): void
