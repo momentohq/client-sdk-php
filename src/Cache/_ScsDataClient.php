@@ -23,6 +23,7 @@ use Cache_client\_ListRange;
 use Cache_client\_ListRemoveRequest;
 use Cache_client\_SetDifferenceRequest;
 use Cache_client\_SetDifferenceRequest\_Subtrahend;
+use Cache_client\_SetDifferenceRequest\_Subtrahend\_Identity;
 use Cache_client\_SetDifferenceRequest\_Subtrahend\_Set;
 use Cache_client\_SetFetchRequest;
 use Cache_client\_SetRequest;
@@ -98,6 +99,9 @@ use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheSetDeleteResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetDeleteResponseError;
+use Momento\Cache\CacheOperationTypes\CacheSetDeleteResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseHit;
@@ -708,7 +712,8 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheSetFetchResponseMiss();
     }
 
-    public function setRemoveElement(string $cacheName, string $setName, string $element): CacheSetRemoveElementResponse {
+    public function setRemoveElement(string $cacheName, string $setName, string $element): CacheSetRemoveElementResponse
+    {
         try {
             validateCacheName($cacheName);
             validateSetName($setName);
@@ -728,5 +733,25 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheSetRemoveElementResponseError(new UnknownError($e->getMessage()));
         }
         return new CacheSetRemoveElementResponseSuccess();
+    }
+
+    public function setDelete(string $cacheName, string $setName): CacheSetDeleteResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSetName($setName);
+            $setDeleteRequest = new _SetDifferenceRequest();
+            $setDeleteRequest->setSetName($setName);
+            $subtrahend = new _Subtrahend();
+            $subtrahend->setIdentity(new _Identity());
+            $setDeleteRequest->setSubtrahend($subtrahend);
+            $call = $this->grpcManager->client->SetDifference($setDeleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheSetDeleteResponseError($e);
+        } catch (Exception $e) {
+            return new CacheSetDeleteResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheSetDeleteResponseSuccess();
     }
 }
