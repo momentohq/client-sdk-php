@@ -169,7 +169,7 @@ if ($response->asSuccess()) {
 $logger->info("Getting value for key: $KEY\n");
 $response = $client->get($CACHE_NAME, $KEY);
 if ($response->asHit()) {
-    $logger->info("SUCCESS: - Get key: " . $KEY . " value: " . $response->asHit()->value() . " cache: " . $CACHE_NAME . "\n");
+    $logger->info("SUCCESS: - Get key: " . $KEY . " value: " . $response->asHit()->valueString() . " cache: " . $CACHE_NAME . "\n");
 } elseif ($response->asMiss()) {
     $logger->info("Get operation was a MISS\n");
 } elseif ($response->asError()) {

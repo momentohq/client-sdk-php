@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Momento\Auth;
 
-use Momento\Auth\AuthUtils;
 use Momento\Cache\Errors\InvalidArgumentError;
 use function \Momento\Utilities\isNullOrEmpty;
 
@@ -13,17 +12,33 @@ class EnvMomentoTokenProvider implements ICredentialProvider
     private string $authToken;
     private string $controlEndpoint;
     private string $cacheEndpoint;
+    private ?string $trustedControlEndpointCertificateName = null;
+    private ?string $trustedCacheEndpointCertificateName = null;
 
-    public function __construct(string $envVariableName)
+    public function __construct(
+        string  $envVariableName,
+        ?string $controlEndpoint = null,
+        ?string $cacheEndpoint = null,
+        ?string $trustedControlEndpointCertificateName = null,
+        ?string $trustedCacheEndpointCertificateName = null
+    )
     {
         $authToken = getenv($envVariableName);
         if ($authToken === false || isNullOrEmpty($authToken)) {
             throw new InvalidArgumentError("Environment variable $envVariableName is empty or null.");
         }
-        $payload = AuthUtils::parseAuthToken($authToken);
+        if ($trustedControlEndpointCertificateName xor $trustedCacheEndpointCertificateName) {
+            throw new InvalidArgumentError(
+                "If either of trustedCacheEndpointCertificateName or trustedControlEndpointCertificateName " .
+                "are provided, they must both be."
+            );
+        }
         $this->authToken = $authToken;
-        $this->controlEndpoint = $payload->cp;
-        $this->cacheEndpoint = $payload->c;
+        $payload = AuthUtils::parseAuthToken($authToken);
+        $this->controlEndpoint = $controlEndpoint ?? $payload->cp;
+        $this->cacheEndpoint = $cacheEndpoint ?? $payload->c;
+        $this->trustedControlEndpointCertificateName = $trustedControlEndpointCertificateName;
+        $this->trustedCacheEndpointCertificateName = $trustedCacheEndpointCertificateName;
     }
 
     public function getAuthToken(): string
@@ -39,5 +54,15 @@ class EnvMomentoTokenProvider implements ICredentialProvider
     public function getControlEndpoint(): string
     {
         return $this->controlEndpoint;
+    }
+
+    public function getTrustedControlEndpointCertificateName(): string|null
+    {
+        return $this->trustedControlEndpointCertificateName;
+    }
+
+    public function getTrustedCacheEndpointCertificateName(): string|null
+    {
+        return $this->trustedCacheEndpointCertificateName;
     }
 }

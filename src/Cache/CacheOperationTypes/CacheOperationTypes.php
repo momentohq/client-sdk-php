@@ -1255,3 +1255,31 @@ class CacheSetRemoveElementResponseError extends CacheSetRemoveElementResponse
 {
     use ErrorBody;
 }
+
+abstract class CacheSetDeleteResponse extends ResponseBase
+{
+    public function asSuccess(): CacheSetDeleteResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheSetDeleteResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheSetDeleteResponseSuccess extends CacheSetDeleteResponse
+{
+}
+
+class CacheSetDeleteResponseError extends CacheSetDeleteResponse
+{
+    use ErrorBody;
+}
