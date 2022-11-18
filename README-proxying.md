@@ -33,9 +33,9 @@ frontend cache-plane-fe
   bind localhost:4444
   option tcplog
   mode tcp
-  default_backend cache-plane-fe
+  default_backend cache-plane-be
 
-backend cache-plane-fe
+backend cache-plane-be
   mode tcp
   server server1 cache.some-cache-cell-name.momentohq.com:443
 ```
@@ -47,16 +47,11 @@ provider. Using the `EnvMomentoTokenProvider`, which reads the token from an env
 
 ```php
 $authProvider = new EnvMomentoTokenProvider(
-    // name of the environment variable that contains our auth token
-    "MOMENTO_AUTH_TOKEN",
-    // host and port to connect to haproxy for the control plane
-    "localhost:4443",
-    // host and port to connect to haproxy for the cache plane
-    "localhost:4444",
-    // host and port to connect haproxy to Momento's control plane
-    "control.some-control-cell-name.momentohq.com:443",
-    // host and port to connect haproxy to Momento's cache plane
-    "cache.some-cache-cell-name.momentohq.com:443"
+  envVariableName: "MOMENTO_AUTH_TOKEN",
+  controlEndpoint: "localhost:4443",
+  cacheEndpoint: "localhost:4444",
+  trustedControlEndpointCertificateName: "control.some-control-cell-name.momentohq.com",
+  trustedCacheEndpointCertificateName: "cache.some-cache-cell-name.momentohq.com"
 );
 ```
 
