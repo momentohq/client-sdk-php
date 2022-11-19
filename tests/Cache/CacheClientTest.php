@@ -1614,10 +1614,7 @@ class CacheClientTest extends TestCase
         $field3 = uniqid();
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        foreach ($response->asHit()->responses() as $response) {
-            $this->assertEquals(CacheDictionaryGetFieldResponseMiss::class, $response);
-        }
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
     }
 
     public function testDictionaryGetBatchFieldsValuesArray_MixedPath()
