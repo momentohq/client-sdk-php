@@ -18,7 +18,7 @@ Check out our SDK [requirements](https://github.com/momentohq/client-sdk-php#req
 You will likely need to run this only once:
 
 ```bash
-docker build --tag php-test .
+./dev-docker-build.sh
 ```
 
 ## Run Integration Test
