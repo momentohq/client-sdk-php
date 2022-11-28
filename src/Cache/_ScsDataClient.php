@@ -684,17 +684,18 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryRemoveFieldsResponseSuccess();
     }
 
-    public function setAddElement(string $cacheName, string $setName, string $element, ?bool $refreshTt = true, ?int $ttlSeconds = null): CacheSetAddElementResponse
+    public function setAddElement(string $cacheName, string $setName, string $element, CollectionTtl $ttl = null): CacheSetAddElementResponse
     {
         try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateSetName($setName);
             validateElement($element);
-            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             validateTtl($ttlMillis);
             $setAddElementRequest = new _SetUnionRequest();
             $setAddElementRequest->setSetName($setName);
-            $setAddElementRequest->setRefreshTtl($refreshTt);
+            $setAddElementRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $setAddElementRequest->setTtlMilliseconds($ttlMillis);
             $setAddElementRequest->setElements([$element]);
             $call = $this->grpcManager->client->SetUnion($setAddElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
