@@ -1164,7 +1164,7 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, amount: 10);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, ttlSeconds: 10);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(2);
@@ -1613,10 +1613,7 @@ class CacheClientTest extends TestCase
         $field3 = uniqid();
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        foreach ($response->asHit()->responses() as $response) {
-            $this->assertEquals(CacheDictionaryGetFieldResponseMiss::class, $response);
-        }
+        $this->assertNotNull($response->asMiss(), "Expected a hit but got: $response");
     }
 
     public function testDictionaryGetBatchFieldsValuesArray_MixedPath()
