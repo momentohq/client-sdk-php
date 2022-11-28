@@ -271,7 +271,7 @@ class _ScsDataClient implements LoggerAwareInterface
     }
 
     public function listPushFront(
-        string $cacheName, string $listName, string $value, bool $refreshTtl, ?int $truncateBackToSize = null, ?int $ttlSeconds = null
+        string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, ?bool $refreshTtl = true, ?int $ttlSeconds = null
     ): CacheListPushFrontResponse
     {
         try {
@@ -300,7 +300,7 @@ class _ScsDataClient implements LoggerAwareInterface
     }
 
     public function listPushBack(
-        string $cacheName, string $listName, string $value, bool $refreshTtl, ?int $truncateFrontToSize = null, ?int $ttlSeconds = null
+        string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, ?bool $refreshTtl = true, ?int $ttlSeconds = null
     ): CacheListPushBackResponse
     {
         try {
@@ -442,7 +442,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheListEraseResponseSuccess();
     }
 
-    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldResponse
+    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?bool $refreshTtl = true, ?int $ttlSeconds = null): CacheDictionarySetFieldResponse
     {
         try {
             validateCacheName($cacheName);
@@ -541,7 +541,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryFetchResponseMiss();
     }
 
-    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldsResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, ?bool $refreshTtl = true, ?int $ttlSeconds = null): CacheDictionarySetFieldsResponse
     {
         try {
             validateCacheName($cacheName);
@@ -595,7 +595,7 @@ class _ScsDataClient implements LoggerAwareInterface
     }
 
     public function dictionaryIncrement(
-        string $cacheName, string $dictionaryName, string $field, bool $refreshTtl, int $amount = 1, ?int $ttlSeconds = null
+        string $cacheName, string $dictionaryName, string $field, int $amount = 1, ?bool $refreshTtl = true, ?int $ttlSeconds = null
     ): CacheDictionaryIncrementResponse
     {
         try {
@@ -669,7 +669,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryRemoveFieldsResponseSuccess();
     }
 
-    public function setAddElement(string $cacheName, string $setName, string $element, bool $refreshTt, ?int $ttlSeconds = null): CacheSetAddElementResponse
+    public function setAddElement(string $cacheName, string $setName, string $element, ?bool $refreshTt = true, ?int $ttlSeconds = null): CacheSetAddElementResponse
     {
         try {
             validateCacheName($cacheName);
