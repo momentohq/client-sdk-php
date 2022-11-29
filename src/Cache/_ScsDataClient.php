@@ -177,7 +177,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return $ttl * 1000;
     }
 
-    private function returnCollectionTtl($ttl): CollectionTtl
+    private function returnCollectionTtl(?CollectionTtl $ttl): CollectionTtl
     {
         if (!$ttl) {
             return CollectionTtl::fromCacheTtl();

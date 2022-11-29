@@ -33,7 +33,6 @@ use Momento\Cache\CacheOperationTypes\ListCachesResponse;
 use Momento\Config\IConfiguration;
 use Momento\Logging\ILoggerFactory;
 use Momento\Requests\CollectionTtl;
-use Momento\Requests\CollectionTtlFactory;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
