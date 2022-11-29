@@ -1199,7 +1199,7 @@ class CacheClientTest extends TestCase
     {
         $dictionaryName = uniqid();
         $field = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "10", false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "10", CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1213,7 +1213,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(100, $response->asSuccess()->valueInt());
 
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "0", false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "0", CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
