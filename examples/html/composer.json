@@ -1,0 +1,17 @@
+{
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../../client-sdk-php"
+    }
+  ],
+  "require": {
+    "momentohq/client-sdk-php": "dev-php-benchmark"
+  },
+  "config": {
+    "platform": {
+      "php": "8.0"
+    }
+  }
+}
+

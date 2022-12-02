@@ -20,4 +20,11 @@ class Laptop extends Configuration
         return new Laptop($loggerFactory, $transportStrategy);
     }
 
+    public static function loadgen(): Laptop
+    {
+        $ret = new Laptop();
+        $ret->forceNew = true;
+        return $ret;
+    }
+
 }

@@ -12,6 +12,7 @@ class Configuration implements IConfiguration
 
     private ?ILoggerFactory $loggerFactory;
     private ?ITransportStrategy $transportStrategy;
+    public bool $forceNew;
 
     public function __construct(?ILoggerFactory $loggerFactory, ?ITransportStrategy $transportStrategy)
     {
