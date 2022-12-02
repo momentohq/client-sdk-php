@@ -106,14 +106,14 @@ class SimpleCacheClient implements LoggerAwareInterface
     }
 
     public function listPushFront(
-        string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, CollectionTtl $ttl = null
+        string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, ?CollectionTtl $ttl = null
     ): CacheListPushFrontResponse
     {
         return $this->dataClient->listPushFront($cacheName, $listName, $value, $truncateBackToSize, $ttl);
     }
 
     public function listPushBack(
-        string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, CollectionTtl $ttl = null
+        string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, ?CollectionTtl $ttl = null
     ): CacheListPushBackResponse
     {
         return $this->dataClient->listPushBack($cacheName, $listName, $value, $truncateFrontToSize, $ttl);
@@ -144,7 +144,7 @@ class SimpleCacheClient implements LoggerAwareInterface
         return $this->dataClient->listErase($cacheName, $listName, $beginIndex, $count);
     }
 
-    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, CollectionTtl $ttl = null): CacheDictionarySetFieldResponse
+    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): CacheDictionarySetFieldResponse
     {
         return $this->dataClient->dictionarySetField($cacheName, $dictionaryName, $field, $value, $ttl);
     }
@@ -164,7 +164,7 @@ class SimpleCacheClient implements LoggerAwareInterface
         return $this->dataClient->dictionaryFetch($cacheName, $dictionaryName);
     }
 
-    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, CollectionTtl $ttl = null): CacheDictionarySetFieldsResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, ?CollectionTtl $ttl = null): CacheDictionarySetFieldsResponse
     {
         return $this->dataClient->dictionarySetFields($cacheName, $dictionaryName, $items, $ttl);
     }
@@ -175,7 +175,7 @@ class SimpleCacheClient implements LoggerAwareInterface
     }
 
     public function dictionaryIncrement(
-        string $cacheName, string $dictionaryName, string $field, int $amount = 1, CollectionTtl $ttl = null
+        string $cacheName, string $dictionaryName, string $field, int $amount = 1, ?CollectionTtl $ttl = null
     ): CacheDictionaryIncrementResponse
     {
         return $this->dataClient->dictionaryIncrement($cacheName, $dictionaryName, $field, $amount, $ttl);
@@ -191,7 +191,7 @@ class SimpleCacheClient implements LoggerAwareInterface
         return $this->dataClient->dictionaryRemoveFields($cacheName, $dictionaryName, $fields);
     }
 
-    public function setAddElement(string $cacheName, string $setName, string $element, CollectionTtl $ttl = null): CacheSetAddElementResponse
+    public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): CacheSetAddElementResponse
     {
         return $this->dataClient->setAddElement($cacheName, $setName, $element, $ttl);
     }

@@ -281,7 +281,7 @@ class _ScsDataClient implements LoggerAwareInterface
     }
 
     public function listPushFront(
-        string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, CollectionTtl $ttl = null
+        string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, ?CollectionTtl $ttl = null
     ): CacheListPushFrontResponse
     {
         try {
@@ -311,7 +311,7 @@ class _ScsDataClient implements LoggerAwareInterface
     }
 
     public function listPushBack(
-        string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, CollectionTtl $ttl = null
+        string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, ?CollectionTtl $ttl = null
     ): CacheListPushBackResponse
     {
         try {
@@ -454,7 +454,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheListEraseResponseSuccess();
     }
 
-    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, CollectionTtl $ttl = null): CacheDictionarySetFieldResponse
+    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): CacheDictionarySetFieldResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -554,7 +554,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryFetchResponseMiss();
     }
 
-    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, CollectionTtl $ttl = null): CacheDictionarySetFieldsResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, ?CollectionTtl $ttl = null): CacheDictionarySetFieldsResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -609,7 +609,7 @@ class _ScsDataClient implements LoggerAwareInterface
     }
 
     public function dictionaryIncrement(
-        string $cacheName, string $dictionaryName, string $field, int $amount = 1, CollectionTtl $ttl = null
+        string $cacheName, string $dictionaryName, string $field, int $amount = 1, ?CollectionTtl $ttl = null
     ): CacheDictionaryIncrementResponse
     {
         try {
@@ -684,7 +684,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryRemoveFieldsResponseSuccess();
     }
 
-    public function setAddElement(string $cacheName, string $setName, string $element, CollectionTtl $ttl = null): CacheSetAddElementResponse
+    public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): CacheSetAddElementResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);

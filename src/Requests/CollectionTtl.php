@@ -19,9 +19,9 @@ class CollectionTtl
         return new CollectionTtl(null, true);
     }
 
-    public static function of(int $ttl): CollectionTtl
+    public static function of(int $ttlSeconds): CollectionTtl
     {
-        return new CollectionTtl($ttl);
+        return new CollectionTtl($ttlSeconds);
     }
 
     public function getTtl(): int|null
