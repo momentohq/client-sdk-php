@@ -844,34 +844,6 @@ class CacheDictionaryGetFieldResponseError extends CacheDictionaryGetFieldRespon
     use ErrorBody;
 }
 
-abstract class CacheDictionaryDeleteResponse extends ResponseBase
-{
-    public function asSuccess(): CacheDictionaryDeleteResponseSuccess|null
-    {
-        if ($this->isSuccess()) {
-            return $this;
-        }
-        return null;
-    }
-
-    public function asError(): CacheDictionaryDeleteResponseError|null
-    {
-        if ($this->isError()) {
-            return $this;
-        }
-        return null;
-    }
-}
-
-class CacheDictionaryDeleteResponseSuccess extends CacheDictionaryDeleteResponse
-{
-}
-
-class CacheDictionaryDeleteResponseError extends CacheDictionaryDeleteResponse
-{
-    use ErrorBody;
-}
-
 abstract class CacheDictionaryFetchResponse extends ResponseBase
 {
     public function asHit(): CacheDictionaryFetchResponseHit|null
@@ -1252,34 +1224,6 @@ class CacheSetRemoveElementResponseSuccess extends CacheSetRemoveElementResponse
 }
 
 class CacheSetRemoveElementResponseError extends CacheSetRemoveElementResponse
-{
-    use ErrorBody;
-}
-
-abstract class CacheSetDeleteResponse extends ResponseBase
-{
-    public function asSuccess(): CacheSetDeleteResponseSuccess|null
-    {
-        if ($this->isSuccess()) {
-            return $this;
-        }
-        return null;
-    }
-
-    public function asError(): CacheSetDeleteResponseError|null
-    {
-        if ($this->isError()) {
-            return $this;
-        }
-        return null;
-    }
-}
-
-class CacheSetDeleteResponseSuccess extends CacheSetDeleteResponse
-{
-}
-
-class CacheSetDeleteResponseError extends CacheSetDeleteResponse
 {
     use ErrorBody;
 }
