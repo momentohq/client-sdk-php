@@ -4,22 +4,27 @@
 
 - A Momento Auth Token is required, you can generate one using
   the [Momento CLI](https://github.com/momentohq/momento-cli)
+
+### Running via local PHP
+
+You will need:
+
 - At least PHP 8.0
   The gRPC PHP extension. See the [gRPC docs](https://github.com/grpc/grpc/blob/v1.46.3/src/php/README.md) section on
 - [Composer](https://getcomposer.org/doc/00-intro.md)
 
-## Running the examples
+Run `composer update` to install the prerequisites.
+
+### Running via docker
 
 The Docker way:
 
-```bash
-# You can reference php commands to run various examples below.
-export DOCKER_COMMAND="php example.php"
-docker build --tag php-example --build-arg token=<YOUR_AUTH_TOKEN> --build-arg cache_name=<YOUR_CACHE_NAME> ../
-docker run -d -w /app/examples -it php-test bash -c $DOCKER_COMMAND
-```
+- Make sure you have run the `dev-docker-build.sh` script in the parent directory, to build the Momento PHP development
+  image.
+- Run the `./dev-php-docker-shell.sh` script to get a bash shell in a docker container that has all of the PHP dependencies
+  necessary to run the examples.  You may then run any of the commands below inside of the shell.
 
-Run `composer update` to install the prerequisites.
+## Running the examples
 
 Set required environment variables:
 

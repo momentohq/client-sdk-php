@@ -4,10 +4,12 @@ declare(strict_types=1);
 require "vendor/autoload.php";
 
 use Momento\Auth\EnvMomentoTokenProvider;
+use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\SimpleCacheClient;
 use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
 use Psr\Log\LoggerInterface;
+use function Momento\Utilities\isNullOrEmpty;
 
 $CACHE_NAME = getenv("CACHE_NAME");
 $DICTIONARY_NAME = "example-dictionary";
@@ -16,6 +18,9 @@ $VALUE = "MyValue";
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 
 // Setup
+if ($CACHE_NAME === false || isNullOrEmpty($CACHE_NAME)) {
+    throw new InvalidArgumentError("Environment variable CACHE_NAME is empty or null.");
+}
 $authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
 
 $configuration = Laptop::latest()->withLoggerFactory(new StderrLoggerFactory());
