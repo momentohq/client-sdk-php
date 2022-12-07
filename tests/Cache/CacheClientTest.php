@@ -948,6 +948,7 @@ class CacheClientTest extends TestCase
 
     public function testListEraseRange_LargeCountValue()
     {
+        $this->markTestSkipped("Skipping pending resolution of https://github.com/momentohq/storage-store/issues/111");
         $listName = uniqid();
         $values = [];
         foreach (range(0, 3) as $ignored) {
