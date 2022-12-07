@@ -154,11 +154,6 @@ class SimpleCacheClient implements LoggerAwareInterface
         return $this->dataClient->dictionaryGetField($cacheName, $dictionaryName, $field);
     }
 
-    public function dictionaryDelete(string $cacheName, string $dictionaryName): CacheDictionaryDeleteResponse
-    {
-        return $this->dataClient->dictionaryDelete($cacheName, $dictionaryName);
-    }
-
     public function dictionaryFetch(string $cacheName, string $dictionaryName): CacheDictionaryFetchResponse
     {
         return $this->dataClient->dictionaryFetch($cacheName, $dictionaryName);
@@ -204,10 +199,5 @@ class SimpleCacheClient implements LoggerAwareInterface
     public function setRemoveElement(string $cacheName, string $setName, string $element): CacheSetRemoveElementResponse
     {
         return $this->dataClient->setRemoveElement($cacheName, $setName, $element);
-    }
-
-    public function setDelete(string $cacheName, string $setName): CacheSetDeleteResponse
-    {
-        return $this->dataClient->setDelete($cacheName, $setName);
     }
 }

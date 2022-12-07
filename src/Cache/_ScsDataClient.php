@@ -515,25 +515,6 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryGetFieldResponseHit($dictionaryGetFieldResponse);
     }
 
-    public function dictionaryDelete(string $cacheName, string $dictionaryName): CacheDictionaryDeleteResponse
-    {
-        try {
-            validateCacheName($cacheName);
-            validateDictionaryName($dictionaryName);
-            $dictionaryDeleteRequest = new _DictionaryDeleteRequest();
-            $dictionaryDeleteRequest->setDictionaryName($dictionaryName);
-            $all = new All();
-            $dictionaryDeleteRequest->setAll($all);
-            $call = $this->grpcManager->client->DictionaryDelete($dictionaryDeleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
-        } catch (SdkError $e) {
-            return new CacheDictionaryDeleteResponseError($e);
-        } catch (Exception $e) {
-            return new CacheDictionaryDeleteResponseError(new UnknownError($e->getMessage()));
-        }
-        return new CacheDictionaryDeleteResponseSuccess();
-    }
-
     public function dictionaryFetch(string $cacheName, string $dictionaryName): CacheDictionaryFetchResponse
     {
         try {
@@ -749,25 +730,5 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheSetRemoveElementResponseError(new UnknownError($e->getMessage()));
         }
         return new CacheSetRemoveElementResponseSuccess();
-    }
-
-    public function setDelete(string $cacheName, string $setName): CacheSetDeleteResponse
-    {
-        try {
-            validateCacheName($cacheName);
-            validateSetName($setName);
-            $setDeleteRequest = new _SetDifferenceRequest();
-            $setDeleteRequest->setSetName($setName);
-            $subtrahend = new _Subtrahend();
-            $subtrahend->setIdentity(new _Identity());
-            $setDeleteRequest->setSubtrahend($subtrahend);
-            $call = $this->grpcManager->client->SetDifference($setDeleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
-        } catch (SdkError $e) {
-            return new CacheSetDeleteResponseError($e);
-        } catch (Exception $e) {
-            return new CacheSetDeleteResponseError(new UnknownError($e->getMessage()));
-        }
-        return new CacheSetDeleteResponseSuccess();
     }
 }
