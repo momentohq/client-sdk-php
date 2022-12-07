@@ -11,6 +11,7 @@ use Momento\Auth\ICredentialProvider;
 use Momento\Cache\Interceptors\AgentInterceptor;
 use Momento\Cache\Interceptors\AuthorizationInterceptor;
 use Momento\Config\IConfiguration;
+use const Grpc\CHANNEL_READY;
 
 class _DataGrpcManager
 {
@@ -33,6 +34,23 @@ class _DataGrpcManager
             new AgentInterceptor(),
         ];
         $channel = Interceptor::intercept($channel, $interceptors);
+
+        $tries = 0;
+        while (true) {
+            $state = $channel->getConnectivityState(true);
+            if ($state == CHANNEL_READY) {
+                print "Channel is ready!\n";
+                break;
+            } else {
+                print "Channel state is $state\n";
+                $tries++;
+                if ($tries > 30) {
+                    print "Giving up on channel\n";
+                    break;
+                }
+                sleep(1);
+            }
+        }
         $options = [];
         $this->client = new ScsClient($endpoint, $options, $channel);
     }

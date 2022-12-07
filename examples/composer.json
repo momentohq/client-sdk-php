@@ -1,12 +1,12 @@
 {
   "repositories": [
     {
-      "type": "vcs",
-      "url": "https://github.com/momentohq/client-sdk-php"
+      "type": "path",
+      "url": "../../client-sdk-php"
     }
   ],
   "require": {
-    "momentohq/client-sdk-php": "0.4.0",
+    "momentohq/client-sdk-php": "dev-php-benchmark",
     "monolog/monolog": "^2.5"
   },
   "config": {
