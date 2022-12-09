@@ -139,11 +139,6 @@ class SimpleCacheClient implements LoggerAwareInterface
         return $this->dataClient->listLength($cacheName, $listName);
     }
 
-    public function listErase(string $cacheName, string $listName, ?int $beginIndex = null, ?int $count = null)
-    {
-        return $this->dataClient->listErase($cacheName, $listName, $beginIndex, $count);
-    }
-
     public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): CacheDictionarySetFieldResponse
     {
         return $this->dataClient->dictionarySetField($cacheName, $dictionaryName, $field, $value, $ttl);

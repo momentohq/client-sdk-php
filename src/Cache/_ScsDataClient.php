@@ -423,37 +423,6 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheListLengthResponseSuccess($response);
     }
 
-    public function listErase(string $cacheName, string $listName, ?int $beginIndex = null, ?int $count = null): CacheListEraseResponse
-    {
-        try {
-            validateCacheName($cacheName);
-            validateListName($listName);
-            validateRange($beginIndex, $count);
-            $listEraseRequest = new _ListEraseRequest();
-            $listEraseRequest->setListName($listName);
-            if (!is_null($beginIndex) && !is_null($count)) {
-                $listRanges = new _ListEraseRequest\_ListRanges();
-                $listRange = new _ListRange();
-                $listRange->setBeginIndex($beginIndex);
-                $listRange->setCount($count);
-                $listRanges->setRanges([$listRange]);
-                $listEraseRequest->setSome($listRanges);
-            } else {
-                $all = new _ListEraseRequest\_All();
-                $listEraseRequest->setAll($all);
-            }
-            $call = $this->grpcManager->client->ListErase(
-                $listEraseRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
-            );
-            $this->processCall($call);
-        } catch (SdkError $e) {
-            return new CacheListEraseResponseError($e);
-        } catch (Exception $e) {
-            return new CacheListEraseResponseError(new UnknownError($e->getMessage()));
-        }
-        return new CacheListEraseResponseSuccess();
-    }
-
     public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): CacheDictionarySetFieldResponse
     {
         try {

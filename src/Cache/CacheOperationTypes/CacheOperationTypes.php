@@ -726,34 +726,6 @@ class CacheListLengthResponseError extends CacheListLengthResponse
     use ErrorBody;
 }
 
-abstract class CacheListEraseResponse extends ResponseBase
-{
-    public function asSuccess(): CacheListEraseResponseSuccess|null
-    {
-        if ($this->isSuccess()) {
-            return $this;
-        }
-        return null;
-    }
-
-    public function asError(): CacheListEraseResponseError|null
-    {
-        if ($this->isError()) {
-            return $this;
-        }
-        return null;
-    }
-}
-
-class CacheListEraseResponseSuccess extends CacheListEraseResponse
-{
-}
-
-class CacheListEraseResponseError extends CacheListEraseResponse
-{
-    use ErrorBody;
-}
-
 abstract class CacheDictionarySetFieldResponse extends ResponseBase
 {
     public function asSuccess(): CacheDictionarySetFieldResponseSuccess|null
