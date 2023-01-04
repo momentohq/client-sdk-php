@@ -28,7 +28,7 @@ This SDK contains APIs for interacting with collection data structures: Lists, S
 are currently in preview.  If you would like to request early access to the data structure APIs, please contact us
 at `support@momentohq.com`.
 
-**Note that if you call the List, Set, or Dictionary APIs without first signing up for our early access preview, you
+**Note that if you call the SetIfNotExists, List, Set, or Dictionary APIs without first signing up for our early access preview, you
 the calls will result in an `Unsupported operation` error.**
 
 ## Getting Started :running:
