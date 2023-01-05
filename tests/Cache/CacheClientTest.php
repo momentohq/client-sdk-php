@@ -456,7 +456,8 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->setIfNotExists($this->TEST_CACHE_NAME, $key, $value);
         $this->assertNull($response->asError());
-        $response = $response->asStored();
+        $this->assertNotNull($response->asStored());
+        $this->assertNull($response->asNotStored());
 
         $response = $this->client->get($this->TEST_CACHE_NAME, $key);
         $this->assertNull($response->asError());
@@ -465,7 +466,9 @@ class CacheClientTest extends TestCase
         $this->assertEquals($value, $response->valueString());
 
         $response = $this->client->setIfNotExists($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
         $this->assertNotNull($response->asNotStored());
+        $this->assertNull($response->asStored());
     }
 
     public function testSetIfNotExistsWithNonexistentCache()
