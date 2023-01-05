@@ -264,7 +264,7 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheSetIfNotExistsResponseError(new UnknownError($e->getMessage()));
         }
         if ($setIfNotExistsResponse->hasStored()) {
-            return new CacheSetIfNotExistsResponseStored();
+            return new CacheSetIfNotExistsResponseStored($setIfNotExistsResponse, $key, $value);
         }
         return new CacheSetIfNotExistsResponseNotStored();
     }

@@ -396,6 +396,30 @@ abstract class CacheSetIfNotExistsResponse extends ResponseBase
 }
 
 class CacheSetIfNotExistsResponseStored extends CacheSetIfNotExistsResponse {
+    private string $key;
+    private string $value;
+
+    public function __construct(_SetIfNotExistsResponse $grpcSetIfNotExistsResponse, string $key, string $value)
+    {
+        parent::__construct();
+        $this->key = $key;
+        $this->value = $value;
+    }
+
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    public function valueString(): string
+    {
+        return $this->value;
+    }
+
+    public function __toString()
+    {
+        return get_class($this) . ": key {$this->shortValue($this->key)} = {$this->shortValue($this->value)}";
+    }
 }
 
 class CacheSetIfNotExistsResponseNotStored extends CacheSetIfNotExistsResponse {
