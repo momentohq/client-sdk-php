@@ -34,9 +34,9 @@ class _ListPushBackRequest extends \Google\Protobuf\Internal\Message
     /**
      * ensure total length <= this; remove excess from front of list
      *
-     * Generated from protobuf field <code>optional uint32 truncate_front_to_size = 5;</code>
+     * Generated from protobuf field <code>uint32 truncate_front_to_size = 5;</code>
      */
-    protected $truncate_front_to_size = null;
+    protected $truncate_front_to_size = 0;
 
     /**
      * Constructor.
@@ -148,28 +148,18 @@ class _ListPushBackRequest extends \Google\Protobuf\Internal\Message
     /**
      * ensure total length <= this; remove excess from front of list
      *
-     * Generated from protobuf field <code>optional uint32 truncate_front_to_size = 5;</code>
+     * Generated from protobuf field <code>uint32 truncate_front_to_size = 5;</code>
      * @return int
      */
     public function getTruncateFrontToSize()
     {
-        return isset($this->truncate_front_to_size) ? $this->truncate_front_to_size : 0;
-    }
-
-    public function hasTruncateFrontToSize()
-    {
-        return isset($this->truncate_front_to_size);
-    }
-
-    public function clearTruncateFrontToSize()
-    {
-        unset($this->truncate_front_to_size);
+        return $this->truncate_front_to_size;
     }
 
     /**
      * ensure total length <= this; remove excess from front of list
      *
-     * Generated from protobuf field <code>optional uint32 truncate_front_to_size = 5;</code>
+     * Generated from protobuf field <code>uint32 truncate_front_to_size = 5;</code>
      * @param int $var
      * @return $this
      */

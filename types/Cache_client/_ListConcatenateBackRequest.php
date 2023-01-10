@@ -9,20 +9,18 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * stored = request + stored
- *
- * Generated from protobuf message <code>cache_client._ListPushFrontRequest</code>
+ * Generated from protobuf message <code>cache_client._ListConcatenateBackRequest</code>
  */
-class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
+class _ListConcatenateBackRequest extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>bytes list_name = 1;</code>
      */
     protected $list_name = '';
     /**
-     * Generated from protobuf field <code>bytes value = 2;</code>
+     * Generated from protobuf field <code>repeated bytes values = 2;</code>
      */
-    protected $value = '';
+    private $values;
     /**
      * Generated from protobuf field <code>uint64 ttl_milliseconds = 3;</code>
      */
@@ -32,11 +30,11 @@ class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
      */
     protected $refresh_ttl = false;
     /**
-     * ensure total length <= this; remove excess from back of list
+     * ensure total length <= this; remove excess from front of list
      *
-     * Generated from protobuf field <code>uint32 truncate_back_to_size = 5;</code>
+     * Generated from protobuf field <code>uint32 truncate_front_to_size = 5;</code>
      */
-    protected $truncate_back_to_size = 0;
+    protected $truncate_front_to_size = 0;
 
     /**
      * Constructor.
@@ -45,11 +43,11 @@ class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $list_name
-     *     @type string $value
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $values
      *     @type int|string $ttl_milliseconds
      *     @type bool $refresh_ttl
-     *     @type int $truncate_back_to_size
-     *           ensure total length <= this; remove excess from back of list
+     *     @type int $truncate_front_to_size
+     *           ensure total length <= this; remove excess from front of list
      * }
      */
     public function __construct($data = NULL) {
@@ -80,23 +78,23 @@ class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bytes value = 2;</code>
-     * @return string
+     * Generated from protobuf field <code>repeated bytes values = 2;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
-    public function getValue()
+    public function getValues()
     {
-        return $this->value;
+        return $this->values;
     }
 
     /**
-     * Generated from protobuf field <code>bytes value = 2;</code>
-     * @param string $var
+     * Generated from protobuf field <code>repeated bytes values = 2;</code>
+     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setValue($var)
+    public function setValues($var)
     {
-        GPBUtil::checkString($var, False);
-        $this->value = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::BYTES);
+        $this->values = $arr;
 
         return $this;
     }
@@ -146,27 +144,27 @@ class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * ensure total length <= this; remove excess from back of list
+     * ensure total length <= this; remove excess from front of list
      *
-     * Generated from protobuf field <code>uint32 truncate_back_to_size = 5;</code>
+     * Generated from protobuf field <code>uint32 truncate_front_to_size = 5;</code>
      * @return int
      */
-    public function getTruncateBackToSize()
+    public function getTruncateFrontToSize()
     {
-        return $this->truncate_back_to_size;
+        return $this->truncate_front_to_size;
     }
 
     /**
-     * ensure total length <= this; remove excess from back of list
+     * ensure total length <= this; remove excess from front of list
      *
-     * Generated from protobuf field <code>uint32 truncate_back_to_size = 5;</code>
+     * Generated from protobuf field <code>uint32 truncate_front_to_size = 5;</code>
      * @param int $var
      * @return $this
      */
-    public function setTruncateBackToSize($var)
+    public function setTruncateFrontToSize($var)
     {
         GPBUtil::checkUint32($var);
-        $this->truncate_back_to_size = $var;
+        $this->truncate_front_to_size = $var;
 
         return $this;
     }

@@ -26,6 +26,7 @@ use Cache_client\_SetDifferenceRequest\_Subtrahend;
 use Cache_client\_SetDifferenceRequest\_Subtrahend\_Identity;
 use Cache_client\_SetDifferenceRequest\_Subtrahend\_Set;
 use Cache_client\_SetFetchRequest;
+use Cache_client\_SetIfNotExistsRequest;
 use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
 use Cache_client\ECacheResult;
@@ -106,6 +107,10 @@ use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponseError;
+use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponseNotStored;
+use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponseStored;
 use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponseSuccess;
@@ -239,6 +244,31 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheGetResponseError(new UnknownError($e->getMessage()));
         }
     }
+
+    public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = null): CacheSetIfNotExistsResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $setIfNotExistsRequest = new _SetIfNotExistsRequest();
+            $setIfNotExistsRequest->setCacheKey($key);
+            $setIfNotExistsRequest->setCacheBody($value);
+            $setIfNotExistsRequest->setTtlMilliseconds($ttlMillis);
+            $call = $this->grpcManager->client->SetIfNotExists(
+                $setIfNotExistsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+            );
+            $setIfNotExistsResponse = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheSetIfNotExistsResponseError($e);
+        } catch (Exception $e) {
+            return new CacheSetIfNotExistsResponseError(new UnknownError($e->getMessage()));
+        }
+        if ($setIfNotExistsResponse->hasStored()) {
+            return new CacheSetIfNotExistsResponseStored($setIfNotExistsResponse, $key, $value);
+        }
+        return new CacheSetIfNotExistsResponseNotStored();
+    }
+
 
     public function delete(string $cacheName, string $key): CacheDeleteResponse
     {
