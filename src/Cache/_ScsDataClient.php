@@ -26,6 +26,7 @@ use Cache_client\_SetDifferenceRequest\_Subtrahend;
 use Cache_client\_SetDifferenceRequest\_Subtrahend\_Identity;
 use Cache_client\_SetDifferenceRequest\_Subtrahend\_Set;
 use Cache_client\_SetFetchRequest;
+use Cache_client\_SetIfNotExistsRequest;
 use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
 use Cache_client\ECacheResult;
@@ -106,6 +107,10 @@ use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponse;
+use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponseError;
+use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponseNotStored;
+use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponseStored;
 use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponseError;
 use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponseSuccess;
@@ -116,6 +121,8 @@ use Momento\Cache\Errors\InternalServerError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Config\IConfiguration;
+use Momento\Requests\CollectionTtl;
+use Momento\Requests\CollectionTtlFactory;
 use Momento\Utilities\_ErrorConverter;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -175,6 +182,14 @@ class _ScsDataClient implements LoggerAwareInterface
         return $ttl * 1000;
     }
 
+    private function returnCollectionTtl(?CollectionTtl $ttl): CollectionTtl
+    {
+        if (!$ttl) {
+            return CollectionTtl::fromCacheTtl();
+        }
+        return $ttl;
+    }
+
     private function processCall(UnaryCall $call): mixed
     {
         [$response, $status] = $call->wait();
@@ -230,6 +245,31 @@ class _ScsDataClient implements LoggerAwareInterface
         }
     }
 
+    public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = null): CacheSetIfNotExistsResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $setIfNotExistsRequest = new _SetIfNotExistsRequest();
+            $setIfNotExistsRequest->setCacheKey($key);
+            $setIfNotExistsRequest->setCacheBody($value);
+            $setIfNotExistsRequest->setTtlMilliseconds($ttlMillis);
+            $call = $this->grpcManager->client->SetIfNotExists(
+                $setIfNotExistsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+            );
+            $setIfNotExistsResponse = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheSetIfNotExistsResponseError($e);
+        } catch (Exception $e) {
+            return new CacheSetIfNotExistsResponseError(new UnknownError($e->getMessage()));
+        }
+        if ($setIfNotExistsResponse->hasStored()) {
+            return new CacheSetIfNotExistsResponseStored($setIfNotExistsResponse, $key, $value);
+        }
+        return new CacheSetIfNotExistsResponseNotStored();
+    }
+
+
     public function delete(string $cacheName, string $key): CacheDeleteResponse
     {
         try {
@@ -271,18 +311,19 @@ class _ScsDataClient implements LoggerAwareInterface
     }
 
     public function listPushFront(
-        string $cacheName, string $listName, string $value, bool $refreshTtl, ?int $truncateBackToSize = null, ?int $ttlSeconds = null
+        string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, ?CollectionTtl $ttl = null
     ): CacheListPushFrontResponse
     {
         try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateListName($listName);
             validateTruncateSize($truncateBackToSize);
-            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             $listPushFrontRequest = new _ListPushFrontRequest();
             $listPushFrontRequest->setListName($listName);
             $listPushFrontRequest->setValue($value);
-            $listPushFrontRequest->setRefreshTtl($refreshTtl);
+            $listPushFrontRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $listPushFrontRequest->setTtlMilliseconds($ttlMillis);
             if (!is_null($truncateBackToSize)) {
                 $listPushFrontRequest->setTruncateBackToSize($truncateBackToSize);
@@ -300,18 +341,19 @@ class _ScsDataClient implements LoggerAwareInterface
     }
 
     public function listPushBack(
-        string $cacheName, string $listName, string $value, bool $refreshTtl, ?int $truncateFrontToSize = null, ?int $ttlSeconds = null
+        string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, ?CollectionTtl $ttl = null
     ): CacheListPushBackResponse
     {
         try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateListName($listName);
             validateTruncateSize($truncateFrontToSize);
-            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             $listPushBackRequest = new _ListPushBackRequest();
             $listPushBackRequest->setListName($listName);
             $listPushBackRequest->setValue($value);
-            $listPushBackRequest->setRefreshTtl($refreshTtl);
+            $listPushBackRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $listPushBackRequest->setTtlMilliseconds($ttlMillis);
             if (!is_null($truncateFrontToSize)) {
                 $listPushBackRequest->setTruncateFrontToSize($truncateFrontToSize);
@@ -411,50 +453,20 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheListLengthResponseSuccess($response);
     }
 
-    public function listErase(string $cacheName, string $listName, ?int $beginIndex = null, ?int $count = null): CacheListEraseResponse
+    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): CacheDictionarySetFieldResponse
     {
         try {
-            validateCacheName($cacheName);
-            validateListName($listName);
-            validateRange($beginIndex, $count);
-            $listEraseRequest = new _ListEraseRequest();
-            $listEraseRequest->setListName($listName);
-            if (!is_null($beginIndex) && !is_null($count)) {
-                $listRanges = new _ListEraseRequest\_ListRanges();
-                $listRange = new _ListRange();
-                $listRange->setBeginIndex($beginIndex);
-                $listRange->setCount($count);
-                $listRanges->setRanges([$listRange]);
-                $listEraseRequest->setSome($listRanges);
-            } else {
-                $all = new _ListEraseRequest\_All();
-                $listEraseRequest->setAll($all);
-            }
-            $call = $this->grpcManager->client->ListErase(
-                $listEraseRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
-            );
-            $this->processCall($call);
-        } catch (SdkError $e) {
-            return new CacheListEraseResponseError($e);
-        } catch (Exception $e) {
-            return new CacheListEraseResponseError(new UnknownError($e->getMessage()));
-        }
-        return new CacheListEraseResponseSuccess();
-    }
-
-    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldResponse
-    {
-        try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
             validateFieldName($field);
             validateValueName($value);
-            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             validateTtl($ttlMillis);
             $dictionarySetFieldRequest = new _DictionarySetRequest();
             $dictionarySetFieldRequest->setDictionaryName($dictionaryName);
             $dictionarySetFieldRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
-            $dictionarySetFieldRequest->setRefreshTtl($refreshTtl);
+            $dictionarySetFieldRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $dictionarySetFieldRequest->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
@@ -502,25 +514,6 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryGetFieldResponseHit($dictionaryGetFieldResponse);
     }
 
-    public function dictionaryDelete(string $cacheName, string $dictionaryName): CacheDictionaryDeleteResponse
-    {
-        try {
-            validateCacheName($cacheName);
-            validateDictionaryName($dictionaryName);
-            $dictionaryDeleteRequest = new _DictionaryDeleteRequest();
-            $dictionaryDeleteRequest->setDictionaryName($dictionaryName);
-            $all = new All();
-            $dictionaryDeleteRequest->setAll($all);
-            $call = $this->grpcManager->client->DictionaryDelete($dictionaryDeleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
-        } catch (SdkError $e) {
-            return new CacheDictionaryDeleteResponseError($e);
-        } catch (Exception $e) {
-            return new CacheDictionaryDeleteResponseError(new UnknownError($e->getMessage()));
-        }
-        return new CacheDictionaryDeleteResponseSuccess();
-    }
-
     public function dictionaryFetch(string $cacheName, string $dictionaryName): CacheDictionaryFetchResponse
     {
         try {
@@ -541,14 +534,15 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryFetchResponseMiss();
     }
 
-    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, bool $refreshTtl, ?int $ttlSeconds = null): CacheDictionarySetFieldsResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, ?CollectionTtl $ttl = null): CacheDictionarySetFieldsResponse
     {
         try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
             validateItems($items);
             validateFieldsKeys($items);
-            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             $protoItems = [];
             foreach ($items as $field => $value) {
                 $fieldValuePair = new _DictionaryFieldValuePair();
@@ -558,7 +552,7 @@ class _ScsDataClient implements LoggerAwareInterface
             }
             $dictionarySetFieldsRequest = new _DictionarySetRequest();
             $dictionarySetFieldsRequest->setDictionaryName($dictionaryName);
-            $dictionarySetFieldsRequest->setRefreshTtl($refreshTtl);
+            $dictionarySetFieldsRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $dictionarySetFieldsRequest->setItems($protoItems);
             $dictionarySetFieldsRequest->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
@@ -595,21 +589,22 @@ class _ScsDataClient implements LoggerAwareInterface
     }
 
     public function dictionaryIncrement(
-        string $cacheName, string $dictionaryName, string $field, bool $refreshTtl, int $amount = 1, ?int $ttlSeconds = null
+        string $cacheName, string $dictionaryName, string $field, int $amount = 1, ?CollectionTtl $ttl = null
     ): CacheDictionaryIncrementResponse
     {
         try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
             validateFieldName($field);
-            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             validateTtl($ttlMillis);
             $dictionaryIncrementRequest = new _DictionaryIncrementRequest();
             $dictionaryIncrementRequest
                 ->setDictionaryName($dictionaryName)
                 ->setField($field)
                 ->setAmount($amount)
-                ->setRefreshTtl($refreshTtl)
+                ->setRefreshTtl($collectionTtl->getRefreshTtl())
                 ->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->DictionaryIncrement(
                 $dictionaryIncrementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
@@ -669,17 +664,18 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDictionaryRemoveFieldsResponseSuccess();
     }
 
-    public function setAddElement(string $cacheName, string $setName, string $element, bool $refreshTt, ?int $ttlSeconds = null): CacheSetAddElementResponse
+    public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): CacheSetAddElementResponse
     {
         try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateSetName($setName);
             validateElement($element);
-            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             validateTtl($ttlMillis);
             $setAddElementRequest = new _SetUnionRequest();
             $setAddElementRequest->setSetName($setName);
-            $setAddElementRequest->setRefreshTtl($refreshTt);
+            $setAddElementRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $setAddElementRequest->setTtlMilliseconds($ttlMillis);
             $setAddElementRequest->setElements([$element]);
             $call = $this->grpcManager->client->SetUnion($setAddElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
@@ -733,25 +729,5 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheSetRemoveElementResponseError(new UnknownError($e->getMessage()));
         }
         return new CacheSetRemoveElementResponseSuccess();
-    }
-
-    public function setDelete(string $cacheName, string $setName): CacheSetDeleteResponse
-    {
-        try {
-            validateCacheName($cacheName);
-            validateSetName($setName);
-            $setDeleteRequest = new _SetDifferenceRequest();
-            $setDeleteRequest->setSetName($setName);
-            $subtrahend = new _Subtrahend();
-            $subtrahend->setIdentity(new _Identity());
-            $setDeleteRequest->setSubtrahend($subtrahend);
-            $call = $this->grpcManager->client->SetDifference($setDeleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
-        } catch (SdkError $e) {
-            return new CacheSetDeleteResponseError($e);
-        } catch (Exception $e) {
-            return new CacheSetDeleteResponseError(new UnknownError($e->getMessage()));
-        }
-        return new CacheSetDeleteResponseSuccess();
     }
 }

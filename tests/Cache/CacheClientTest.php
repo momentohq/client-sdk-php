@@ -15,8 +15,9 @@ use Momento\Config\IConfiguration;
 use Momento\Config\Transport\StaticGrpcConfiguration;
 use Momento\Config\Transport\StaticTransportStrategy;
 use Momento\Logging\NullLoggerFactory;
+use Momento\Requests\CollectionTtl;
+use Momento\Requests\CollectionTtlFactory;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\NullLogger;
 use RuntimeException;
 use TypeError;
 
@@ -446,6 +447,94 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::TIMEOUT_ERROR, $response->asError()->errorCode());
     }
 
+    // SetIfNotExists tests
+
+    public function testSetIfNotExists()
+    {
+        $key = uniqid();
+        $value = uniqid();
+
+        $response = $this->client->setIfNotExists($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+        $this->assertNull($response->asNotStored());
+        $response = $response->asStored();
+        $this->assertNotNull($response);
+        $this->assertEquals($key, $response->key());
+        $this->assertEquals($value, $response->valueString());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $response = $response->asHit();
+        $this->assertNotNull($response);
+        $this->assertEquals($value, $response->valueString());
+
+        $response = $this->client->setIfNotExists($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asNotStored());
+        $this->assertNull($response->asStored());
+    }
+
+    public function testSetIfNotExistsWithNonexistentCache()
+    {
+        $cacheName = uniqid();
+        $response = $this->client->setIfNotExists($cacheName, "key", "value");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfNotExistsWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfNotExists(null, "key", "value");
+    }
+
+    public function testSetIfNotExistsWithEmptyCacheName()
+    {
+        $response = $this->client->setIfNotExists("", "key", "value");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfNotExistsWithNullKey_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfNotExists($this->TEST_CACHE_NAME, null, "value");
+    }
+
+    public function testSetIfNotExistsWithNullValue_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfNotExists($this->TEST_CACHE_NAME, "key", null);
+    }
+
+    public function testSetIfNotExistsNegativeTtl()
+    {
+        $response = $this->client->setIfNotExists($this->TEST_CACHE_NAME, "key", "value", -1);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfNotExistsBadKey()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->set($this->TEST_CACHE_NAME, null, "bar");
+    }
+
+    public function testSetIfNotExistsBadValue()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfNotExists($this->TEST_CACHE_NAME, "foo", null);
+    }
+
+    public function testSetIfNotExistsBadAuth()
+    {
+        $client = $this->getBadAuthTokenClient();
+        $response = $client->setIfNotExists($this->TEST_CACHE_NAME, "foo", "bar");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
+    }
+
+
     // Delete tests
 
     public function testDeleteNonexistentKey()
@@ -495,7 +584,7 @@ class CacheClientTest extends TestCase
         $listName = uniqid();
         $value = uniqid();
         $value2 = uniqid();
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, true, 6000);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::of(6000));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(1, $response->asSuccess()->listLength());
@@ -508,7 +597,7 @@ class CacheClientTest extends TestCase
         $this->assertCount(1, $values);
         $this->assertContains($value, $values);
 
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value2, true, 6000);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value2, ttl: CollectionTtl::of(6000));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(2, $response->asSuccess()->listLength());
@@ -525,11 +614,11 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false, 5);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::of(5)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false, 10);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -543,11 +632,11 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false, 2);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::of(2)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, true, 10);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::of(10)->withRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -564,15 +653,15 @@ class CacheClientTest extends TestCase
         $value1 = uniqid();
         $value2 = uniqid();
         $value3 = uniqid();
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value1, false);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value1, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value2, false);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value2, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value3, false, truncateBackToSize: 2);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value3, 2, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -586,7 +675,7 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false, truncateBackToSize: -1);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, -1, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -596,7 +685,7 @@ class CacheClientTest extends TestCase
         $listName = uniqid();
         $value = uniqid();
         $value2 = uniqid();
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, true, 6000);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::of(6000));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(1, $response->asSuccess()->listLength());
@@ -609,7 +698,7 @@ class CacheClientTest extends TestCase
         $this->assertCount(1, $values);
         $this->assertContains($value, $values);
 
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value2, true, 6000);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value2, ttl: CollectionTtl::of(6000));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(2, $response->asSuccess()->listLength());
@@ -626,11 +715,11 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false, 5);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::of(5)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false, 10);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -644,11 +733,11 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false, 2);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::of(2)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, true, 10);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::of(10));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -665,15 +754,15 @@ class CacheClientTest extends TestCase
         $value1 = uniqid();
         $value2 = uniqid();
         $value3 = uniqid();
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value1, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value1, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value2, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value2, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value3, false, truncateFrontToSize: 2);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value3, 2, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -687,7 +776,7 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false, truncateFrontToSize: -1);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, -1, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -706,7 +795,7 @@ class CacheClientTest extends TestCase
         $values = [];
         foreach (range(0, 3) as $ignored) {
             $val = uniqid();
-            $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $val, false);
+            $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $val, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
             $this->assertNull($response->asError());
             $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
             array_unshift($values, $val);
@@ -736,7 +825,7 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -761,7 +850,7 @@ class CacheClientTest extends TestCase
         $values = [];
         foreach (range(0, 3) as $ignored) {
             $val = uniqid();
-            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
             $this->assertNull($response->asError());
             $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
             $values[] = $val;
@@ -784,7 +873,7 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -810,16 +899,16 @@ class CacheClientTest extends TestCase
         $valueToRemove = uniqid();
         foreach (range(0, 3) as $ignored) {
             $val = uniqid();
-            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
             $this->assertNull($response->asError());
             $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
             $values[] = $val;
         }
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $valueToRemove, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $valueToRemove, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $valueToRemove, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $valueToRemove, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -846,7 +935,7 @@ class CacheClientTest extends TestCase
         $values = [];
         foreach (range(0, 3) as $ignored) {
             $val = uniqid();
-            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
             $this->assertNull($response->asError());
             $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
             $values[] = $val;
@@ -872,7 +961,7 @@ class CacheClientTest extends TestCase
         $listName = uniqid();
         foreach (range(0, 3) as $i) {
             $val = uniqid();
-            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
+            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
             $this->assertNull($response->asError());
             $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -892,93 +981,6 @@ class CacheClientTest extends TestCase
         $this->assertEquals(0, $response->asSuccess()->length());
     }
 
-    // List erase
-    public function testListEraseAll_HappyPath()
-    {
-        $listName = uniqid();
-        foreach (range(0, 3) as $ignored) {
-            $val = uniqid();
-            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
-            $this->assertNull($response->asError());
-            $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        }
-
-        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertEquals(4, $response->asSuccess()->length());
-
-        $response = $this->client->listErase($this->TEST_CACHE_NAME, $listName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-
-        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertEquals(0, $response->asSuccess()->length());
-    }
-
-    public function testListEraseRange_HappyPath()
-    {
-        $listName = uniqid();
-        $values = [];
-        foreach (range(0, 3) as $ignored) {
-            $val = uniqid();
-            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
-            $this->assertNull($response->asError());
-            $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-            $values[] = $val;
-        }
-
-        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertEquals(4, $response->asSuccess()->length());
-
-        $response = $this->client->listErase($this->TEST_CACHE_NAME, $listName, 0, 2);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-
-        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals(array_slice($values, 2), $response->asHit()->valuesArray());
-    }
-
-    public function testListEraseRange_LargeCountValue()
-    {
-        $listName = uniqid();
-        $values = [];
-        foreach (range(0, 3) as $ignored) {
-            $val = uniqid();
-            $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $val, false);
-            $this->assertNull($response->asError());
-            $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-            $values[] = $val;
-        }
-
-        $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertEquals(4, $response->asSuccess()->length());
-
-        $response = $this->client->listErase($this->TEST_CACHE_NAME, $listName, 1, 20);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-
-        $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals([$values[0]], $response->asHit()->valuesArray());
-    }
-
-    public function testListErase_MissingList()
-    {
-        $response = $this->client->listErase($this->TEST_CACHE_NAME, uniqid());
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-    }
-
     // Dictionary tests
     public function testDictionary_IsMissing()
     {
@@ -994,7 +996,7 @@ class CacheClientTest extends TestCase
         $dictionaryName = uniqid();
         $field = uniqid();
         $value = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1008,7 +1010,7 @@ class CacheClientTest extends TestCase
         $dictionaryName = uniqid();
         $field = uniqid();
         $value = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1023,12 +1025,12 @@ class CacheClientTest extends TestCase
         $dictionaryName = uniqid();
         $field = uniqid();
         $value = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, false, 5);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, CollectionTtl::of(5)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(1);
 
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, false, 10);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(4);
@@ -1061,7 +1063,7 @@ class CacheClientTest extends TestCase
         $dictionaryName = uniqid();
         $field = uniqid();
         $value = "";
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -1071,11 +1073,11 @@ class CacheClientTest extends TestCase
         $dictionaryName = uniqid();
         $field = uniqid();
         $value = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, false, 2);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, ttl: CollectionTtl::of(2)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, true, 10);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, ttl: CollectionTtl::of(10));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1086,28 +1088,11 @@ class CacheClientTest extends TestCase
         $this->assertEquals($value, $response->asHit()->valueString());
     }
 
-    public function testDictionaryDeleteEmptyCacheName_IsError()
-    {
-        $cacheName = "";
-        $dictionaryName = uniqid();
-        $response = $this->client->dictionaryDelete($cacheName, $dictionaryName);
-        $this->assertNotNull($response->asError(), "Expected error but got: $response");
-        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
-    }
-
-    public function testDictionaryDeleteEmptyDictionaryName_IsError()
-    {
-        $dictionaryName = "";
-        $response = $this->client->dictionaryDelete($this->TEST_CACHE_NAME, $dictionaryName);
-        $this->assertNotNull($response->asError(), "Expected error but got: $response");
-        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
-    }
-
     public function testDictionaryDelete_HappyPath()
     {
         $dictionaryName = uniqid();
         $field = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, uniqid(), false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, uniqid(), ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1115,7 +1100,7 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
-        $response = $this->client->dictionaryDelete($this->TEST_CACHE_NAME, $dictionaryName);
+        $response = $this->client->delete($this->TEST_CACHE_NAME, $dictionaryName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1127,7 +1112,7 @@ class CacheClientTest extends TestCase
     {
         $dictionaryName = uniqid();
         $field = "";
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -1136,17 +1121,17 @@ class CacheClientTest extends TestCase
     {
         $dictionaryName = uniqid();
         $field = uniqid();
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(1, $response->asSuccess()->valueInt());
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, 41);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, amount: 41, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(42, $response->asSuccess()->valueInt());
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, -1042);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, amount: -1042, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(-1000, $response->asSuccess()->valueInt());
@@ -1161,11 +1146,11 @@ class CacheClientTest extends TestCase
     {
         $dictionaryName = uniqid();
         $field = uniqid();
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, ttlSeconds: 2);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, ttl: CollectionTtl::of(2)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, true, ttlSeconds: 10);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, ttl: CollectionTtl::of(10));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(2);
@@ -1180,11 +1165,11 @@ class CacheClientTest extends TestCase
     {
         $dictionaryName = uniqid();
         $field = uniqid();
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, ttlSeconds: 5);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, ttl: CollectionTtl::of(5)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, ttlSeconds: 10);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, ttl: CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(6);
@@ -1198,25 +1183,25 @@ class CacheClientTest extends TestCase
     {
         $dictionaryName = uniqid();
         $field = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "10", false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "10", CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, 0);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, amount: 0, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(10, $response->asSuccess()->valueInt());
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, 90);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, amount: 90, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(100, $response->asSuccess()->valueInt());
 
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "0", false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "0", CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, 0);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, amount: 0, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(0, $response->asSuccess()->valueInt());
@@ -1226,11 +1211,11 @@ class CacheClientTest extends TestCase
     {
         $dictionaryName = uniqid();
         $field = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "amcaface", false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "amcaface", CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, true, 1);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, amount: 1);
         $this->assertNotNull($response->asError(), "Expected an error but got: $response");
         $this->assertEquals(MomentoErrorCode::FAILED_PRECONDITION_ERROR, $response->asError()->errorCode());
     }
@@ -1261,7 +1246,7 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
 
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field1, $value1, false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field1, $value1, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1307,11 +1292,11 @@ class CacheClientTest extends TestCase
         $fields = [uniqid(), uniqid()];
         $otherField = uniqid();
 
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $fields[0], uniqid(), false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $fields[0], uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $fields[1], uniqid(), false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $fields[1], uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $otherField, uniqid(), false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $otherField, uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
 
         $response = $this->client->dictionaryRemoveFields($this->TEST_CACHE_NAME, $dictionaryName, $fields);
@@ -1361,10 +1346,10 @@ class CacheClientTest extends TestCase
         $value1 = uniqid();
         $value2 = uniqid();
         $contentDictionary = [$field1 => $value1, $field2 => $value2];
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field1, $value1, true, 10);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field1, $value1, CollectionTtl::of(10));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field2, $value2, true, 10);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field2, $value2, CollectionTtl::of(10));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1381,7 +1366,7 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
 
-        $response = $this->client->dictionaryDelete($this->TEST_CACHE_NAME, $dictionaryName);
+        $response = $this->client->delete($this->TEST_CACHE_NAME, $dictionaryName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1393,15 +1378,15 @@ class CacheClientTest extends TestCase
     public function testDictionaryDeleteDictionaryExists_HappyPath()
     {
         $dictionaryName = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, uniqid(), uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1409,7 +1394,7 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
-        $response = $this->client->dictionaryDelete($this->TEST_CACHE_NAME, $dictionaryName);
+        $response = $this->client->delete($this->TEST_CACHE_NAME, $dictionaryName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1423,14 +1408,14 @@ class CacheClientTest extends TestCase
         $this->expectException(TypeError::class);
         $dictionaryName = null;
         $items = [uniqid()];
-        $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+        $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
     }
 
     public function testDictionarySetFieldsWithEmptyDictionaryName_IsError()
     {
         $dictionaryName = "";
         $items = [uniqid()];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -1440,19 +1425,19 @@ class CacheClientTest extends TestCase
         $this->expectException(TypeError::class);
         $dictionaryName = uniqid();
         $items = null;
-        $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+        $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
     }
 
     public function testDictionarySetFieldsWithEmptyItems_IsError()
     {
         $dictionaryName = uniqid();
         $items = [""];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
 
         $items = [];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -1465,7 +1450,7 @@ class CacheClientTest extends TestCase
         $value1 = uniqid();
         $value2 = uniqid();
         $items = [$field1 => $value1, $field2 => $value2];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1486,11 +1471,11 @@ class CacheClientTest extends TestCase
         $field = uniqid();
         $value = uniqid();
         $content = [$field => $value];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $content, false, 2);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $content, CollectionTtl::of(2)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $content, true, 10);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $content, CollectionTtl::of(10));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(2);
@@ -1507,12 +1492,12 @@ class CacheClientTest extends TestCase
         $field = uniqid();
         $value = uniqid();
         $content = [$field => $value];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $content, false, 5);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $content, CollectionTtl::of(5)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(1);
 
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $content, false, 10);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $content, CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(4);
@@ -1568,7 +1553,7 @@ class CacheClientTest extends TestCase
         $value1 = uniqid();
         $value2 = uniqid();
         $items = [$field1 => $value1, $field2 => $value2];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 600);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::of(600)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1596,7 +1581,7 @@ class CacheClientTest extends TestCase
         $value2 = uniqid();
         $value3 = uniqid();
         $items = [$field1 => $value1, $field2 => $value2, $field3 => $value3];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1614,10 +1599,7 @@ class CacheClientTest extends TestCase
         $field3 = uniqid();
         $response = $this->client->dictionaryGetFields($this->TEST_CACHE_NAME, $dictionaryName, [$field1, $field2, $field3]);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        foreach ($response->asHit()->responses() as $response) {
-            $this->assertEquals(CacheDictionaryGetFieldResponseMiss::class, $response);
-        }
+        $this->assertNotNull($response->asMiss(), "Expected a hit but got: $response");
     }
 
     public function testDictionaryGetBatchFieldsValuesArray_MixedPath()
@@ -1629,7 +1611,7 @@ class CacheClientTest extends TestCase
         $value1 = "val1";
         $value3 = "val3";
         $items = [$field1 => $value1, $field3 => $value3];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, false, 10);
+        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1689,7 +1671,7 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = "a short value";
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
 
         $response = $this->client->listPopFront($this->TEST_CACHE_NAME, $listName);
@@ -1701,7 +1683,7 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = str_repeat("a", 256);
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
 
         $response = $this->client->listPopFront($this->TEST_CACHE_NAME, $listName);
@@ -1714,7 +1696,7 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = "a short value";
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
 
         $response = $this->client->listPopBack($this->TEST_CACHE_NAME, $listName);
@@ -1726,7 +1708,7 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = str_repeat("a", 256);
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
 
         $response = $this->client->listPopBack($this->TEST_CACHE_NAME, $listName);
@@ -1739,11 +1721,11 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
 
         $response = $this->client->listFetch($this->TEST_CACHE_NAME, $listName);
@@ -1756,13 +1738,13 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertEquals("$response", get_class($response) . ": 1 items");
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertEquals("$response", get_class($response) . ": 2 items");
-        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushFront($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl(2)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertEquals("$response", get_class($response) . ": 3 items");
     }
@@ -1771,13 +1753,13 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertEquals("$response", get_class($response) . ": 1 items");
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertEquals("$response", get_class($response) . ": 2 items");
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertEquals("$response", get_class($response) . ": 3 items");
     }
@@ -1786,11 +1768,11 @@ class CacheClientTest extends TestCase
     {
         $listName = uniqid();
         $value = uniqid();
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
-        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, false);
+        $response = $this->client->listPushBack($this->TEST_CACHE_NAME, $listName, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
 
         $response = $this->client->listLength($this->TEST_CACHE_NAME, $listName);
@@ -1803,7 +1785,7 @@ class CacheClientTest extends TestCase
         $dictionaryName = uniqid();
         $field = uniqid();
         $value = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
 
         $response = $this->client->dictionaryGetField($this->TEST_CACHE_NAME, $dictionaryName, $field);
@@ -1817,7 +1799,7 @@ class CacheClientTest extends TestCase
         $dictionaryName = uniqid();
         $field = uniqid();
         $value = str_repeat("a", 256);
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
 
         $response = $this->client->dictionaryGetField($this->TEST_CACHE_NAME, $dictionaryName, $field);
@@ -1833,7 +1815,7 @@ class CacheClientTest extends TestCase
         $field = uniqid();
         $value = uniqid();
         for ($i = 0; $i < 5; $i++) {
-            $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, "$field-$i", $value, false);
+            $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, "$field-$i", $value, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
             $this->assertNull($response->asError());
         }
         $response = $this->client->dictionaryFetch($this->TEST_CACHE_NAME, $dictionaryName);
@@ -1846,14 +1828,14 @@ class CacheClientTest extends TestCase
     {
         $dictionaryName = uniqid();
         $field = uniqid();
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "1", false);
+        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, "1", CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertEquals("$response", get_class($response) . ": 2");
 
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, false, 10);
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, amount: 10, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertEquals("$response", get_class($response) . ": 12");
     }
@@ -1863,14 +1845,14 @@ class CacheClientTest extends TestCase
         $this->expectException(TypeError::class);
         $setName = uniqid();
         $element = uniqid();
-        $this->client->setAddElement(null, $setName, $element, false);
+        $this->client->setAddElement(null, $setName, $element, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
     }
 
     public function testSetAddElementWithEmptyCacheName_ThrowsException()
     {
         $setName = uniqid();
         $element = uniqid();
-        $response = $this->client->setAddElement("", $setName, $element, false);
+        $response = $this->client->setAddElement("", $setName, $element, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -1879,13 +1861,13 @@ class CacheClientTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $element = uniqid();
-        $this->client->setAddElement($this->TEST_CACHE_NAME, null, $element, false);
+        $this->client->setAddElement($this->TEST_CACHE_NAME, null, $element, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
     }
 
     public function testSetAddElementWithEmptySetName_ThrowsException()
     {
         $element = uniqid();
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, "", $element, false);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, "", $element, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -1894,13 +1876,13 @@ class CacheClientTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $setName = uniqid();
-        $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, null, false);
+        $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, null, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
     }
 
     public function testSetAddElementWithEmptyElement_ThrowsException()
     {
         $setName = uniqid();
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, "", false);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, "", CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -1937,7 +1919,7 @@ class CacheClientTest extends TestCase
     {
         $setName = uniqid();
         $element = uniqid();
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, false);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -1951,12 +1933,12 @@ class CacheClientTest extends TestCase
     {
         $setName = uniqid();
         $element = uniqid();
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, false, 5);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, CollectionTtl::of(5)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(1);
 
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, false, 10);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(4);
@@ -1970,11 +1952,11 @@ class CacheClientTest extends TestCase
     {
         $setName = uniqid();
         $element = uniqid();
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, false, 2);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, CollectionTtl::of(2)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, true, 10);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, CollectionTtl::of(10));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(2);
@@ -2035,7 +2017,7 @@ class CacheClientTest extends TestCase
     {
         $setName = uniqid();
         $element = uniqid();
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, false);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $element, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -2070,55 +2052,16 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
     }
 
-    public function testSetDeleteWithNullCacheName_ThrowsException()
-    {
-        $this->expectException(TypeError::class);
-        $setName = uniqid();
-        $this->client->setDelete(null, $setName);
-    }
-
-    public function testSetDeleteWithEmptyCacheName_IsError()
-    {
-        $setName = uniqid();
-        $response = $this->client->setDelete("", $setName);
-        $this->assertNotNull($response->asError(), "Expected error but got: $response");
-        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
-    }
-
-    public function testSetDeleteWithNullSetName_ThrowsException()
-    {
-        $this->expectException(TypeError::class);
-        $this->client->setDelete($this->TEST_CACHE_NAME, null);
-    }
-
-    public function testSetDeleteWithEmptySetName_IsError()
-    {
-        $response = $this->client->setDelete($this->TEST_CACHE_NAME, "");
-        $this->assertNotNull($response->asError(), "Expected error but got: $response");
-        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
-    }
-
-    public function testSetDelete_SetDoesNotExist_Noop()
-    {
-        $setName = uniqid();
-        $response = $this->client->setDelete($this->TEST_CACHE_NAME, $setName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got ${response}.");
-        $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asMiss(), "Expected a miss but got ${response}.");
-    }
-
     public function testSetDelete_SetExists_HappyPath()
     {
         $setName = uniqid();
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, uniqid(), false);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got ${response}.");
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, uniqid(), false);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got ${response}.");
-        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, uniqid(), false);
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got ${response}.");
 
@@ -2126,7 +2069,7 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got ${response}.");
 
-        $response = $this->client->setDelete($this->TEST_CACHE_NAME, $setName);
+        $response = $this->client->delete($this->TEST_CACHE_NAME, $setName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got ${response}.");
 

@@ -59,6 +59,20 @@ class ScsControlClient extends \Grpc\BaseStub {
     }
 
     /**
+     * @param \Control_client\_FlushCacheRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function FlushCache(\Control_client\_FlushCacheRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/control_client.ScsControl/FlushCache',
+        $argument,
+        ['\Control_client\_FlushCacheResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
      * @param \Control_client\_CreateSigningKeyRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options

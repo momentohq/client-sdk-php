@@ -9,20 +9,18 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * stored = request + stored
- *
- * Generated from protobuf message <code>cache_client._ListPushFrontRequest</code>
+ * Generated from protobuf message <code>cache_client._ListConcatenateFrontRequest</code>
  */
-class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
+class _ListConcatenateFrontRequest extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>bytes list_name = 1;</code>
      */
     protected $list_name = '';
     /**
-     * Generated from protobuf field <code>bytes value = 2;</code>
+     * Generated from protobuf field <code>repeated bytes values = 2;</code>
      */
-    protected $value = '';
+    private $values;
     /**
      * Generated from protobuf field <code>uint64 ttl_milliseconds = 3;</code>
      */
@@ -45,7 +43,7 @@ class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $list_name
-     *     @type string $value
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $values
      *     @type int|string $ttl_milliseconds
      *     @type bool $refresh_ttl
      *     @type int $truncate_back_to_size
@@ -80,23 +78,23 @@ class _ListPushFrontRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bytes value = 2;</code>
-     * @return string
+     * Generated from protobuf field <code>repeated bytes values = 2;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
-    public function getValue()
+    public function getValues()
     {
-        return $this->value;
+        return $this->values;
     }
 
     /**
-     * Generated from protobuf field <code>bytes value = 2;</code>
-     * @param string $var
+     * Generated from protobuf field <code>repeated bytes values = 2;</code>
+     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setValue($var)
+    public function setValues($var)
     {
-        GPBUtil::checkString($var, False);
-        $this->value = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::BYTES);
+        $this->values = $arr;
 
         return $this;
     }

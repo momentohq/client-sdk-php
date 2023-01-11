@@ -14,6 +14,7 @@ use Cache_client\_ListPopFrontResponse;
 use Cache_client\_ListPushBackResponse;
 use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetFetchResponse;
+use Cache_client\_SetIfNotExistsResponse;
 use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
 use Control_client\_ListCachesResponse;
@@ -109,6 +110,16 @@ abstract class ResponseBase
     protected function isMiss(): bool
     {
         return get_class($this) == "{$this->baseType}Miss";
+    }
+
+    protected function isStored(): bool
+    {
+        return get_class($this) == "{$this->baseType}Stored";
+    }
+
+    protected function isNotStored(): bool
+    {
+        return get_class($this) == "{$this->baseType}NotStored";
     }
 
     protected function shortValue(string $value): string
@@ -356,6 +367,69 @@ class CacheGetResponseError extends CacheGetResponse
 {
     use ErrorBody;
 }
+
+abstract class CacheSetIfNotExistsResponse extends ResponseBase
+{
+    public function asStored(): CacheSetIfNotExistsResponseStored|null
+    {
+        if ($this->isStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asNotStored(): CacheSetIfNotExistsResponseNotStored|null
+    {
+        if($this->isNotStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError(): CacheSetIfNotExistsResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheSetIfNotExistsResponseStored extends CacheSetIfNotExistsResponse {
+    private string $key;
+    private string $value;
+
+    public function __construct(_SetIfNotExistsResponse $grpcSetIfNotExistsResponse, string $key, string $value)
+    {
+        parent::__construct();
+        $this->key = $key;
+        $this->value = $value;
+    }
+
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    public function valueString(): string
+    {
+        return $this->value;
+    }
+
+    public function __toString()
+    {
+        return get_class($this) . ": key {$this->shortValue($this->key)} = {$this->shortValue($this->value)}";
+    }
+}
+
+class CacheSetIfNotExistsResponseNotStored extends CacheSetIfNotExistsResponse {
+}
+
+class CacheSetIfNotExistsResponseError extends CacheSetIfNotExistsResponse
+{
+    use ErrorBody;
+}
+
 
 abstract class CacheDeleteResponse extends ResponseBase
 {
@@ -726,34 +800,6 @@ class CacheListLengthResponseError extends CacheListLengthResponse
     use ErrorBody;
 }
 
-abstract class CacheListEraseResponse extends ResponseBase
-{
-    public function asSuccess(): CacheListEraseResponseSuccess|null
-    {
-        if ($this->isSuccess()) {
-            return $this;
-        }
-        return null;
-    }
-
-    public function asError(): CacheListEraseResponseError|null
-    {
-        if ($this->isError()) {
-            return $this;
-        }
-        return null;
-    }
-}
-
-class CacheListEraseResponseSuccess extends CacheListEraseResponse
-{
-}
-
-class CacheListEraseResponseError extends CacheListEraseResponse
-{
-    use ErrorBody;
-}
-
 abstract class CacheDictionarySetFieldResponse extends ResponseBase
 {
     public function asSuccess(): CacheDictionarySetFieldResponseSuccess|null
@@ -840,34 +886,6 @@ class CacheDictionaryGetFieldResponseMiss extends CacheDictionaryGetFieldRespons
 }
 
 class CacheDictionaryGetFieldResponseError extends CacheDictionaryGetFieldResponse
-{
-    use ErrorBody;
-}
-
-abstract class CacheDictionaryDeleteResponse extends ResponseBase
-{
-    public function asSuccess(): CacheDictionaryDeleteResponseSuccess|null
-    {
-        if ($this->isSuccess()) {
-            return $this;
-        }
-        return null;
-    }
-
-    public function asError(): CacheDictionaryDeleteResponseError|null
-    {
-        if ($this->isError()) {
-            return $this;
-        }
-        return null;
-    }
-}
-
-class CacheDictionaryDeleteResponseSuccess extends CacheDictionaryDeleteResponse
-{
-}
-
-class CacheDictionaryDeleteResponseError extends CacheDictionaryDeleteResponse
 {
     use ErrorBody;
 }
@@ -1252,34 +1270,6 @@ class CacheSetRemoveElementResponseSuccess extends CacheSetRemoveElementResponse
 }
 
 class CacheSetRemoveElementResponseError extends CacheSetRemoveElementResponse
-{
-    use ErrorBody;
-}
-
-abstract class CacheSetDeleteResponse extends ResponseBase
-{
-    public function asSuccess(): CacheSetDeleteResponseSuccess|null
-    {
-        if ($this->isSuccess()) {
-            return $this;
-        }
-        return null;
-    }
-
-    public function asError(): CacheSetDeleteResponseError|null
-    {
-        if ($this->isError()) {
-            return $this;
-        }
-        return null;
-    }
-}
-
-class CacheSetDeleteResponseSuccess extends CacheSetDeleteResponse
-{
-}
-
-class CacheSetDeleteResponseError extends CacheSetDeleteResponse
 {
     use ErrorBody;
 }

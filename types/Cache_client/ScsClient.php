@@ -45,6 +45,20 @@ class ScsClient extends \Grpc\BaseStub {
     }
 
     /**
+     * @param \Cache_client\_SetIfNotExistsRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SetIfNotExists(\Cache_client\_SetIfNotExistsRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SetIfNotExists',
+        $argument,
+        ['\Cache_client\_SetIfNotExistsResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
      * @param \Cache_client\_DeleteRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
@@ -279,6 +293,34 @@ class ScsClient extends \Grpc\BaseStub {
         return $this->_simpleRequest('/cache_client.Scs/ListLength',
         $argument,
         ['\Cache_client\_ListLengthResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * @param \Cache_client\_ListConcatenateFrontRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function ListConcatenateFront(\Cache_client\_ListConcatenateFrontRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/ListConcatenateFront',
+        $argument,
+        ['\Cache_client\_ListConcatenateFrontResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * @param \Cache_client\_ListConcatenateBackRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function ListConcatenateBack(\Cache_client\_ListConcatenateBackRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/ListConcatenateBack',
+        $argument,
+        ['\Cache_client\_ListConcatenateBackResponse', 'decode'],
         $metadata, $options);
     }
 
