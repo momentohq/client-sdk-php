@@ -114,4 +114,19 @@ class ScsControlClient extends \Grpc\BaseStub {
         $metadata, $options);
     }
 
+    /**
+     * api for programatically generating api and refresh tokens
+     * @param \Control_client\_GenerateApiTokenRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function GenerateApiToken(\Control_client\_GenerateApiTokenRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/control_client.ScsControl/GenerateApiToken',
+        $argument,
+        ['\Control_client\_GenerateApiTokenResponse', 'decode'],
+        $metadata, $options);
+    }
+
 }

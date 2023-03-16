@@ -9,14 +9,22 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Generated from protobuf message <code>cache_client._ListFetchRequest</code>
+ * Generated from protobuf message <code>cache_client._ListRetainRequest</code>
  */
-class _ListFetchRequest extends \Google\Protobuf\Internal\Message
+class _ListRetainRequest extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>bytes list_name = 1;</code>
      */
     protected $list_name = '';
+    /**
+     * Generated from protobuf field <code>uint64 ttl_milliseconds = 6;</code>
+     */
+    protected $ttl_milliseconds = 0;
+    /**
+     * Generated from protobuf field <code>bool refresh_ttl = 7;</code>
+     */
+    protected $refresh_ttl = false;
     protected $start_index;
     protected $end_index;
 
@@ -31,6 +39,8 @@ class _ListFetchRequest extends \Google\Protobuf\Internal\Message
      *     @type int $inclusive_start
      *     @type \Cache_client\_Unbounded $unbounded_end
      *     @type int $exclusive_end
+     *     @type int|string $ttl_milliseconds
+     *     @type bool $refresh_ttl
      * }
      */
     public function __construct($data = NULL) {
@@ -164,6 +174,50 @@ class _ListFetchRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->writeOneof(5, $var);
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 ttl_milliseconds = 6;</code>
+     * @return int|string
+     */
+    public function getTtlMilliseconds()
+    {
+        return $this->ttl_milliseconds;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint64 ttl_milliseconds = 6;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setTtlMilliseconds($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->ttl_milliseconds = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool refresh_ttl = 7;</code>
+     * @return bool
+     */
+    public function getRefreshTtl()
+    {
+        return $this->refresh_ttl;
+    }
+
+    /**
+     * Generated from protobuf field <code>bool refresh_ttl = 7;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setRefreshTtl($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->refresh_ttl = $var;
 
         return $this;
     }
