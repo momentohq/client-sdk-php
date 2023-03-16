@@ -16,7 +16,6 @@ use Momento\Config\Transport\StaticGrpcConfiguration;
 use Momento\Config\Transport\StaticTransportStrategy;
 use Momento\Logging\NullLoggerFactory;
 use Momento\Requests\CollectionTtl;
-use Momento\Requests\CollectionTtlFactory;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use TypeError;

@@ -5,7 +5,6 @@ namespace Momento\Cache;
 
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponse;
@@ -23,7 +22,6 @@ use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponse;
