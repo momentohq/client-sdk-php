@@ -17,7 +17,6 @@ use Momento\Config\Transport\StaticTransportStrategy;
 use Momento\Logging\NullLoggerFactory;
 use Momento\Requests\CollectionTtl;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 use TypeError;
 
 /**
@@ -27,30 +26,28 @@ class CacheClientTest extends TestCase
 {
     private IConfiguration $configuration;
     private EnvMomentoTokenProvider $authProvider;
-    private string $TEST_CACHE_NAME;
-    private string $BAD_AUTH_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJpbnRlZ3JhdGlvbiIsImNwIjoiY29udHJvbC5jZWxsLWFscGhhLWRldi5wcmVwcm9kLmEubW9tZW50b2hxLmNvbSIsImMiOiJjYWNoZS5jZWxsLWFscGhhLWRldi5wcmVwcm9kLmEubW9tZW50b2hxLmNvbSJ9.gdghdjjfjyehhdkkkskskmmls76573jnajhjjjhjdhnndy";
     private int $DEFAULT_TTL_SECONDS = 10;
     private SimpleCacheClient $client;
+    private string $TEST_CACHE_NAME;
+    private string $BAD_AUTH_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJpbnRlZ3JhdGlvbiIsImNwIjoiY29udHJvbC5jZWxsLWFscGhhLWRldi5wcmVwcm9kLmEubW9tZW50b2hxLmNvbSIsImMiOiJjYWNoZS5jZWxsLWFscGhhLWRldi5wcmVwcm9kLmEubW9tZW50b2hxLmNvbSJ9.gdghdjjfjyehhdkkkskskmmls76573jnajhjjjhjdhnndy";
 
     public function setUp(): void
     {
-        try {
-            $this->TEST_CACHE_NAME = getenv("TEST_CACHE_NAME");
-        } catch (TypeError) {
-            // getenv returned false
-            throw new RuntimeException(
-                "Integration tests require TEST_CACHE_NAME env var; see README for more details."
-            );
-        }
-
         $this->configuration = Configurations\Laptop::latest();
         $this->authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
         $this->client = new SimpleCacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
-
+        $this->TEST_CACHE_NAME = uniqid('php-integration-tests-');
         // Ensure test cache exists
-        $setUpCreateResponse = $this->client->createCache($this->TEST_CACHE_NAME);
-        if ($setUpError = $setUpCreateResponse->asError()) {
-            throw $setUpError->innerException();
+        $createResponse = $this->client->createCache($this->TEST_CACHE_NAME);
+        if ($createError = $createResponse->asError()) {
+            throw $createError->innerException();
+        }
+    }
+
+    public function tearDown() : void {
+        $deleteResponse = $this->client->deleteCache($this->TEST_CACHE_NAME);
+        if ($deleteError = $deleteResponse->asError()) {
+            throw $deleteError->innerException();
         }
     }
 
@@ -574,6 +571,55 @@ class CacheClientTest extends TestCase
         $response = $this->client->get($this->TEST_CACHE_NAME, $key);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+    }
+
+    // Keys Exist tests
+    public function testKeysExist() {
+        $keysToSet = ["key1", "key2", "key3"];
+        foreach ($keysToSet as $key) {
+            $response = $this->client->set($this->TEST_CACHE_NAME, $key, "hi");
+            $this->assertNull($response->asError());
+        }
+
+        $keysToTestAllHits = $keysToSet;
+        $keysToTestAllMisses = ["nope1", "nope2", "nope3"];
+        $keysToTestMixed = array_merge($keysToTestAllHits, $keysToTestAllMisses);
+        $expectAllHits = array_map(function() { return true; }, $keysToTestAllHits);
+        $expectAllMisses = array_map(function() { return false; }, $keysToTestAllMisses);
+        $expectMixed = array_map(function($v) { return str_starts_with($v, "key"); }, $keysToTestMixed);
+
+        $response = $this->client->keysExist($this->TEST_CACHE_NAME, $keysToTestAllHits);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals($response->asSuccess()->exists(), $expectAllHits);
+
+        $response = $this->client->keysExist($this->TEST_CACHE_NAME, $keysToTestAllMisses);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals($response->asSuccess()->exists(), $expectAllMisses);
+
+        $response = $this->client->keysExist($this->TEST_CACHE_NAME, $keysToTestMixed);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals($response->asSuccess()->exists(), $expectMixed);
+    }
+
+    public function testKeyExists() {
+        $keysToSet = ["key1", "key2", "key3"];
+        foreach ($keysToSet as $key) {
+            $response = $this->client->set($this->TEST_CACHE_NAME, $key, "hi");
+            $this->assertNull($response->asError());
+        }
+
+        $response = $this->client->keyExists($this->TEST_CACHE_NAME, "key2");
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(true, $response->asSuccess()->exists());
+
+        $response = $this->client->keyExists($this->TEST_CACHE_NAME, "nope99");
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(false, $response->asSuccess()->exists());
     }
 
     // List API tests
@@ -2056,24 +2102,24 @@ class CacheClientTest extends TestCase
         $setName = uniqid();
         $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got ${response}.");
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got $response.");
         $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got ${response}.");
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got $response.");
         $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, uniqid(), CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got ${response}.");
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got $response.");
 
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asHit(), "Expected a hit but got ${response}.");
+        $this->assertNotNull($response->asHit(), "Expected a hit but got $response.");
 
         $response = $this->client->delete($this->TEST_CACHE_NAME, $setName);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got ${response}.");
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got $response.");
 
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asMiss(), "Expected a miss but got ${response}.");
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got $response.");
     }
 }

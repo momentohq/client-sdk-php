@@ -7,6 +7,7 @@ use Cache_client\_DictionaryFetchResponse;
 use Cache_client\_DictionaryGetResponse;
 use Cache_client\_DictionaryIncrementResponse;
 use Cache_client\_GetResponse;
+use Cache_client\_KeysExistResponse;
 use Cache_client\_ListFetchResponse;
 use Cache_client\_ListLengthResponse;
 use Cache_client\_ListPopBackResponse;
@@ -422,8 +423,7 @@ class CacheSetIfNotExistsResponseStored extends CacheSetIfNotExistsResponse {
     }
 }
 
-class CacheSetIfNotExistsResponseNotStored extends CacheSetIfNotExistsResponse {
-}
+class CacheSetIfNotExistsResponseNotStored extends CacheSetIfNotExistsResponse {}
 
 class CacheSetIfNotExistsResponseError extends CacheSetIfNotExistsResponse
 {
@@ -455,6 +455,84 @@ class CacheDeleteResponseSuccess extends CacheDeleteResponse
 }
 
 class CacheDeleteResponseError extends CacheDeleteResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheKeysExistResponse extends ResponseBase
+{
+    public function asSuccess() : CacheKeysExistResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError() : CacheKeysExistResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheKeysExistResponseSuccess extends CacheKeysExistResponse
+{
+    private array $values = [];
+
+    public function __construct(_KeysExistResponse $response) {
+        parent::__construct();
+        foreach ($response->getExists()->getIterator() as $value) {
+            $this->values[] = (bool)$value;
+        }
+    }
+
+    public function exists() : array {
+        return $this->values;
+    }
+}
+
+class CacheKeysExistResponseError extends CacheKeysExistResponse
+{
+    use ErrorBody;
+}
+
+abstract class CacheKeyExistsResponse extends ResponseBase
+{
+    public function asSuccess() : CacheKeyExistsResponseSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    public function asError() : CacheKeyExistsResponseError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class CacheKeyExistsResponseSuccess extends CacheKeyExistsResponse
+{
+    private bool $value;
+
+    public function __construct(bool $response) {
+        parent::__construct();
+        $this->value = $response;
+    }
+
+    public function exists() : bool {
+        return $this->value;
+    }
+}
+
+class CacheKeyExistsResponseError extends CacheKeyExistsResponse
 {
     use ErrorBody;
 }

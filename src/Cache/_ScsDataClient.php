@@ -11,6 +11,8 @@ use Cache_client\_DictionaryGetRequest;
 use Cache_client\_DictionaryIncrementRequest;
 use Cache_client\_DictionarySetRequest;
 use Cache_client\_GetRequest;
+use Cache_client\_KeysExistRequest;
+use Cache_client\_KeysExistResponse;
 use Cache_client\_ListFetchRequest;
 use Cache_client\_ListLengthRequest;
 use Cache_client\_ListPopBackRequest;
@@ -63,6 +65,12 @@ use Momento\Cache\CacheOperationTypes\CacheGetResponse;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseError;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheGetResponseMiss;
+use Momento\Cache\CacheOperationTypes\CacheKeyExistsResponse;
+use Momento\Cache\CacheOperationTypes\CacheKeyExistsResponseError;
+use Momento\Cache\CacheOperationTypes\CacheKeyExistsResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CacheKeysExistResponse;
+use Momento\Cache\CacheOperationTypes\CacheKeysExistResponseError;
+use Momento\Cache\CacheOperationTypes\CacheKeysExistResponseSuccess;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponseError;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponseHit;
@@ -125,6 +133,7 @@ use function Momento\Utilities\validateSetName;
 use function Momento\Utilities\validateTruncateSize;
 use function Momento\Utilities\validateTtl;
 use function Momento\Utilities\validateValueName;
+use function PHPUnit\Framework\isInstanceOf;
 
 class _ScsDataClient implements LoggerAwareInterface
 {
@@ -271,6 +280,33 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheDeleteResponseError(new UnknownError($e->getMessage()));
         }
         return new CacheDeleteResponseSuccess();
+    }
+
+    public function keysExist(string $cacheName, array $keys) : CacheKeysExistResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            $keysExistRequest = new _KeysExistRequest();
+            $keysExistRequest->setCacheKeys($keys);
+            $call = $this->grpcManager->client->KeysExist(
+                $keysExistRequest, ["cache"=> [$cacheName]], ["timeout" => $this->timeout]
+            );
+            $response = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new CacheKeysExistResponseError($e);
+        } catch (Exception $e) {
+            return new CacheKeysExistResponseError(new UnknownError($e->getMessage()));
+        }
+        return new CacheKeysExistResponseSuccess($response);
+    }
+
+    public function keyExists(string $cacheName, string $key) : CacheKeyExistsResponse
+    {
+        $response = $this->keysExist($cacheName, [$key]);
+        if ($response instanceof CacheKeysExistResponseError) {
+            return new CacheKeyExistsResponseError($response->innerException());
+        }
+        return new CacheKeyExistsResponseSuccess($response->asSuccess()->exists()[0]);
     }
 
     public function listFetch(string $cacheName, string $listName): CacheListFetchResponse
