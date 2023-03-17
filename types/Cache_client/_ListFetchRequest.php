@@ -17,6 +17,8 @@ class _ListFetchRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>bytes list_name = 1;</code>
      */
     protected $list_name = '';
+    protected $start_index;
+    protected $end_index;
 
     /**
      * Constructor.
@@ -25,6 +27,10 @@ class _ListFetchRequest extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $list_name
+     *     @type \Cache_client\_Unbounded $unbounded_start
+     *     @type int $inclusive_start
+     *     @type \Cache_client\_Unbounded $unbounded_end
+     *     @type int $exclusive_end
      * }
      */
     public function __construct($data = NULL) {
@@ -52,6 +58,130 @@ class _ListFetchRequest extends \Google\Protobuf\Internal\Message
         $this->list_name = $var;
 
         return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_start = 2;</code>
+     * @return \Cache_client\_Unbounded|null
+     */
+    public function getUnboundedStart()
+    {
+        return $this->readOneof(2);
+    }
+
+    public function hasUnboundedStart()
+    {
+        return $this->hasOneof(2);
+    }
+
+    /**
+     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_start = 2;</code>
+     * @param \Cache_client\_Unbounded $var
+     * @return $this
+     */
+    public function setUnboundedStart($var)
+    {
+        GPBUtil::checkMessage($var, \Cache_client\_Unbounded::class);
+        $this->writeOneof(2, $var);
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>sint32 inclusive_start = 3;</code>
+     * @return int
+     */
+    public function getInclusiveStart()
+    {
+        return $this->readOneof(3);
+    }
+
+    public function hasInclusiveStart()
+    {
+        return $this->hasOneof(3);
+    }
+
+    /**
+     * Generated from protobuf field <code>sint32 inclusive_start = 3;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setInclusiveStart($var)
+    {
+        GPBUtil::checkInt32($var);
+        $this->writeOneof(3, $var);
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_end = 4;</code>
+     * @return \Cache_client\_Unbounded|null
+     */
+    public function getUnboundedEnd()
+    {
+        return $this->readOneof(4);
+    }
+
+    public function hasUnboundedEnd()
+    {
+        return $this->hasOneof(4);
+    }
+
+    /**
+     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_end = 4;</code>
+     * @param \Cache_client\_Unbounded $var
+     * @return $this
+     */
+    public function setUnboundedEnd($var)
+    {
+        GPBUtil::checkMessage($var, \Cache_client\_Unbounded::class);
+        $this->writeOneof(4, $var);
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>sint32 exclusive_end = 5;</code>
+     * @return int
+     */
+    public function getExclusiveEnd()
+    {
+        return $this->readOneof(5);
+    }
+
+    public function hasExclusiveEnd()
+    {
+        return $this->hasOneof(5);
+    }
+
+    /**
+     * Generated from protobuf field <code>sint32 exclusive_end = 5;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setExclusiveEnd($var)
+    {
+        GPBUtil::checkInt32($var);
+        $this->writeOneof(5, $var);
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStartIndex()
+    {
+        return $this->whichOneof("start_index");
+    }
+
+    /**
+     * @return string
+     */
+    public function getEndIndex()
+    {
+        return $this->whichOneof("end_index");
     }
 
 }

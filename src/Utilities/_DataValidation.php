@@ -31,6 +31,20 @@ if (!function_exists('validateCacheName')) {
     }
 }
 
+if (!function_exists('validateKeys')) {
+    function validateKeys(array $keys): void
+    {
+        if (empty($keys)) {
+            throw new InvalidArgumentError("Keys must be a non-empty array");
+        }
+        foreach ($keys as $key) {
+            if (isNullOrEmpty($key)) {
+                throw new InvalidArgumentError("Keys must all be non-empty strings");
+            }
+        }
+    }
+}
+
 if (!function_exists('validateListName')) {
     function validateListName(string $listName): void
     {

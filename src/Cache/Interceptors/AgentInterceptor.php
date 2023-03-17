@@ -8,7 +8,7 @@ use Grpc\Interceptor;
 class AgentInterceptor extends Interceptor
 {
 
-    private const AGENT = "php:0.3.0";
+    private const AGENT = "php:0.5.0";
     private bool $isFirstRequest = true;
 
     public function interceptUnaryUnary($method, $argument, $deserialize, $continuation, array $metadata = [], array $options = [])
