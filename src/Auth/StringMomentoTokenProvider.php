@@ -65,7 +65,7 @@ class StringMomentoTokenProvider implements ICredentialProvider
         return $this->trustedCacheEndpointCertificateName;
     }
 
-    public static function fromString(string $authToken): EnvMomentoTokenProvider
+    public static function fromString(string $authToken): StringMomentoTokenProvider
     {
         return new StringMomentoTokenProvider($authToken);
     }
