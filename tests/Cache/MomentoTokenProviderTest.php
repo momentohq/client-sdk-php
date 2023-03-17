@@ -13,6 +13,7 @@ use TypeError;
 
 /**
  * @covers \Momento\Auth\EnvMomentoTokenProvider
+ * @covers \Momento\Auth\StringMomentoTokenProvider
  */
 class MomentoTokenProviderTest extends TestCase
 {
