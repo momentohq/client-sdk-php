@@ -286,6 +286,7 @@ class _ScsDataClient implements LoggerAwareInterface
     {
         try {
             validateCacheName($cacheName);
+            validateKeys($keys);
             $keysExistRequest = new _KeysExistRequest();
             $keysExistRequest->setCacheKeys($keys);
             $call = $this->grpcManager->client->KeysExist(
