@@ -12,7 +12,6 @@ use Cache_client\_DictionaryIncrementRequest;
 use Cache_client\_DictionarySetRequest;
 use Cache_client\_GetRequest;
 use Cache_client\_KeysExistRequest;
-use Cache_client\_KeysExistResponse;
 use Cache_client\_ListFetchRequest;
 use Cache_client\_ListLengthRequest;
 use Cache_client\_ListPopBackRequest;
@@ -127,13 +126,13 @@ use function Momento\Utilities\validateFieldName;
 use function Momento\Utilities\validateFields;
 use function Momento\Utilities\validateFieldsKeys;
 use function Momento\Utilities\validateItems;
+use function Momento\Utilities\validateKeys;
 use function Momento\Utilities\validateListName;
 use function Momento\Utilities\validateOperationTimeout;
 use function Momento\Utilities\validateSetName;
 use function Momento\Utilities\validateTruncateSize;
 use function Momento\Utilities\validateTtl;
 use function Momento\Utilities\validateValueName;
-use function PHPUnit\Framework\isInstanceOf;
 
 class _ScsDataClient implements LoggerAwareInterface
 {
@@ -298,7 +297,7 @@ class _ScsDataClient implements LoggerAwareInterface
         } catch (Exception $e) {
             return new CacheKeysExistResponseError(new UnknownError($e->getMessage()));
         }
-        return new CacheKeysExistResponseSuccess($response);
+        return new CacheKeysExistResponseSuccess($response, $keys);
     }
 
     public function keyExists(string $cacheName, string $key) : CacheKeyExistsResponse

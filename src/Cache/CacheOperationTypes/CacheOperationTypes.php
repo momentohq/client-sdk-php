@@ -481,16 +481,23 @@ abstract class CacheKeysExistResponse extends ResponseBase
 class CacheKeysExistResponseSuccess extends CacheKeysExistResponse
 {
     private array $values = [];
+    private array $valuesDictionary = [];
 
-    public function __construct(_KeysExistResponse $response) {
+    public function __construct(_KeysExistResponse $response, array $keys) {
         parent::__construct();
-        foreach ($response->getExists()->getIterator() as $value) {
+        foreach ($response->getExists()->getIterator() as $index=>$value) {
             $this->values[] = (bool)$value;
+            $this->valuesDictionary[$keys[$index]] = (bool)$value;
         }
     }
 
     public function exists() : array {
         return $this->values;
+    }
+
+    public function existsDictionary() : array
+    {
+        return $this->valuesDictionary;
     }
 }
 
@@ -530,6 +537,8 @@ class CacheKeyExistsResponseSuccess extends CacheKeyExistsResponse
     public function exists() : bool {
         return $this->value;
     }
+
+
 }
 
 class CacheKeyExistsResponseError extends CacheKeyExistsResponse

@@ -585,23 +585,29 @@ class CacheClientTest extends TestCase
         $keysToTestAllMisses = ["nope1", "nope2", "nope3"];
         $keysToTestMixed = array_merge($keysToTestAllHits, $keysToTestAllMisses);
         $expectAllHits = array_map(function() { return true; }, $keysToTestAllHits);
+        $expectAllHitsDict = array_combine($keysToTestAllHits, $expectAllHits);
         $expectAllMisses = array_map(function() { return false; }, $keysToTestAllMisses);
+        $expectAllMissesDict = array_combine($keysToTestAllMisses, $expectAllMisses);
         $expectMixed = array_map(function($v) { return str_starts_with($v, "key"); }, $keysToTestMixed);
+        $expectMixedDict = array_combine($keysToTestMixed, $expectMixed);
 
         $response = $this->client->keysExist($this->TEST_CACHE_NAME, $keysToTestAllHits);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals($response->asSuccess()->exists(), $expectAllHits);
+        $this->assertEquals($response->asSuccess()->existsDictionary(), $expectAllHitsDict);
 
         $response = $this->client->keysExist($this->TEST_CACHE_NAME, $keysToTestAllMisses);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals($response->asSuccess()->exists(), $expectAllMisses);
+        $this->assertEquals($response->asSuccess()->existsDictionary(), $expectAllMissesDict);
 
         $response = $this->client->keysExist($this->TEST_CACHE_NAME, $keysToTestMixed);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals($response->asSuccess()->exists(), $expectMixed);
+        $this->assertEquals($response->asSuccess()->existsDictionary(), $expectMixedDict);
     }
 
     public function testKeyExists() {
