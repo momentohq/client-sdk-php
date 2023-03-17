@@ -73,6 +73,48 @@ class ScsClient extends \Grpc\BaseStub {
     }
 
     /**
+     * @param \Cache_client\_KeysExistRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function KeysExist(\Cache_client\_KeysExistRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/KeysExist',
+        $argument,
+        ['\Cache_client\_KeysExistResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * @param \Cache_client\_IncrementRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function Increment(\Cache_client\_IncrementRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/Increment',
+        $argument,
+        ['\Cache_client\_IncrementResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * @param \Cache_client\_UpdateTtlRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function UpdateTtl(\Cache_client\_UpdateTtlRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/UpdateTtl',
+        $argument,
+        ['\Cache_client\_UpdateTtlResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
      * @param \Cache_client\_DictionaryGetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
@@ -181,6 +223,20 @@ class ScsClient extends \Grpc\BaseStub {
         return $this->_simpleRequest('/cache_client.Scs/SetDifference',
         $argument,
         ['\Cache_client\_SetDifferenceResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * @param \Cache_client\_SetContainsRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SetContains(\Cache_client\_SetContainsRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SetContains',
+        $argument,
+        ['\Cache_client\_SetContainsResponse', 'decode'],
         $metadata, $options);
     }
 
@@ -321,6 +377,125 @@ class ScsClient extends \Grpc\BaseStub {
         return $this->_simpleRequest('/cache_client.Scs/ListConcatenateBack',
         $argument,
         ['\Cache_client\_ListConcatenateBackResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * @param \Cache_client\_ListRetainRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function ListRetain(\Cache_client\_ListRetainRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/ListRetain',
+        $argument,
+        ['\Cache_client\_ListRetainResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * Sorted Set Operations
+     * A sorted set is a collection of elements ordered by their score.
+     * The elements with same score are ordered lexicographically.
+     *
+     * Add or Updates new element with its score to the Sorted Set.
+     * If sorted set doesn't exist, a new one is created with the specified
+     * element and its associated score.
+     * If an element exists, then its associate score gets overridden with the one
+     * provided in this operation.
+     * @param \Cache_client\_SortedSetPutRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SortedSetPut(\Cache_client\_SortedSetPutRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SortedSetPut',
+        $argument,
+        ['\Cache_client\_SortedSetPutResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * Fetches a subset of elements in the sorted set.
+     * @param \Cache_client\_SortedSetFetchRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SortedSetFetch(\Cache_client\_SortedSetFetchRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SortedSetFetch',
+        $argument,
+        ['\Cache_client\_SortedSetFetchResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * Gets the specified element and its associated score if it exists in the
+     * sorted set.
+     * @param \Cache_client\_SortedSetGetScoreRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SortedSetGetScore(\Cache_client\_SortedSetGetScoreRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SortedSetGetScore',
+        $argument,
+        ['\Cache_client\_SortedSetGetScoreResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * Removes specified elements and their associated scores
+     * @param \Cache_client\_SortedSetRemoveRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SortedSetRemove(\Cache_client\_SortedSetRemoveRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SortedSetRemove',
+        $argument,
+        ['\Cache_client\_SortedSetRemoveResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * Changes the score associated with the element by specified amount.
+     * If the provided amount is negative, then the score associated with the
+     * element is decremented.
+     * If the element that needs to be incremented isn't present in the sorted
+     * set, it is added with specified number as the score.
+     * If the set itself doesn't exist then a new one with specified element and
+     * score is created.
+     * @param \Cache_client\_SortedSetIncrementRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SortedSetIncrement(\Cache_client\_SortedSetIncrementRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SortedSetIncrement',
+        $argument,
+        ['\Cache_client\_SortedSetIncrementResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * Gives the rank of an element.
+     * @param \Cache_client\_SortedSetGetRankRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SortedSetGetRank(\Cache_client\_SortedSetGetRankRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SortedSetGetRank',
+        $argument,
+        ['\Cache_client\_SortedSetGetRankResponse', 'decode'],
         $metadata, $options);
     }
 

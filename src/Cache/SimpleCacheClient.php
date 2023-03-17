@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Momento\Cache;
 
+use Cache_client\_KeysExistResponse;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponse;
@@ -15,6 +15,8 @@ use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\CacheGetResponse;
+use Momento\Cache\CacheOperationTypes\CacheKeyExistsResponse;
+use Momento\Cache\CacheOperationTypes\CacheKeysExistResponse;
 use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheListLengthResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPopBackResponse;
@@ -23,7 +25,6 @@ use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
 use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponse;
 use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponse;
@@ -104,6 +105,16 @@ class SimpleCacheClient implements LoggerAwareInterface
     public function delete(string $cacheName, string $key): CacheDeleteResponse
     {
         return $this->dataClient->delete($cacheName, $key);
+    }
+
+    public function keysExist(string $cacheName, array $keys): CacheKeysExistResponse
+    {
+        return $this->dataClient->keysExist($cacheName, $keys);
+    }
+
+    public function keyExists(string $cacheName, string $key): CacheKeyExistsResponse
+    {
+        return $this->dataClient->keyExists($cacheName, $key);
     }
 
     public function listFetch(string $cacheName, string $listName): CacheListFetchResponse
