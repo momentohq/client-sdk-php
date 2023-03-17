@@ -15,7 +15,7 @@ use function Momento\Utilities\validatePsr16Key;
 class Psr16CacheClient implements CacheInterface
 {
 
-    private SimpleCacheClient $momento;
+    private CacheClient $momento;
     // PSR-16 spec requires a default of as close to "forever" as the engine allows.
     // The below is set to a week and will be truncated as necessary for the cache
     // backend in use.
@@ -38,7 +38,7 @@ class Psr16CacheClient implements CacheInterface
     )
     {
         $ttlSeconds = $defaultTtlSeconds ?? self::DEFAULT_TTL_SECONDS;
-        $this->momento = new SimpleCacheClient($configuration, $authProvider, $ttlSeconds);
+        $this->momento = new CacheClient($configuration, $authProvider, $ttlSeconds);
         if (!is_null($throwExceptions)) {
             $this->throwExceptions = $throwExceptions;
         }

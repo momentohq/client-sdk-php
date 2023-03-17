@@ -9,7 +9,7 @@ use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Errors\InvalidArgumentException;
 use Momento\Cache\Errors\NotImplementedException;
 use Momento\Cache\Psr16CacheClient;
-use Momento\Cache\SimpleCacheClient;
+use Momento\Cache\CacheClient;
 use Momento\Config\Configuration;
 use Momento\Config\Transport\StaticGrpcConfiguration;
 use Momento\Config\Transport\StaticTransportStrategy;
@@ -34,7 +34,7 @@ class Psr16ClientTest extends \PHPUnit\Framework\TestCase
         $authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
 
         // Ensure test cache exists
-        $createCacheClient = new SimpleCacheClient($configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
+        $createCacheClient = new CacheClient($configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
         $setUpCreateResponse = $createCacheClient->createCache($this->TEST_CACHE_NAME);
         if ($setUpError = $setUpCreateResponse->asError()) {
             throw $setUpError->innerException();
