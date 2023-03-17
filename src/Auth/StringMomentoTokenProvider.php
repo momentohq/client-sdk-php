@@ -7,7 +7,7 @@ use Momento\Cache\Errors\InvalidArgumentError;
 use function \Momento\Utilities\isNullOrEmpty;
 
 
-class EnvMomentoTokenProvider implements ICredentialProvider
+class StringMomentoTokenProvider implements ICredentialProvider
 {
     private string $authToken;
     private string $controlEndpoint;
@@ -16,16 +16,15 @@ class EnvMomentoTokenProvider implements ICredentialProvider
     private ?string $trustedCacheEndpointCertificateName = null;
 
     public function __construct(
-        string  $envVariableName,
+        string  $authToken,
         ?string $controlEndpoint = null,
         ?string $cacheEndpoint = null,
         ?string $trustedControlEndpointCertificateName = null,
         ?string $trustedCacheEndpointCertificateName = null
     )
     {
-        $authToken = getenv($envVariableName);
-        if ($authToken === false || isNullOrEmpty($authToken)) {
-            throw new InvalidArgumentError("Environment variable $envVariableName is empty or null.");
+        if (isNullOrEmpty($authToken)) {
+            throw new InvalidArgumentError("String $authToken is empty or null.");
         }
         if ($trustedControlEndpointCertificateName xor $trustedCacheEndpointCertificateName) {
             throw new InvalidArgumentError(
@@ -66,7 +65,8 @@ class EnvMomentoTokenProvider implements ICredentialProvider
         return $this->trustedCacheEndpointCertificateName;
     }
 
-    public static function fromEnvironmentVariable(string $envVariableName): EnvMomentoTokenProvider {
-        return new EnvMomentoTokenProvider($envVariableName);
+    public static function fromString(string $authToken): EnvMomentoTokenProvider
+    {
+        return new StringMomentoTokenProvider($authToken);
     }
 }
