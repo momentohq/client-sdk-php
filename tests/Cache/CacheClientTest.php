@@ -8,7 +8,7 @@ use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseHit;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseMiss;
 use Momento\Cache\Errors\MomentoErrorCode;
-use Momento\Cache\SimpleCacheClient;
+use Momento\Cache\CacheClient;
 use Momento\Config\Configuration;
 use Momento\Config\Configurations;
 use Momento\Config\IConfiguration;
@@ -20,14 +20,14 @@ use PHPUnit\Framework\TestCase;
 use TypeError;
 
 /**
- * @covers SimpleCacheClient
+ * @covers CacheClient
  */
 class CacheClientTest extends TestCase
 {
     private IConfiguration $configuration;
     private EnvMomentoTokenProvider $authProvider;
     private int $DEFAULT_TTL_SECONDS = 10;
-    private SimpleCacheClient $client;
+    private CacheClient $client;
     private string $TEST_CACHE_NAME;
     private string $BAD_AUTH_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJpbnRlZ3JhdGlvbiIsImNwIjoiY29udHJvbC5jZWxsLWFscGhhLWRldi5wcmVwcm9kLmEubW9tZW50b2hxLmNvbSIsImMiOiJjYWNoZS5jZWxsLWFscGhhLWRldi5wcmVwcm9kLmEubW9tZW50b2hxLmNvbSJ9.gdghdjjfjyehhdkkkskskmmls76573jnajhjjjhjdhnndy";
 
@@ -35,7 +35,7 @@ class CacheClientTest extends TestCase
     {
         $this->configuration = Configurations\Laptop::latest();
         $this->authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
-        $this->client = new SimpleCacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
+        $this->client = new CacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
         $this->TEST_CACHE_NAME = uniqid('php-integration-tests-');
         // Ensure test cache exists
         $createResponse = $this->client->createCache($this->TEST_CACHE_NAME);
@@ -51,13 +51,13 @@ class CacheClientTest extends TestCase
         }
     }
 
-    private function getBadAuthTokenClient(): SimpleCacheClient
+    private function getBadAuthTokenClient(): CacheClient
     {
         $badEnvName = "_MOMENTO_BAD_AUTH_TOKEN";
         putenv("{$badEnvName}={$this->BAD_AUTH_TOKEN}");
         $authProvider = new EnvMomentoTokenProvider($badEnvName);
         putenv($badEnvName);
-        return new SimpleCacheClient($this->configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
+        return new CacheClient($this->configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
     private function getConfigurationWithDeadline(int $deadline)
@@ -102,7 +102,7 @@ class CacheClientTest extends TestCase
     public function testNegativeDefaultTtl()
     {
         $this->expectExceptionMessage("TTL Seconds must be a non-negative integer");
-        $client = new SimpleCacheClient($this->configuration, $this->authProvider, -1);
+        $client = new CacheClient($this->configuration, $this->authProvider, -1);
     }
 
     // Client initialization tests
@@ -121,14 +121,14 @@ class CacheClientTest extends TestCase
     {
         $this->expectExceptionMessage("Request timeout must be greater than zero.");
         $configuration = $this->getConfigurationWithDeadline(-1);
-        $client = new SimpleCacheClient($configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
+        $client = new CacheClient($configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
     public function testZeroRequestTimeout()
     {
         $this->expectExceptionMessage("Request timeout must be greater than zero.");
         $configuration = $this->getConfigurationWithDeadline(0);
-        $client = new SimpleCacheClient($configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
+        $client = new CacheClient($configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
     // Create cache tests
@@ -290,7 +290,7 @@ class CacheClientTest extends TestCase
     {
         $key = uniqid();
         $value = uniqid();
-        $client = new SimpleCacheClient($this->configuration, $this->authProvider, 2);
+        $client = new CacheClient($this->configuration, $this->authProvider, 2);
         $response = $client->set($this->TEST_CACHE_NAME, $key, $value);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
@@ -437,7 +437,7 @@ class CacheClientTest extends TestCase
     public function testGetTimeout()
     {
         $configuration = $this->getConfigurationWithDeadline(1);
-        $client = new SimpleCacheClient($configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
+        $client = new CacheClient($configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
         $response = $client->get($this->TEST_CACHE_NAME, "key");
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::TIMEOUT_ERROR, $response->asError()->errorCode());
