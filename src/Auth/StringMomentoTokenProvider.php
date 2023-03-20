@@ -6,7 +6,9 @@ namespace Momento\Auth;
 use Momento\Cache\Errors\InvalidArgumentError;
 use function \Momento\Utilities\isNullOrEmpty;
 
-
+/**
+ * Reads and parses a JWT token stored as a string.
+ */
 class StringMomentoTokenProvider implements ICredentialProvider
 {
     private string $authToken;
@@ -65,6 +67,12 @@ class StringMomentoTokenProvider implements ICredentialProvider
         return $this->trustedCacheEndpointCertificateName;
     }
 
+    /**
+     * Convenience method for reading and parsing a JWT token stored as a string.
+     * @param string $authToken The JWT token.
+     * @return StringMomentoTokenProvider
+     * @throws InvalidArgumentError
+     */
     public static function fromString(string $authToken): StringMomentoTokenProvider
     {
         return new StringMomentoTokenProvider($authToken);

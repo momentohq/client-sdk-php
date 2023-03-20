@@ -6,7 +6,9 @@ namespace Momento\Auth;
 use Momento\Cache\Errors\InvalidArgumentError;
 use function \Momento\Utilities\isNullOrEmpty;
 
-
+/**
+ * Reads and parses a JWT token stored as an environment variable.
+ */
 class EnvMomentoTokenProvider implements ICredentialProvider
 {
     private string $authToken;
@@ -66,6 +68,12 @@ class EnvMomentoTokenProvider implements ICredentialProvider
         return $this->trustedCacheEndpointCertificateName;
     }
 
+    /**
+     * Convenience method for reading and parsing a JWT token stored as an environment variable.
+     * @param string $envVariableName Name of the environment variable that contains the JWT token.
+     * @return EnvMomentoTokenProvider
+     * @throws InvalidArgumentError
+     */
     public static function fromEnvironmentVariable(string $envVariableName): EnvMomentoTokenProvider {
         return new EnvMomentoTokenProvider($envVariableName);
     }
