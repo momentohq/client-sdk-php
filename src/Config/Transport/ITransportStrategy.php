@@ -16,4 +16,6 @@ interface ITransportStrategy
     public function withGrpcConfig(IGrpcConfiguration $grpcConfig);
 
     public function withClientTimeout(int $clientTimeout);
+
+    public function getClientTimeout(): int;
 }

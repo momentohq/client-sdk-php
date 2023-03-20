@@ -10,13 +10,15 @@ use Grpc\Interceptor;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\Interceptors\AgentInterceptor;
 use Momento\Cache\Interceptors\AuthorizationInterceptor;
+use Momento\Cache\Interceptors\RetryInterceptor;
+use Momento\Config\Retry\IRetryStrategy;
 
 class _DataGrpcManager
 {
 
     public ScsClient $client;
 
-    public function __construct(ICredentialProvider $authProvider)
+    public function __construct(ICredentialProvider $authProvider, IRetryStrategy $retryStrategy)
     {
         $endpoint = $authProvider->getCacheEndpoint();
         $channelArgs = ["credentials" => ChannelCredentials::createSsl()];
@@ -27,6 +29,7 @@ class _DataGrpcManager
         $interceptors = [
             new AuthorizationInterceptor($authProvider->getAuthToken()),
             new AgentInterceptor(),
+            new RetryInterceptor($retryStrategy),
         ];
         $channel = Interceptor::intercept($channel, $interceptors);
         $options = [];
