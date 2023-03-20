@@ -124,7 +124,6 @@ use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateElement;
 use function Momento\Utilities\validateFieldName;
 use function Momento\Utilities\validateFields;
-use function Momento\Utilities\validateFieldsKeys;
 use function Momento\Utilities\validateItems;
 use function Momento\Utilities\validateKeys;
 use function Momento\Utilities\validateListName;
@@ -561,8 +560,7 @@ class _ScsDataClient implements LoggerAwareInterface
             $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
-            validateItems($items);
-            validateFieldsKeys($items);
+            validateKeys(array_keys($items));
             $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             $protoItems = [];
             foreach ($items as $field => $value) {
