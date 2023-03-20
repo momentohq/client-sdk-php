@@ -29,7 +29,7 @@ use Cache_client\_SetUnionRequest;
 use Cache_client\ECacheResult;
 use Exception;
 use Grpc\UnaryCall;
-use Momento\Auth\ICredentialProvider;
+use Momento\Auth\CredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponseSuccess;
@@ -146,7 +146,7 @@ class _ScsDataClient implements LoggerAwareInterface
     private LoggerInterface $logger;
     private int $timeout;
 
-    public function __construct(IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds)
+    public function __construct(IConfiguration $configuration, CredentialProvider $authProvider, int $defaultTtlSeconds)
     {
         validateTtl($defaultTtlSeconds);
         $this->defaultTtlSeconds = $defaultTtlSeconds;

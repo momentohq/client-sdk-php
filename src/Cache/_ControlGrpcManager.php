@@ -7,7 +7,7 @@ use Grpc\Channel;
 use Grpc\ChannelCredentials;
 use Control_client\ScsControlClient;
 use Grpc\Interceptor;
-use Momento\Auth\ICredentialProvider;
+use Momento\Auth\CredentialProvider;
 use Momento\Cache\Interceptors\AgentInterceptor;
 use Momento\Cache\Interceptors\AuthorizationInterceptor;
 
@@ -17,7 +17,7 @@ class _ControlGrpcManager
 
     public ScsControlClient $client;
 
-    public function __construct(ICredentialProvider $authProvider)
+    public function __construct(CredentialProvider $authProvider)
     {
         $endpoint = $authProvider->getControlEndpoint();
         $channelArgs = ["credentials" => ChannelCredentials::createSsl()];

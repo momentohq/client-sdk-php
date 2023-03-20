@@ -7,7 +7,7 @@ use Cache_client\ScsClient;
 use Grpc\Channel;
 use Grpc\ChannelCredentials;
 use Grpc\Interceptor;
-use Momento\Auth\ICredentialProvider;
+use Momento\Auth\CredentialProvider;
 use Momento\Cache\Interceptors\AgentInterceptor;
 use Momento\Cache\Interceptors\AuthorizationInterceptor;
 
@@ -16,7 +16,7 @@ class _DataGrpcManager
 
     public ScsClient $client;
 
-    public function __construct(ICredentialProvider $authProvider)
+    public function __construct(CredentialProvider $authProvider)
     {
         $endpoint = $authProvider->getCacheEndpoint();
         $channelArgs = ["credentials" => ChannelCredentials::createSsl()];
