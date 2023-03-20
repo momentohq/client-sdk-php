@@ -480,7 +480,6 @@ class _ScsDataClient implements LoggerAwareInterface
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
             validateFieldName($field);
-            validateValueName($value);
             $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             validateTtl($ttlMillis);
             $dictionarySetFieldRequest = new _DictionarySetRequest();

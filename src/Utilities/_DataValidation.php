@@ -96,13 +96,6 @@ if (!function_exists('validateFields')) {
     }
 }
 
-if (!function_exists('validateValueName')) {
-    function validateValueName(string $valueName): void
-    {
-        validateNullOrEmpty($valueName, "Value name");
-    }
-}
-
 if (!function_exists('validateItems')) {
     function validateItems(array $items): void
     {
