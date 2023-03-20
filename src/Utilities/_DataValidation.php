@@ -59,7 +59,9 @@ if (!function_exists('validateKeys')) {
             throw new InvalidArgumentError("Keys must be a non-empty array");
         }
         foreach ($keys as $key) {
-            if (isNullOrEmpty($key)) {
+            // Explicitly test type of key. If someone passes us a ["a", "b", "c"] style list upstream
+            // instead of a ["key"=>"val"] dict, the "keys" will be integers and we want to reject the payload.
+            if (!is_string($key) || isNullOrEmpty($key)) {
                 throw new InvalidArgumentError("Keys must all be non-empty strings");
             }
         }
