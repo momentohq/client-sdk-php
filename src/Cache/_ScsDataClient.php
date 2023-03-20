@@ -562,7 +562,6 @@ class _ScsDataClient implements LoggerAwareInterface
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
             validateItems($items);
-            validateFieldsKeys($items);
             $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             $protoItems = [];
             foreach ($items as $field => $value) {
