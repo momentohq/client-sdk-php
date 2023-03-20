@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Momento\Cache;
 
-use Cache_client\_KeysExistResponse;
 use Momento\Auth\CredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
@@ -38,7 +37,7 @@ use Momento\Requests\CollectionTtl;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
-class SimpleCacheClient implements LoggerAwareInterface
+class CacheClient implements LoggerAwareInterface
 {
 
     protected IConfiguration $configuration;
