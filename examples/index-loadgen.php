@@ -4,7 +4,6 @@ require 'vendor/autoload.php';
 
 use Momento\Auth\CredentialProvider;
 use Momento\Cache\CacheClient;
-use Momento\Cache\SimpleCacheClient;
 use Momento\Config\Configurations\Laptop;
 
 $cacheName = "php-loadgen";
