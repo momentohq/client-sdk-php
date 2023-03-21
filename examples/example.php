@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 require "vendor/autoload.php";
 
-use Momento\Auth\EnvMomentoTokenProvider;
-use Momento\Cache\SimpleCacheClient;
+use Momento\Auth\CredentialProvider;
+use Momento\Cache\CacheClient;
 use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
 use Psr\Log\LoggerInterface;
@@ -19,9 +19,9 @@ $KEY = "MyKey";
 $VALUE = "MyValue";
 
 // Setup
-$authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
+$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
 $configuration = Laptop::latest()->withLoggerFactory(new StderrLoggerFactory());
-$client = new SimpleCacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
+$client = new CacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 $logger = $configuration->getLoggerFactory()->getLogger("ex:");
 
 function printBanner(string $message, LoggerInterface $logger): void

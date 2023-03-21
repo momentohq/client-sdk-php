@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require "vendor/autoload.php";
 
-use Momento\Auth\EnvMomentoTokenProvider;
+use Momento\Auth\CredentialProvider;
 use Momento\Cache\Psr16CacheClient;
 use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
@@ -19,7 +19,7 @@ $KEY = "MyKey";
 $VALUE = "MyValue";
 
 // Setup
-$authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
+$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
 $configuration = Laptop::latest()->withLoggerFactory(new StderrLoggerFactory());
 $client = new Psr16CacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 $logger = $configuration->getLoggerFactory()->getLogger("ex:");

@@ -2,12 +2,13 @@
 ini_set('display_errors', 1);
 require 'vendor/autoload.php';
 
-use Momento\Auth\EnvMomentoTokenProvider;
+use Momento\Auth\CredentialProvider;
+use Momento\Cache\CacheClient;
 use Momento\Cache\SimpleCacheClient;
 use Momento\Config\Configurations\Laptop;
 
 $cacheName = "php-loadgen";
-$authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
+$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
 $config = Laptop::latest();
 $defaultTtl = 600;
 
@@ -15,7 +16,7 @@ $gets = [];
 $sets = [];
 
 $startTime = -hrtime(true);
-$client = new SimpleCacheClient($config, $authProvider, $defaultTtl);
+$client = new CacheClient($config, $authProvider, $defaultTtl);
 $startup = $startTime + hrtime(true);
 
 $errors = 0;

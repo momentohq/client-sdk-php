@@ -280,7 +280,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDeleteResponseSuccess();
     }
 
-    public function keysExist(string $cacheName, array $keys) : CacheKeysExistResponse
+    public function keysExist(string $cacheName, array $keys): CacheKeysExistResponse
     {
         try {
             validateCacheName($cacheName);
@@ -288,7 +288,7 @@ class _ScsDataClient implements LoggerAwareInterface
             $keysExistRequest = new _KeysExistRequest();
             $keysExistRequest->setCacheKeys($keys);
             $call = $this->grpcManager->client->KeysExist(
-                $keysExistRequest, ["cache"=> [$cacheName]], ["timeout" => $this->timeout]
+                $keysExistRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -299,7 +299,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheKeysExistResponseSuccess($response, $keys);
     }
 
-    public function keyExists(string $cacheName, string $key) : CacheKeyExistsResponse
+    public function keyExists(string $cacheName, string $key): CacheKeyExistsResponse
     {
         $response = $this->keysExist($cacheName, [$key]);
         if ($response instanceof CacheKeysExistResponseError) {
