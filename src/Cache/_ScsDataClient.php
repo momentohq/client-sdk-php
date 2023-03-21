@@ -29,7 +29,7 @@ use Cache_client\_SetUnionRequest;
 use Cache_client\ECacheResult;
 use Exception;
 use Grpc\UnaryCall;
-use Momento\Auth\CredentialProvider;
+use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponseError;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponseSuccess;
@@ -146,7 +146,7 @@ class _ScsDataClient implements LoggerAwareInterface
     private LoggerInterface $logger;
     private int $timeout;
 
-    public function __construct(IConfiguration $configuration, CredentialProvider $authProvider, int $defaultTtlSeconds)
+    public function __construct(IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds)
     {
         validateTtl($defaultTtlSeconds);
         $this->defaultTtlSeconds = $defaultTtlSeconds;
@@ -281,7 +281,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheDeleteResponseSuccess();
     }
 
-    public function keysExist(string $cacheName, array $keys) : CacheKeysExistResponse
+    public function keysExist(string $cacheName, array $keys): CacheKeysExistResponse
     {
         try {
             validateCacheName($cacheName);
@@ -289,7 +289,7 @@ class _ScsDataClient implements LoggerAwareInterface
             $keysExistRequest = new _KeysExistRequest();
             $keysExistRequest->setCacheKeys($keys);
             $call = $this->grpcManager->client->KeysExist(
-                $keysExistRequest, ["cache"=> [$cacheName]], ["timeout" => $this->timeout]
+                $keysExistRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -300,7 +300,7 @@ class _ScsDataClient implements LoggerAwareInterface
         return new CacheKeysExistResponseSuccess($response, $keys);
     }
 
-    public function keyExists(string $cacheName, string $key) : CacheKeyExistsResponse
+    public function keyExists(string $cacheName, string $key): CacheKeyExistsResponse
     {
         $response = $this->keysExist($cacheName, [$key]);
         if ($response instanceof CacheKeysExistResponseError) {

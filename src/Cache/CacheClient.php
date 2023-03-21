@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Momento\Cache;
 
-use Momento\Auth\CredentialProvider;
+use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
 use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponse;
@@ -48,11 +48,11 @@ class CacheClient implements LoggerAwareInterface
 
     /**
      * @param IConfiguration $configuration
-     * @param CredentialProvider $authProvider
+     * @param ICredentialProvider $authProvider
      * @param int $defaultTtlSeconds
      */
     public function __construct(
-        IConfiguration $configuration, CredentialProvider $authProvider, int $defaultTtlSeconds
+        IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds
     )
     {
         $this->configuration = $configuration;

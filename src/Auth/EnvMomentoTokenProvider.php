@@ -25,15 +25,4 @@ class EnvMomentoTokenProvider extends StringMomentoTokenProvider
         }
         parent::__construct($authToken, $controlEndpoint, $cacheEndpoint, $trustedControlEndpointCertificateName, $trustedCacheEndpointCertificateName);
     }
-
-    /**
-     * Convenience method for reading and parsing a JWT token stored as an environment variable.
-     * @param string $envVariableName Name of the environment variable that contains the JWT token.
-     * @return EnvMomentoTokenProvider
-     * @throws InvalidArgumentError
-     */
-    public static function fromEnvironmentVariable(string $envVariableName): EnvMomentoTokenProvider
-    {
-        return new EnvMomentoTokenProvider($envVariableName);
-    }
 }

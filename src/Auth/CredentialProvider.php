@@ -3,28 +3,39 @@ declare(strict_types=1);
 
 namespace Momento\Auth;
 
-/**
- * Provides information that the CacheClient needs in order to establish a connection to and authenticate with
- * the Momento service.
- */
-abstract class CredentialProvider
+use Momento\Cache\Errors\InvalidArgumentError;
+
+abstract class CredentialProvider implements ICredentialProvider
 {
-    /**
-     * @return string Auth token provided by user, required to authenticate with the service.
-     */
     public abstract function getAuthToken(): string;
 
-    /**
-     * @return string The host which the Momento client will connect to for Momento control plane operations.
-     */
     public abstract function getControlEndpoint(): string;
 
-    /**
-     * @return string The host which the Momento client will connect to for Momento data plane operations.
-     */
     public abstract function getCacheEndpoint(): string;
 
     public abstract function getTrustedControlEndpointCertificateName(): string|null;
 
     public abstract function getTrustedCacheEndpointCertificateName(): string|null;
+
+    /**
+     * Convenience method for reading and parsing a JWT token stored as a string.
+     * @param string $authToken The JWT token.
+     * @return StringMomentoTokenProvider
+     * @throws InvalidArgumentError
+     */
+    public static function fromString(string $authToken): StringMomentoTokenProvider
+    {
+        return new StringMomentoTokenProvider($authToken);
+    }
+
+    /**
+     * Convenience method for reading and parsing a JWT token stored as an environment variable.
+     * @param string $envVariableName Name of the environment variable that contains the JWT token.
+     * @return EnvMomentoTokenProvider
+     * @throws InvalidArgumentError
+     */
+    public static function fromEnvironmentVariable(string $envVariableName): EnvMomentoTokenProvider
+    {
+        return new EnvMomentoTokenProvider($envVariableName);
+    }
 }

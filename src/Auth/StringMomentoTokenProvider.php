@@ -60,15 +60,4 @@ class StringMomentoTokenProvider extends CredentialProvider
     {
         return $this->trustedCacheEndpointCertificateName;
     }
-
-    /**
-     * Convenience method for reading and parsing a JWT token stored as a string.
-     * @param string $authToken The JWT token.
-     * @return StringMomentoTokenProvider
-     * @throws InvalidArgumentError
-     */
-    public static function fromString(string $authToken): StringMomentoTokenProvider
-    {
-        return new StringMomentoTokenProvider($authToken);
-    }
 }

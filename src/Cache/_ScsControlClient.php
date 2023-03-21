@@ -7,7 +7,7 @@ use Control_client\_CreateCacheRequest;
 use Control_client\_DeleteCacheRequest;
 use Control_client\_ListCachesRequest;
 use Grpc\UnaryCall;
-use Momento\Auth\CredentialProvider;
+use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponseAlreadyExists;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponseError;
@@ -34,7 +34,7 @@ class _ScsControlClient implements LoggerAwareInterface
     private ILoggerFactory $loggerFactory;
     private LoggerInterface $logger;
 
-    public function __construct(ILoggerFactory $loggerFactory, CredentialProvider $authProvider)
+    public function __construct(ILoggerFactory $loggerFactory, ICredentialProvider $authProvider)
     {
         $this->grpcManager = new _ControlGrpcManager($authProvider);
         $this->loggerFactory = $loggerFactory;
