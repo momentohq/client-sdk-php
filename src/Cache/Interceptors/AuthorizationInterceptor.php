@@ -18,7 +18,7 @@ class AuthorizationInterceptor extends Interceptor
     public function interceptUnaryUnary($method, $argument, $deserialize, $continuation, array $metadata = [], array $options = [])
     {
         $metadata["authorization"] = [$this->authToken];
-        return parent::interceptUnaryUnary($method, $argument, $deserialize, $continuation, $metadata, $options);
+        return $continuation($method, $argument, $deserialize, $metadata, $options);
     }
 
 }
