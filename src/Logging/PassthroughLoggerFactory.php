@@ -18,7 +18,7 @@ class PassthroughLoggerFactory implements ILoggerFactory
         $this->logger = $logger;
     }
 
-    public function getLogger(?string $name): LoggerInterface
+    public function getLogger(?string $name=null): LoggerInterface
     {
         return $this->logger;
     }

@@ -13,7 +13,7 @@ use Psr\Log\NullLogger;
 class NullLoggerFactory implements ILoggerFactory
 {
 
-    public function getLogger(?string $name): LoggerInterface
+    public function getLogger(?string $name=null): LoggerInterface
     {
         return new NullLogger();
     }

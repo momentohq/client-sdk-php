@@ -13,7 +13,7 @@ class StderrEchoLogger extends AbstractLogger
 {
     private ?string $name;
 
-    public function __construct(?string $name)
+    public function __construct(?string $name=null)
     {
         $this->name = $name;
     }
