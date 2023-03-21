@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Momento\Cache;
 
 use DateInterval;
-use Momento\Auth\CredentialProvider;
+use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseBase;
 use Momento\Cache\Errors\CacheException;
 use Momento\Cache\Errors\NotImplementedException;
@@ -26,15 +26,15 @@ class Psr16CacheClient implements CacheInterface
 
     /**
      * @param IConfiguration $configuration
-     * @param CredentialProvider $authProvider
+     * @param ICredentialProvider $authProvider
      * @param int|null $defaultTtlSeconds
      * @param bool|null $throwExceptions
      */
     public function __construct(
-        IConfiguration     $configuration,
-        CredentialProvider $authProvider,
-        ?int               $defaultTtlSeconds,
-        ?bool              $throwExceptions = null
+        IConfiguration      $configuration,
+        ICredentialProvider $authProvider,
+        ?int                $defaultTtlSeconds,
+        ?bool               $throwExceptions = null
     )
     {
         $ttlSeconds = $defaultTtlSeconds ?? self::DEFAULT_TTL_SECONDS;

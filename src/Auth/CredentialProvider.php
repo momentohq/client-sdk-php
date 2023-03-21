@@ -23,7 +23,7 @@ abstract class CredentialProvider implements ICredentialProvider
      * @return StringMomentoTokenProvider
      * @throws InvalidArgumentError
      */
-    public static function fromString(string $authToken): StringMomentoTokenProvider
+    public static function fromString(string $authToken): ICredentialProvider
     {
         return new StringMomentoTokenProvider($authToken);
     }
@@ -34,7 +34,7 @@ abstract class CredentialProvider implements ICredentialProvider
      * @return EnvMomentoTokenProvider
      * @throws InvalidArgumentError
      */
-    public static function fromEnvironmentVariable(string $envVariableName): EnvMomentoTokenProvider
+    public static function fromEnvironmentVariable(string $envVariableName): ICredentialProvider
     {
         return new EnvMomentoTokenProvider($envVariableName);
     }
