@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Momento\Cache\Errors;
 
-use Grpc\Status;
-
 abstract class MomentoErrorCode
 {
     /// Invalid argument passed to Momento client

@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 require "vendor/autoload.php";
 
-use Momento\Auth\EnvMomentoTokenProvider;
-use Momento\Cache\SimpleCacheClient;
+use Momento\Auth\CredentialProvider;
+use Momento\Cache\CacheClient;
 use Momento\Config\Configurations\Laptop;
 
 class LoadGenerator
@@ -41,12 +41,12 @@ class LoadGenerator
         $this->startTime = -hrtime(true);
     }
 
-    private function getClient(): SimpleCacheClient
+    private function getClient(): CacheClient
     {
         $cache_item_ttl_seconds = 60;
-        $authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
+        $authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
         $configuration = Laptop::latest();
-        return new SimpleCacheClient(
+        return new CacheClient(
             $configuration, $authProvider, $cache_item_ttl_seconds
         );
     }

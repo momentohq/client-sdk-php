@@ -4,17 +4,13 @@ declare(strict_types=1);
 namespace Momento\Auth;
 
 use Momento\Cache\Errors\InvalidArgumentError;
-use function \Momento\Utilities\isNullOrEmpty;
+use function Momento\Utilities\isNullOrEmpty;
 
-
-class EnvMomentoTokenProvider implements ICredentialProvider
+/**
+ * Reads and parses a JWT token stored as an environment variable.
+ */
+class EnvMomentoTokenProvider extends StringMomentoTokenProvider
 {
-    private string $authToken;
-    private string $controlEndpoint;
-    private string $cacheEndpoint;
-    private ?string $trustedControlEndpointCertificateName = null;
-    private ?string $trustedCacheEndpointCertificateName = null;
-
     public function __construct(
         string  $envVariableName,
         ?string $controlEndpoint = null,
@@ -27,42 +23,6 @@ class EnvMomentoTokenProvider implements ICredentialProvider
         if ($authToken === false || isNullOrEmpty($authToken)) {
             throw new InvalidArgumentError("Environment variable $envVariableName is empty or null.");
         }
-        if ($trustedControlEndpointCertificateName xor $trustedCacheEndpointCertificateName) {
-            throw new InvalidArgumentError(
-                "If either of trustedCacheEndpointCertificateName or trustedControlEndpointCertificateName " .
-                "are provided, they must both be."
-            );
-        }
-        $this->authToken = $authToken;
-        $payload = AuthUtils::parseAuthToken($authToken);
-        $this->controlEndpoint = $controlEndpoint ?? $payload->cp;
-        $this->cacheEndpoint = $cacheEndpoint ?? $payload->c;
-        $this->trustedControlEndpointCertificateName = $trustedControlEndpointCertificateName;
-        $this->trustedCacheEndpointCertificateName = $trustedCacheEndpointCertificateName;
-    }
-
-    public function getAuthToken(): string
-    {
-        return $this->authToken;
-    }
-
-    public function getCacheEndpoint(): string
-    {
-        return $this->cacheEndpoint;
-    }
-
-    public function getControlEndpoint(): string
-    {
-        return $this->controlEndpoint;
-    }
-
-    public function getTrustedControlEndpointCertificateName(): string|null
-    {
-        return $this->trustedControlEndpointCertificateName;
-    }
-
-    public function getTrustedCacheEndpointCertificateName(): string|null
-    {
-        return $this->trustedCacheEndpointCertificateName;
+        parent::__construct($authToken, $controlEndpoint, $cacheEndpoint, $trustedControlEndpointCertificateName, $trustedCacheEndpointCertificateName);
     }
 }

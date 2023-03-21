@@ -9,27 +9,12 @@
 # Momento PHP Client Library
 
 
-:warning: Alpha SDK :warning:
-
-This is an official Momento SDK, but the API is in an alpha stage and may be subject to backward-incompatible
-changes.  For more info, click on the alpha badge above.
-
-
 PHP client SDK for Momento Serverless Cache: a fast, simple, pay-as-you-go caching solution without
 any of the operational overhead required by traditional caching solutions!
 
 
 
 Japanese: [日本語](README.ja.md)
-
-## Preview Features
-
-This SDK contains APIs for interacting with collection data structures: Lists, Sets, and Dictionaries.  These APIs
-are currently in preview.  If you would like to request early access to the data structure APIs, please contact us
-at `support@momentohq.com`.
-
-**Note that if you call the SetIfNotExists, List, Set, or Dictionary APIs without first signing up for our early access preview, you
-the calls will result in an `Unsupported operation` error.**
 
 ## Getting Started :running:
 
@@ -87,8 +72,8 @@ declare(strict_types=1);
 
 require "vendor/autoload.php";
 
-use Momento\Auth\EnvMomentoTokenProvider;
-use Momento\Cache\SimpleCacheClient;
+use Momento\Auth\CredentialProvider;
+use Momento\Cache\CacheClient;
 use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
 use Psr\Log\LoggerInterface;
@@ -103,9 +88,9 @@ $KEY = "MyKey";
 $VALUE = "MyValue";
 
 // Setup
-$authProvider = new EnvMomentoTokenProvider("MOMENTO_AUTH_TOKEN");
+$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
 $configuration = Laptop::latest()->withLoggerFactory(new StderrLoggerFactory());
-$client = new SimpleCacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
+$client = new CacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 $logger = $configuration->getLoggerFactory()->getLogger("ex:");
 
 function printBanner(string $message, LoggerInterface $logger): void
