@@ -11,6 +11,12 @@ use function Momento\Utilities\isNullOrEmpty;
  */
 class StringMomentoTokenProvider extends CredentialProvider
 {
+    protected string  $authToken;
+    protected ?string $controlEndpoint = null;
+    protected ?string $cacheEndpoint = null;
+    protected ?string $trustedControlEndpointCertificateName = null;
+    protected ?string $trustedCacheEndpointCertificateName = null;
+
     public function __construct(
         string  $authToken,
         ?string $controlEndpoint = null,
