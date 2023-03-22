@@ -131,7 +131,6 @@ use function Momento\Utilities\validateOperationTimeout;
 use function Momento\Utilities\validateSetName;
 use function Momento\Utilities\validateTruncateSize;
 use function Momento\Utilities\validateTtl;
-use function Momento\Utilities\validateValueName;
 
 class _ScsDataClient implements LoggerAwareInterface
 {
@@ -156,7 +155,7 @@ class _ScsDataClient implements LoggerAwareInterface
         validateOperationTimeout($operationTimeoutMs);
         $this->deadline_milliseconds = $operationTimeoutMs ?? self::$DEFAULT_DEADLINE_MILLISECONDS;
         $this->timeout = $this->deadline_milliseconds * self::$TIMEOUT_MULTIPLIER;
-        $this->grpcManager = new _DataGrpcManager($authProvider);
+        $this->grpcManager = new _DataGrpcManager($authProvider, $configuration->getRetryStrategy());
         $this->setLogger($configuration->getLoggerFactory()->getLogger(get_class($this)));
     }
 
@@ -182,15 +181,6 @@ class _ScsDataClient implements LoggerAwareInterface
         return $ttl;
     }
 
-    private function processCall(UnaryCall $call): mixed
-    {
-        [$response, $status] = $call->wait();
-        if ($status->code !== 0) {
-            throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
-        }
-        return $response;
-    }
-
     public function set(string $cacheName, string $key, string $value, int $ttlSeconds = null): CacheSetResponse
     {
         try {
@@ -200,10 +190,9 @@ class _ScsDataClient implements LoggerAwareInterface
             $setRequest->setCacheKey($key);
             $setRequest->setCacheBody($value);
             $setRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->Set(
+            $response = $this->grpcManager->client->Set(
                 $setRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheSetResponseError($e);
         } catch (Exception $e) {
@@ -218,10 +207,9 @@ class _ScsDataClient implements LoggerAwareInterface
             validateCacheName($cacheName);
             $getRequest = new _GetRequest();
             $getRequest->setCacheKey($key);
-            $call = $this->grpcManager->client->Get(
+            $response = $this->grpcManager->client->Get(
                 $getRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
             $ecacheResult = $response->getResult();
             if ($ecacheResult == ECacheResult::Hit) {
                 return new CacheGetResponseHit($response);
@@ -246,10 +234,9 @@ class _ScsDataClient implements LoggerAwareInterface
             $setIfNotExistsRequest->setCacheKey($key);
             $setIfNotExistsRequest->setCacheBody($value);
             $setIfNotExistsRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->SetIfNotExists(
+            $setIfNotExistsResponse = $this->grpcManager->client->SetIfNotExists(
                 $setIfNotExistsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $setIfNotExistsResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheSetIfNotExistsResponseError($e);
         } catch (Exception $e) {
@@ -268,10 +255,9 @@ class _ScsDataClient implements LoggerAwareInterface
             validateCacheName($cacheName);
             $deleteRequest = new _DeleteRequest();
             $deleteRequest->setCacheKey($key);
-            $call = $this->grpcManager->client->Delete(
+            $this->grpcManager->client->Delete(
                 $deleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDeleteResponseError($e);
         } catch (Exception $e) {
@@ -287,10 +273,9 @@ class _ScsDataClient implements LoggerAwareInterface
             validateKeys($keys);
             $keysExistRequest = new _KeysExistRequest();
             $keysExistRequest->setCacheKeys($keys);
-            $call = $this->grpcManager->client->KeysExist(
+            $response = $this->grpcManager->client->KeysExist(
                 $keysExistRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheKeysExistResponseError($e);
         } catch (Exception $e) {
@@ -315,10 +300,9 @@ class _ScsDataClient implements LoggerAwareInterface
             validateListName($listName);
             $listFetchRequest = new _ListFetchRequest();
             $listFetchRequest->setListName($listName);
-            $call = $this->grpcManager->client->ListFetch(
+            $response = $this->grpcManager->client->ListFetch(
                 $listFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheListFetchResponseError($e);
         } catch (Exception $e) {
@@ -348,10 +332,9 @@ class _ScsDataClient implements LoggerAwareInterface
             if (!is_null($truncateBackToSize)) {
                 $listPushFrontRequest->setTruncateBackToSize($truncateBackToSize);
             }
-            $call = $this->grpcManager->client->ListPushFront(
-                $listPushFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+            $response = $this->grpcManager->client->ListPushFront(
+                $listPushFrontRequest, ["cache" => ["$cacheName"]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheListPushFrontResponseError($e);
         } catch (Exception $e) {
@@ -378,10 +361,9 @@ class _ScsDataClient implements LoggerAwareInterface
             if (!is_null($truncateFrontToSize)) {
                 $listPushBackRequest->setTruncateFrontToSize($truncateFrontToSize);
             }
-            $call = $this->grpcManager->client->ListPushBack(
+            $response = $this->grpcManager->client->ListPushBack(
                 $listPushBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheListPushBackResponseError($e);
         } catch (Exception $e) {
@@ -397,10 +379,9 @@ class _ScsDataClient implements LoggerAwareInterface
             validateListName($listName);
             $listPopFrontRequest = new _ListPopFrontRequest();
             $listPopFrontRequest->setListName($listName);
-            $call = $this->grpcManager->client->ListPopFront(
+            $response = $this->grpcManager->client->ListPopFront(
                 $listPopFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheListPopFrontResponseError($e);
         } catch (Exception $e) {
@@ -419,10 +400,9 @@ class _ScsDataClient implements LoggerAwareInterface
             validateListName($listName);
             $listPopBackRequest = new _ListPopBackRequest();
             $listPopBackRequest->setListName($listName);
-            $call = $this->grpcManager->client->ListPopBack(
+            $response = $this->grpcManager->client->ListPopBack(
                 $listPopBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheListPopBackResponseError($e);
         } catch (Exception $e) {
@@ -442,10 +422,9 @@ class _ScsDataClient implements LoggerAwareInterface
             $listRemoveValueRequest = new _ListRemoveRequest();
             $listRemoveValueRequest->setListName($listName);
             $listRemoveValueRequest->setAllElementsWithValue($value);
-            $call = $this->grpcManager->client->ListRemove(
-                $listRemoveValueRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+            $this->grpcManager->client->ListRemove(
+                $listRemoveValueRequest, ["cache" => ["$cacheName"]], ["timeout" => $this->timeout]
             );
-            $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheListRemoveValueResponseError($e);
         } catch (Exception $e) {
@@ -461,10 +440,9 @@ class _ScsDataClient implements LoggerAwareInterface
             validateListName($listName);
             $listLengthRequest = new _ListLengthRequest();
             $listLengthRequest->setListName($listName);
-            $call = $this->grpcManager->client->ListLength(
+            $response = $this->grpcManager->client->ListLength(
                 $listLengthRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheListLengthResponseError($e);
         } catch (Exception $e) {
@@ -487,8 +465,7 @@ class _ScsDataClient implements LoggerAwareInterface
             $dictionarySetFieldRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
             $dictionarySetFieldRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $dictionarySetFieldRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
+            $this->grpcManager->client->DictionarySet($dictionarySetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
         } catch (SdkError $e) {
             return new CacheDictionarySetFieldResponseError($e);
         } catch (Exception $e) {
@@ -514,23 +491,22 @@ class _ScsDataClient implements LoggerAwareInterface
             $dictionaryGetFieldRequest = new _DictionaryGetRequest();
             $dictionaryGetFieldRequest->setDictionaryName($dictionaryName);
             $dictionaryGetFieldRequest->setFields([$field]);
-            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $dictionaryGetFieldResponse = $this->processCall($call);
+            $response = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
         } catch (SdkError $e) {
             return new CacheDictionaryGetFieldResponseError($e);
         } catch (Exception $e) {
             return new CacheDictionaryGetFieldResponseError(new UnknownError($e->getMessage()));
         }
-        if ($dictionaryGetFieldResponse->hasMissing()) {
+        if ($response->hasMissing()) {
             return new CacheDictionaryGetFieldResponseMiss();
         }
-        if ($dictionaryGetFieldResponse->getFound()->getItems()->count() == 0) {
+        if ($response->getFound()->getItems()->count() == 0) {
             return new CacheDictionaryGetFieldResponseError(new UnknownError("_DictionaryGetResponseResponse contained no data but was found"));
         }
-        if ($dictionaryGetFieldResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
+        if ($response->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
             return new CacheDictionaryGetFieldResponseMiss();
         }
-        return new CacheDictionaryGetFieldResponseHit($dictionaryGetFieldResponse);
+        return new CacheDictionaryGetFieldResponseHit($response);
     }
 
     public function dictionaryFetch(string $cacheName, string $dictionaryName): CacheDictionaryFetchResponse
@@ -540,15 +516,14 @@ class _ScsDataClient implements LoggerAwareInterface
             validateDictionaryName($dictionaryName);
             $dictionaryFetchRequest = new _DictionaryFetchRequest();
             $dictionaryFetchRequest->setDictionaryName($dictionaryName);
-            $call = $this->grpcManager->client->DictionaryFetch($dictionaryFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $dictionaryFetchResponse = $this->processCall($call);
+            $response = $this->grpcManager->client->DictionaryFetch($dictionaryFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
         } catch (SdkError $e) {
             return new CacheDictionaryFetchResponseError($e);
         } catch (Exception $e) {
             return new CacheDictionaryFetchResponseError(new UnknownError($e->getMessage()));
         }
-        if ($dictionaryFetchResponse->hasFound()) {
-            return new CacheDictionaryFetchResponseHit($dictionaryFetchResponse);
+        if ($response->hasFound()) {
+            return new CacheDictionaryFetchResponseHit($response);
         }
         return new CacheDictionaryFetchResponseMiss();
     }
@@ -573,8 +548,7 @@ class _ScsDataClient implements LoggerAwareInterface
             $dictionarySetFieldsRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $dictionarySetFieldsRequest->setItems($protoItems);
             $dictionarySetFieldsRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
+            $this->grpcManager->client->DictionarySet($dictionarySetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
         } catch (SdkError $e) {
             return new CacheDictionarySetFieldsResponseError($e);
         } catch (Exception $e) {
@@ -592,15 +566,14 @@ class _ScsDataClient implements LoggerAwareInterface
             $dictionaryGetFieldsRequest = new _DictionaryGetRequest();
             $dictionaryGetFieldsRequest->setDictionaryName($dictionaryName);
             $dictionaryGetFieldsRequest->setFields($fields);
-            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $dictionaryGetFieldsResponse = $this->processCall($call);
+            $response = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
         } catch (SdkError $e) {
             return new CacheDictionaryGetFieldsResponseError($e);
         } catch (Exception $e) {
             return new CacheDictionaryGetFieldsResponseError(new UnknownError($e->getMessage()));
         }
-        if ($dictionaryGetFieldsResponse->hasFound()) {
-            return new CacheDictionaryGetFieldsResponseHit($dictionaryGetFieldsResponse, fields: $fields);
+        if ($response->hasFound()) {
+            return new CacheDictionaryGetFieldsResponseHit($response, fields: $fields);
         }
         return new CacheDictionaryGetFieldsResponseMiss();
 
@@ -624,10 +597,9 @@ class _ScsDataClient implements LoggerAwareInterface
                 ->setAmount($amount)
                 ->setRefreshTtl($collectionTtl->getRefreshTtl())
                 ->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionaryIncrement(
+            $response = $this->grpcManager->client->DictionaryIncrement(
                 $dictionaryIncrementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryIncrementResponseError($e);
         } catch (Exception $e) {
@@ -647,10 +619,9 @@ class _ScsDataClient implements LoggerAwareInterface
             $some->setFields([$field]);
             $dictionaryRemoveFieldRequest->setDictionaryName($dictionaryName);
             $dictionaryRemoveFieldRequest->setSome($some);
-            $call = $this->grpcManager->client->DictionaryDelete(
+            $this->grpcManager->client->DictionaryDelete(
                 $dictionaryRemoveFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryRemoveFieldResponseError($e);
         } catch (Exception $e) {
@@ -670,10 +641,9 @@ class _ScsDataClient implements LoggerAwareInterface
             $some->setFields($fields);
             $dictionaryRemoveFieldsRequest->setDictionaryName($dictionaryName);
             $dictionaryRemoveFieldsRequest->setSome($some);
-            $call = $this->grpcManager->client->DictionaryDelete(
+            $this->grpcManager->client->DictionaryDelete(
                 $dictionaryRemoveFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $this->processCall($call);
         } catch (SdkError $e) {
             return new CacheDictionaryRemoveFieldsResponseError($e);
         } catch (Exception $e) {
@@ -696,8 +666,7 @@ class _ScsDataClient implements LoggerAwareInterface
             $setAddElementRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $setAddElementRequest->setTtlMilliseconds($ttlMillis);
             $setAddElementRequest->setElements([$element]);
-            $call = $this->grpcManager->client->SetUnion($setAddElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
+            $this->grpcManager->client->SetUnion($setAddElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
         } catch (SdkError $e) {
             return new CacheSetAddElementResponseError($e);
         } catch (Exception $e) {
@@ -713,15 +682,14 @@ class _ScsDataClient implements LoggerAwareInterface
             validateSetName($setName);
             $setFetchRequest = new _SetFetchRequest();
             $setFetchRequest->setSetName($setName);
-            $call = $this->grpcManager->client->SetFetch($setFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $setFetchResponse = $this->processCall($call);
+            $response = $this->grpcManager->client->SetFetch($setFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
         } catch (SdkError $e) {
             return new CacheSetFetchResponseError($e);
         } catch (Exception $e) {
             return new CacheSetFetchResponseError(new UnknownError($e->getMessage()));
         }
-        if ($setFetchResponse->hasFound()) {
-            return new CacheSetFetchResponseHit($setFetchResponse);
+        if ($response->hasFound()) {
+            return new CacheSetFetchResponseHit($response);
         }
         return new CacheSetFetchResponseMiss();
     }
@@ -739,8 +707,7 @@ class _ScsDataClient implements LoggerAwareInterface
             $set->setElements([$element]);
             $subtrahend->setSet($set);
             $setRemoveElementRequest->setSubtrahend($subtrahend);
-            $call = $this->grpcManager->client->SetDifference($setRemoveElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
+            $this->grpcManager->client->SetDifference($setRemoveElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
         } catch (SdkError $e) {
             return new CacheSetRemoveElementResponseError($e);
         } catch (Exception $e) {
