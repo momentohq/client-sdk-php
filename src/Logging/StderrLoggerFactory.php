@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 class StderrLoggerFactory implements ILoggerFactory
 {
 
-    public function getLogger(?string $name): LoggerInterface
+    public function getLogger(?string $name=null): LoggerInterface
     {
         return new StderrEchoLogger($name);
     }

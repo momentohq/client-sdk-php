@@ -33,6 +33,11 @@ class StaticTransportStrategy implements ITransportStrategy
         return $this->grpcConfig;
     }
 
+    public function getClientTimeout(): int
+    {
+        return $this->grpcConfig->getDeadlineMilliseconds();
+    }
+
     public function withLoggerFactory(ILoggerFactory $loggerFactory): StaticTransportStrategy
     {
         return new StaticTransportStrategy($this->maxConcurrentRequests, $this->grpcConfig, $loggerFactory);
@@ -46,7 +51,7 @@ class StaticTransportStrategy implements ITransportStrategy
     public function withClientTimeout(int $clientTimeout): StaticTransportStrategy
     {
         return new StaticTransportStrategy(
-            $this->maxConcurrentRequests, $this->grpcConfig->withDeadline($clientTimeout), $this->loggerFactory
+            $this->maxConcurrentRequests, $this->grpcConfig->withDeadlineMilliseconds($clientTimeout), $this->loggerFactory
         );
     }
 }

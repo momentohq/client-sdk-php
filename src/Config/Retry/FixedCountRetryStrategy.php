@@ -27,14 +27,16 @@ class FixedCountRetryStrategy implements IRetryStrategy {
 
     public function determineWhenToRetry(int $grpcStatusCode, string $grpcMethod, int $attemptNumber): int|null
     {
-        // TODO: Add logging
+        $requestInfo = "[status $grpcStatusCode, method $grpcMethod]";
         if (!$this->eligibilityStrategy->isEligibleForRetry($grpcStatusCode, $grpcMethod, $attemptNumber)) {
+            $this->log->debug("request is not retryable: $requestInfo");
             return null;
         }
         if ($attemptNumber > $this->maxAttempts) {
+            $this->log->debug("exceeded max retries: $requestInfo");
             return null;
         }
-
+        $this->log->debug("request is retryable: $requestInfo");
         // Return value is time until next retry, which is currently 0.
         return 0;
     }

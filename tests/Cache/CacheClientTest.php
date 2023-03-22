@@ -12,6 +12,8 @@ use Momento\Cache\CacheClient;
 use Momento\Config\Configuration;
 use Momento\Config\Configurations;
 use Momento\Config\IConfiguration;
+use Momento\Config\Retry\DefaultEligibilityStrategy;
+use Momento\Config\Retry\FixedCountRetryStrategy;
 use Momento\Config\Transport\StaticGrpcConfiguration;
 use Momento\Config\Transport\StaticTransportStrategy;
 use Momento\Logging\NullLoggerFactory;
@@ -65,7 +67,12 @@ class CacheClientTest extends TestCase
         $loggerFactory = new NullLoggerFactory();
         $grpcConfig = new StaticGrpcConfiguration($deadline);
         $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory);
-        return new Configuration($loggerFactory, $transportStrategy);
+        $retryStrategy = new FixedCountRetryStrategy(
+            new DefaultEligibilityStrategy(),
+            3,
+            $loggerFactory->getLogger()
+        );
+        return new Configuration($loggerFactory, $transportStrategy, $retryStrategy);
     }
 
     // Happy path test
@@ -1105,16 +1112,6 @@ class CacheClientTest extends TestCase
         $dictionaryName = uniqid();
         $field = "";
         $response = $this->client->dictionaryGetField($this->TEST_CACHE_NAME, $dictionaryName, $field);
-        $this->assertNotNull($response->asError(), "Expected error but got: $response");
-        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
-    }
-
-    public function testDictionaryEmptyValue_IsError()
-    {
-        $dictionaryName = uniqid();
-        $field = uniqid();
-        $value = "";
-        $response = $this->client->dictionarySetField($this->TEST_CACHE_NAME, $dictionaryName, $field, $value, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }

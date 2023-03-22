@@ -42,7 +42,15 @@ class DefaultEligibilityStrategy implements IEligibilityStrategy {
     ];
 
     public function isEligibleForRetry(int $grpcCode, string $method, int $attemptNumber): bool {
-        return false;
+        return (
+            (
+                array_key_exists($grpcCode, $this->retryableStatusCodes)
+                && $this->retryableStatusCodes[$grpcCode] === true
+            ) && (
+                array_key_exists($method, $this->retryableRequestMethods)
+                && $this->retryableRequestMethods[$method] === true
+            )
+        );
     }
 
 }
