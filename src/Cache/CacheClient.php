@@ -37,6 +37,9 @@ use Momento\Requests\CollectionTtl;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Client to perform operations against Momento Serverless Cache.
+ */
 class CacheClient implements LoggerAwareInterface
 {
 
@@ -47,9 +50,9 @@ class CacheClient implements LoggerAwareInterface
     private _ScsDataClient $dataClient;
 
     /**
-     * @param IConfiguration $configuration
-     * @param ICredentialProvider $authProvider
-     * @param int $defaultTtlSeconds
+     * @param IConfiguration $configuration Configuration to use for transport.
+     * @param ICredentialProvider $authProvider Momento authentication provider.
+     * @param int $defaultTtlSeconds Default time to live for the item in cache in seconds.
      */
     public function __construct(
         IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds
@@ -66,61 +69,248 @@ class CacheClient implements LoggerAwareInterface
         );
     }
 
+    /**
+     * Assigns a LoggerInterface logging object to the client.
+     *
+     * @param LoggerInterface $logger Object to use for logging
+     * @return void
+     */
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
 
+    /**
+     * Creates a cache if it doesn't exist.
+     *
+     * @param string $cacheName Name of the cache to create
+     * @return CreateCacheResponse Represents the result of the create cache operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * CreateCacheResponseSuccess<br>
+     * * CreateCacheResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function createCache(string $cacheName): CreateCacheResponse
     {
         return $this->controlClient->createCache($cacheName);
     }
 
+    /**
+     * List existing caches.
+     *
+     * @param string|null $nextToken
+     * @return ListCachesResponse Represents the result of the list caches operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * ListCachesResponseSuccess<br>
+     * * ListCachesResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function listCaches(?string $nextToken = null): ListCachesResponse
     {
         return $this->controlClient->listCaches($nextToken);
     }
 
+    /**
+     * Delete a cache.
+     *
+     * @param string $cacheName Name of the cache to delete.
+     * @return DeleteCacheResponse Represents the result of the delete cache operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * DeleteCacheResponseSuccess<br>
+     * * DeleteCacheResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function deleteCache(string $cacheName): DeleteCacheResponse
     {
         return $this->controlClient->deleteCache($cacheName);
     }
 
+    /**
+     * Set the value in cache with a given time to live (TTL) seconds.
+     *
+     * @param string $cacheName Name of the cache in which to set the value.
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return CacheSetResponse Represents the result of the set operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * CacheSetResponseSuccess<br>
+     * * CacheSetResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function set(string $cacheName, string $key, string $value, int $ttlSeconds = 0): CacheSetResponse
     {
         return $this->dataClient->set($cacheName, $key, $value, $ttlSeconds);
     }
 
+    /**
+     * Gets the cache value stored for a given key.
+     *
+     * @param string $cacheName Name of the cache to perform the lookup in.
+     * @param string $key The key to look up.
+     * @return CacheGetResponse Represents the result of the get operation and stores the retrieved value. This
+     * result is resolved to a type-safe object of one of the following types:<br>
+     * * CacheGetResponseHit<br>
+     * * CacheGetResponseMiss<br>
+     * * CacheSetResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($hit = $response->asHit()) {<br>
+     * &nbsp;&nbsp;$value = $hit->valueString();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     */
     public function get(string $cacheName, string $key): CacheGetResponse
     {
         return $this->dataClient->get($cacheName, $key);
     }
 
+    /**
+     * Associates the given key with the given value. If a value for the key is
+     * already present it is not replaced with the new value.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return CacheSetIfNotExistsResponse Represents the result of the setIfNotExists operation. This
+     * result is resolved to a type-safe object of one of the following types:<br>
+     * * CacheSetIfNotExistsResponseStored<br>
+     * * CacheSetIfNotExistsResponseNotStored<br>
+     * * CacheSetIfNotExistsResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($hit = $response->asStored()) {<br>
+     * &nbsp;&nbsp;$value = $hit->valueString();<br>
+     * } elseif ($error = $response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was already set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     */
     public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = 0): CacheSetIfNotExistsResponse
     {
         return $this->dataClient->setIfNotExists($cacheName, $key, $value, $ttlSeconds);
     }
 
+    /**
+     * Removes the key from the cache.
+     *
+     * @param string $cacheName Name of the cache from which to remove the key
+     * @param string $key The key to remove
+     * @return CacheDeleteResponse Represents the result of the delete operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * CacheDeleteResponseSuccess<br>
+     * * CacheDeleteResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function delete(string $cacheName, string $key): CacheDeleteResponse
     {
         return $this->dataClient->delete($cacheName, $key);
     }
 
+    /**
+     * Check to see if multiple keys exist in the cache.
+     *
+     * @param string $cacheName Name of the cache in which to look for keys
+     * @param array $keys List of keys to check
+     * @return CacheKeysExistResponse Represents the result of the keys exist operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * CacheKeysExistResponseSuccess<br>
+     * * CacheKeysExistResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * } elseif ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;// get a list of booleans representing the existence of the key at that index<br>
+     * &nbsp;&nbsp;$asList = $success->exists();<br>
+     * &nbsp;&nbsp;// get a dict with the key names as keys and boolean values<br>
+     * &nbsp;&nbsp;$asDict = $success->existsDictionary();<br>
+     * }</code>
+     */
     public function keysExist(string $cacheName, array $keys): CacheKeysExistResponse
     {
         return $this->dataClient->keysExist($cacheName, $keys);
     }
 
+    /**
+     * Check to see if a key exists in the cache.
+     *
+     * @param string $cacheName Name of the cache in which to look for the key
+     * @param string $key The key to check
+     * @return CacheKeyExistsResponse Represents the result of the keys exist operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * CacheKeyExistsResponseSuccess<br>
+     * * CacheKeyExistsResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * } elseif ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$keyIsInCache = $success->exists();<br>
+     * }</code>
+     */
     public function keyExists(string $cacheName, string $key): CacheKeyExistsResponse
     {
         return $this->dataClient->keyExists($cacheName, $key);
     }
 
+    /**
+     * Fetch the entire list from the cache.
+     *
+     * @param string $cacheName Name of the cache to perform the lookup in.
+     * @param string $listName The list to fetch.
+     * @return CacheListFetchResponse Represents the result of the list fetch operation and the associated list.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * ListFetchResponseHit<br>
+     * * ListFetchResponseMiss<br>
+     * * ListFetchResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($hit = $response->asHit()) {<br>
+     * &nbsp;&nbsp;$theList = $hit->valuesArray();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function listFetch(string $cacheName, string $listName): CacheListFetchResponse
     {
         return $this->dataClient->listFetch($cacheName, $listName);
     }
 
+    /**
+     * Push a value to the beginning of a list.
+     *
+     * @param string $cacheName Name of the cache that contains the list.
+     * @param string $listName The list to push the value on.
+     * @param string $value The value to push to the front of the list.
+     * @param int|null $truncateBackToSize Ensure the list does not exceed this length. Remove excess from the end of the list. Must be a positive number.
+     * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
+     * @return CacheListPushFrontResponse Represents the result of the operation and the length of the list after the push.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * ListPushFrontResponseSuccess<br>
+     * * ListPushFrontResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$listLength = $success->listLength();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function listPushFront(
         string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, ?CollectionTtl $ttl = null
     ): CacheListPushFrontResponse
@@ -128,6 +318,25 @@ class CacheClient implements LoggerAwareInterface
         return $this->dataClient->listPushFront($cacheName, $listName, $value, $truncateBackToSize, $ttl);
     }
 
+    /**
+     * Push a value to the end of a list.
+     *
+     * @param string $cacheName Name of the cache that contains the list.
+     * @param string $listName The list to push the value on.
+     * @param string $value The value to push to the front of the list.
+     * @param int|null $truncateFrontToSize Ensure the list does not exceed this length. Remove excess from the front of the list. Must be a positive number.
+     * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
+     * @return CacheListPushBackResponse Represents the result of the operation and the length of the list after the push.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * ListPushBackResponseSuccess<br>
+     * * ListPushBackResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$listLength = $success->listLength();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function listPushBack(
         string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, ?CollectionTtl $ttl = null
     ): CacheListPushBackResponse
@@ -135,26 +344,108 @@ class CacheClient implements LoggerAwareInterface
         return $this->dataClient->listPushBack($cacheName, $listName, $value, $truncateFrontToSize, $ttl);
     }
 
+    /**
+     * Pop a value from the beginning of a list.
+     *
+     * @param string $cacheName Name of the cache that contains the list.
+     * @param string $listName The list to pop the value from.
+     * @return CacheListPopFrontResponse Represents the result of the operation and the popped value.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * ListPopFrontResponseHit<br>
+     * * ListPopFrontResponseMiss<br>
+     * * ListPushFrontResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($hit = $response->asHit()) {<br>
+     * &nbsp;&nbsp;$poppedValue = $hit->valueString();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function listPopFront(string $cacheName, string $listName): CacheListPopFrontResponse
     {
         return $this->dataClient->listPopFront($cacheName, $listName);
     }
 
+    /**
+     * Pop a value from the back of a list.
+     *
+     * @param string $cacheName Name of the cache that contains the list.
+     * @param string $listName The list to pop the value from.
+     * @return CacheListPopBackResponse Represents the result of the operation and the popped value.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * ListPopBackResponseHit<br>
+     * * ListPopBackResponseMiss<br>
+     * * ListPushBackResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($hit = $response->asHit()) {<br>
+     * &nbsp;&nbsp;$poppedValue = $hit->valueString();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function listPopBack(string $cacheName, string $listName): CacheListPopBackResponse
     {
         return $this->dataClient->listPopBack($cacheName, $listName);
     }
 
+    /**
+     * Remove all elements from a list that are equal to a particular value.
+     *
+     * @param string $cacheName Name of the cache that contains the list.
+     * @param string $listName The list from which to remove the matching elements.
+     * @param string $value The value to completely remove from the list.
+     * @return CacheListRemoveValueResponse Represents the result of the list remove value operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * ListRemoveValueResponseSuccess<br>
+     * * ListRemoveValueResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function listRemoveValue(string $cacheName, string $listName, string $value): CacheListRemoveValueResponse
     {
         return $this->dataClient->listRemoveValue($cacheName, $listName, $value);
     }
 
+    /**
+     * Calculates the length of the list in the cache.
+     *
+     * @param string $cacheName Name of the cache that contains the list.
+     * @param string $listName The list to calculate the length.
+     * @return CacheListLengthResponse Represents the result of the list length operation and contains the list length.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * ListLengthResponseSuccess<br>
+     * * ListLengthResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($hit = $response->asHit()) {<br>
+     * &nbsp;&nbsp;$theLength = $hit->length();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function listLength(string $cacheName, string $listName): CacheListLengthResponse
     {
         return $this->dataClient->listLength($cacheName, $listName);
     }
 
+    /**
+     * Set the dictionary field to a value with a given time to live (TTL) seconds.
+     *
+     * @param string $cacheName Name of the cache that contains the dictionary.
+     * @param string $dictionaryName The dictionary to set the field in. Will be created if it doesn't exist.
+     * @param string $field The field in the dictionary to set.
+     * @param string $value The value to be stored.
+     * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+     * @return CacheDictionarySetFieldResponse Represents the result of the dictionary set field operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * DictionarySetFieldResponseSuccess<br>
+     * * DictionarySetFieldResponseError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
     public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): CacheDictionarySetFieldResponse
     {
         return $this->dataClient->dictionarySetField($cacheName, $dictionaryName, $field, $value, $ttl);
