@@ -30,7 +30,6 @@ Set required environment variables:
 
 ```bash
 export MOMENTO_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-export CACHE_NAME=<YOUR_CACHE_NAME>
 ```
 
 To run the simple set/get example:
@@ -63,14 +62,8 @@ Add the repository and dependency to your project's `composer.json`:
 
 ```json
 {
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/momentohq/client-sdk-php"
-    }
-  ],
   "require": {
-    "momentohq/client-sdk-php": "0.4.0"
+    "momentohq/client-sdk-php": "0.6.2"
   }
 }
 ```

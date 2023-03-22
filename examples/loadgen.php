@@ -41,6 +41,15 @@ class LoadGenerator
         $this->startTime = -hrtime(true);
     }
 
+    private function cleanUp(): void
+    {
+        $client = $this->getClient();
+        $response = $client->deleteCache(self::CACHE_NAME);
+        if ($error = $response->asError()) {
+            throw $error->innerException();
+        }
+    }
+
     private function getClient(): CacheClient
     {
         $cache_item_ttl_seconds = 60;
@@ -86,6 +95,7 @@ class LoadGenerator
             $this->setNanoseconds[] = $setHrtime;
             $this->getNanoseconds[] = $getHrtime;
         }
+        $this->cleanUp();
     }
 }
 
@@ -102,5 +112,4 @@ while ($nextSet = array_shift($loadGenerator->setNanoseconds)) {
     fwrite($sets, "$nextSet\n");
 }
 fclose($sets);
-
 print "Completed with {$loadGenerator->errors} errors.\n";
