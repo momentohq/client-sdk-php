@@ -78,11 +78,7 @@ use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
 use Psr\Log\LoggerInterface;
 
-$CACHE_NAME = getenv("CACHE_NAME");
-if (!$CACHE_NAME) {
-    print "Error: Environment variable CACHE_NAME was not found.\n";
-    exit;
-}
+$CACHE_NAME = uniqid("php-example-");
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 $KEY = "MyKey";
 $VALUE = "MyValue";
@@ -155,6 +151,13 @@ if ($response->asHit()) {
 } elseif ($response->asError()) {
     $logger->info("Error getting cache: " . $response->asError()->message() . "\n");
     exit;
+}
+
+// Delete test cache
+$logger->info("Deleting cache $CACHE_NAME\n");
+$response = $client->deleteCache($CACHE_NAME);
+if ($response->asError()) {
+    $logger->info("Error deleting cache: " . $response->asError()->message() . "\n");
 }
 
 printBanner("*                       Momento Example End                      *", $logger);
