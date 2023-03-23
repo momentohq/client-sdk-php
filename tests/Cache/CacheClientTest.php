@@ -1982,7 +1982,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($element, $response->asHit()->valueArray()[0]);
+        $this->assertEquals($element, $response->asHit()->valuesArray()[0]);
     }
 
     public function testSetAddElementSetFetch_NoRefreshTtl()
@@ -2019,7 +2019,7 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($element, $response->asHit()->valueArray()[0]);
+        $this->assertEquals($element, $response->asHit()->valuesArray()[0]);
     }
 
     public function testSetRemoveElementWithNullCacheName_ThrowsException()
@@ -2083,7 +2083,7 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($element, $response->asHit()->valueArray()[0]);
+        $this->assertEquals($element, $response->asHit()->valuesArray()[0]);
 
         $response = $this->client->setRemoveElement($this->TEST_CACHE_NAME, $setName, $element);
         $this->assertNull($response->asError());
