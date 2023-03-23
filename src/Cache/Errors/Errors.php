@@ -5,42 +5,85 @@ namespace Momento\Cache\Errors;
 
 abstract class MomentoErrorCode
 {
-    /// Invalid argument passed to Momento client
+    /**
+     * Invalid argument passed to Momento client
+     */
     public const INVALID_ARGUMENT_ERROR = "INVALID_ARGUMENT_ERROR";
-    /// Service returned an unknown response
+    /**
+     * Service returned an unknown response
+     */
     public const UNKNOWN_SERVICE_ERROR = "UNKNOWN_SERVICE_ERROR";
-    /// Cache with specified name already exists
+    /**
+     * Cache with specified name already exists
+     */
     public const ALREADY_EXISTS_ERROR = "ALREADY_EXISTS_ERROR";
-    /// Cache with specified name doesn't exist
+    /**
+     * Cache with specified name doesn't exist
+     */
     public const NOT_FOUND_ERROR = "NOT_FOUND_ERROR";
-    /// An unexpected error occurred while trying to fulfill the request
+    /**
+     * An unexpected error occurred while trying to fulfill the request
+     */
     public const INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
-    /// Insufficient permissions to perform operation
+    /**
+     * Insufficient permissions to perform operation
+     */
     public const PERMISSION_ERROR = "PERMISSION_ERROR";
-    /// Invalid authentication credentials to connect to cache service
+    /**
+     * Invalid authentication credentials to connect to cache service
+     */
     public const AUTHENTICATION_ERROR = "AUTHENTICATION_ERROR";
-    /// Request was cancelled by the server
+    /**
+     * Request was cancelled by the server
+     */
     public const CANCELLED_ERROR = "CANCELLED_ERROR";
-    /// Request rate exceeded the limits for the account
+    /**
+     * Request rate exceeded the limits for the account
+     */
     public const LIMIT_EXCEEDED_ERROR = "LIMIT_EXCEEDED_ERROR";
-    /// Request was invalid
+    /**
+     * Request was invalid
+     */
     public const BAD_REQUEST_ERROR = "BAD_REQUEST_ERROR";
-    /// Client's configured timeout was exceeded
+    /**
+     * Client's configured timeout was exceeded
+     */
     public const TIMEOUT_ERROR = "TIMEOUT_ERROR";
-    /// Server was unable to handle the request
+    /**
+     * Server was unable to handle the request
+     */
     public const SERVER_UNAVAILABLE = "SERVER_UNAVAILABLE";
-    /// A client resource (most likely memory) was exhausted
+    /**
+     * A client resource (most likely memory) was exhausted
+     */
     public const CLIENT_RESOURCE_EXHAUSTED = "CLIENT_RESOURCE_EXHAUSTED";
-    /// System is not in a state required for the operation's execution
+    /**
+     * System is not in a state required for the operation's execution
+     */
     public const FAILED_PRECONDITION_ERROR = "FAILED_PRECONDITION_ERROR";
-    /// Unknown error has occurred
+    /**
+     * Unknown error has occurred
+     */
     public const UNKNOWN_ERROR = "UNKNOWN_ERROR";
 }
 
+/**
+ * Captures low-level information about an error, at the gRPC level.  Hopefully
+ * this is only needed in rare cases, by Momento engineers, for debugging.
+ */
 class MomentoGrpcErrorDetails
 {
+    /**
+     * @var int The gRPC status code of the error response
+     */
     public int $code;
+    /**
+     * @var string Detailed information about the error
+     */
     public string $details;
+    /**
+     * @var mixed|null Headers and other information about the error response
+     */
     public mixed $metadata;
 
     public function __construct(int $code, string $details, mixed $metadata = null)
@@ -51,6 +94,9 @@ class MomentoGrpcErrorDetails
     }
 }
 
+/**
+ *  Container for low-level error information, including details from the transport layer.
+ */
 class MomentoErrorTransportDetails
 {
     public MomentoGrpcErrorDetails $grpc;
@@ -61,10 +107,24 @@ class MomentoErrorTransportDetails
     }
 }
 
+/**
+ * Base class for all Momento SDK errors
+ */
 abstract class SdkError extends \Exception
 {
+    /**
+     * @var string error code corresponding to one of the values of MomentoErrorCode
+     */
     public string $errorCode;
+    /**
+     * @var MomentoErrorTransportDetails Low-level error details, from the transport layer.  Hopefully only needed
+     * in rare cases, by Momento engineers, for debugging.
+     */
     public MomentoErrorTransportDetails $transportDetails;
+    /**
+     * @var string Prefix with basic information about the error class; this will be appended
+     * with specific information about the individual error instance at runtime.
+     */
     public string $messageWrapper;
 
     public function __construct(
@@ -82,84 +142,126 @@ abstract class SdkError extends \Exception
     }
 }
 
+/**
+ * Cache with specified name already exists
+ */
 class AlreadyExistsError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::ALREADY_EXISTS_ERROR;
     public string $messageWrapper = 'A cache with the specified name already exists.  To resolve this error, either delete the existing cache and make a new one, or use a different name';
 }
 
+/**
+ * Invalid authentication credentials to connect to cache service
+ */
 class AuthenticationError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::AUTHENTICATION_ERROR;
     public string $messageWrapper = 'Invalid authentication credentials to connect to cache service';
 }
 
+/**
+ * Request was invalid
+ */
 class BadRequestError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::BAD_REQUEST_ERROR;
     public string $messageWrapper = 'The request was invalid; please contact us at support@momentohq.com';
 }
 
+/**
+ * Request was cancelled by the server
+ */
 class CancelledError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::CANCELLED_ERROR;
     public string $messageWrapper = 'The request was cancelled by the server; please contact us at support@momentohq.com';
 }
 
+/**
+ * System is not in a state required for the operation's execution
+ */
 class FailedPreconditionError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::FAILED_PRECONDITION_ERROR;
     public string $messageWrapper = 'System is not in a state required for the operation\'s execution';
 }
 
+/**
+ * An unexpected error occurred while trying to fulfill the request
+ */
 class InternalServerError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::INTERNAL_SERVER_ERROR;
     public string $messageWrapper = 'An unexpected error occurred while trying to fulfill the request; please contact us at support@momentohq.com';
 }
 
+/**
+ * Invalid argument passed to Momento client
+ */
 class InvalidArgumentError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::INVALID_ARGUMENT_ERROR;
     public string $messageWrapper = 'Invalid argument passed to Momento client';
 }
 
+/**
+ * Occurs when request rate, bandwidth, or object size exceeded the limits for the account.
+ */
 class LimitExceededError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::LIMIT_EXCEEDED_ERROR;
-    public string $messageWrapper = 'Request rate exceeded the limits for this account.  To resolve this error, reduce your request rate, or contact us at support@momentohq.com to request a limit increase';
+    public string $messageWrapper = 'Request rate, bandwidth, or object size exceeded the limits for this account.  To resolve this error, reduce your request rate, or contact us at support@momentohq.com to request a limit increase';
 }
 
+/**
+ * Cache with specified name doesn't exist
+ */
 class NotFoundError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::NOT_FOUND_ERROR;
     public string $messageWrapper = 'A cache with the specified name does not exist.  To resolve this error, make sure you have created the cache before attempting to use it';
 }
 
+/**
+ * Insufficient permissions to perform operation
+ */
 class PermissionError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::PERMISSION_ERROR;
     public string $messageWrapper = 'Insufficient permissions to perform an operation on a cache';
 }
 
+/**
+ * Server was unable to handle the request
+ */
 class ServerUnavailableError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::SERVER_UNAVAILABLE;
     public string $messageWrapper = 'The server was unable to handle the request; consider retrying.  If the error persists, please contact us at support@momentohq.com';
 }
 
+/**
+ * Client's configured timeout was exceeded
+ */
 class TimeoutError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::TIMEOUT_ERROR;
     public string $messageWrapper = 'The client\'s configured timeout was exceeded; you may need to use a Configuration with more lenient timeouts';
 }
 
+/**
+ * Unknown error has occurred
+ */
 class UnknownError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::UNKNOWN_ERROR;
     public string $messageWrapper = 'Unknown error has occurred';
 }
 
+/**
+ * Service returned an unknown response
+ */
 class UnknownServiceError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::UNKNOWN_SERVICE_ERROR;
