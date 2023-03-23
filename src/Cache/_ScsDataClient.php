@@ -523,15 +523,15 @@ class _ScsDataClient implements LoggerAwareInterface
             return new CacheDictionaryGetFieldResponseError(new UnknownError($e->getMessage()));
         }
         if ($dictionaryGetFieldResponse->hasMissing()) {
-            return new CacheDictionaryGetFieldResponseMiss();
+            return new CacheDictionaryGetFieldResponseMiss($field);
         }
         if ($dictionaryGetFieldResponse->getFound()->getItems()->count() == 0) {
             return new CacheDictionaryGetFieldResponseError(new UnknownError("_DictionaryGetResponseResponse contained no data but was found"));
         }
         if ($dictionaryGetFieldResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
-            return new CacheDictionaryGetFieldResponseMiss();
+            return new CacheDictionaryGetFieldResponseMiss($field);
         }
-        return new CacheDictionaryGetFieldResponseHit($dictionaryGetFieldResponse);
+        return new CacheDictionaryGetFieldResponseHit($field, $dictionaryGetFieldResponse);
     }
 
     public function dictionaryFetch(string $cacheName, string $dictionaryName): CacheDictionaryFetchResponse
