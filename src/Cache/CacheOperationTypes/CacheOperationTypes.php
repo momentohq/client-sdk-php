@@ -89,7 +89,10 @@ abstract class ResponseBase
 
     public function __construct()
     {
+        $baseTypeSuffix = "Response";
         $this->baseType = get_parent_class($this);
+        // Remove the "Response" suffix from base type so we can match the subtype names.
+        $this->baseType = substr($this->baseType, 0, strlen($baseTypeSuffix)*-1);
     }
 
     public function __toString()
@@ -166,9 +169,9 @@ abstract class CreateCacheResponse extends ResponseBase
 {
 
     /**
-     * @return CreateCacheResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return CreateCacheSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CreateCacheResponseSuccess|null
+    public function asSuccess(): CreateCacheSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -177,9 +180,9 @@ abstract class CreateCacheResponse extends ResponseBase
     }
 
     /**
-     * @return CreateCacheResponseError|null Returns the error subtype if the request was successful and null otherwise.
+     * @return CreateCacheError|null Returns the error subtype if the request was successful and null otherwise.
      */
-    public function asError(): CreateCacheResponseError|null
+    public function asError(): CreateCacheError|null
     {
         if ($this->isError()) {
             return $this;
@@ -188,9 +191,9 @@ abstract class CreateCacheResponse extends ResponseBase
     }
 
     /**
-     * @return CreateCacheResponseAlreadyExists|null Returns the "already exists" subtype if the request was successful and null otherwise.
+     * @return CreateCacheAlreadyExists|null Returns the "already exists" subtype if the request was successful and null otherwise.
      */
-    public function asAlreadyExists(): CreateCacheResponseAlreadyExists|null
+    public function asAlreadyExists(): CreateCacheAlreadyExists|null
     {
         if ($this->isAlreadyExists()) {
             return $this;
@@ -203,21 +206,21 @@ abstract class CreateCacheResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CreateCacheResponseSuccess extends CreateCacheResponse
+class CreateCacheSuccess extends CreateCacheResponse
 {
 }
 
 /**
  * Indicates that a cache with the requested name has already been created in the requesting account.
  */
-class CreateCacheResponseAlreadyExists extends CreateCacheResponse
+class CreateCacheAlreadyExists extends CreateCacheResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CreateCacheResponseError extends CreateCacheResponse
+class CreateCacheError extends CreateCacheResponse
 {
     use ErrorBody;
 }
@@ -243,9 +246,9 @@ class CreateCacheResponseError extends CreateCacheResponse
 abstract class DeleteCacheResponse extends ResponseBase
 {
     /**
-     * @return DeleteCacheResponseSuccess|null  Returns the success subtype if the request was successful and null otherwise.
+     * @return DeleteCacheSuccess|null  Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): DeleteCacheResponseSuccess|null
+    public function asSuccess(): DeleteCacheSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -254,9 +257,9 @@ abstract class DeleteCacheResponse extends ResponseBase
     }
 
     /**
-     * @return DeleteCacheResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return DeleteCacheError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DeleteCacheResponseError|null
+    public function asError(): DeleteCacheError|null
     {
         if ($this->isError()) {
             return $this;
@@ -268,14 +271,14 @@ abstract class DeleteCacheResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class DeleteCacheResponseSuccess extends DeleteCacheResponse
+class DeleteCacheSuccess extends DeleteCacheResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class DeleteCacheResponseError extends DeleteCacheResponse
+class DeleteCacheError extends DeleteCacheResponse
 {
     use ErrorBody;
 }
@@ -300,9 +303,9 @@ abstract class ListCachesResponse extends ResponseBase
 {
 
     /**
-     * @return ListCachesResponseSuccess|null  Returns the success subtype if the request was successful and null otherwise.
+     * @return ListCachesSuccess|null  Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): ListCachesResponseSuccess|null
+    public function asSuccess(): ListCachesSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -311,9 +314,9 @@ abstract class ListCachesResponse extends ResponseBase
     }
 
     /**
-     * @return ListCachesResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return ListCachesError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ListCachesResponseError|null
+    public function asError(): ListCachesError|null
     {
         if ($this->isError()) {
             return $this;
@@ -326,7 +329,7 @@ abstract class ListCachesResponse extends ResponseBase
 /**
  * Contains information from the successful request that generated it.
  */
-class ListCachesResponseSuccess extends ListCachesResponse
+class ListCachesSuccess extends ListCachesResponse
 {
     private string $nextToken;
     private array $caches = [];
@@ -358,7 +361,7 @@ class ListCachesResponseSuccess extends ListCachesResponse
 /**
  * Contains information about an error returned from the request.
  */
-class ListCachesResponseError extends ListCachesResponse
+class ListCachesError extends ListCachesResponse
 {
     use ErrorBody;
 }
@@ -381,12 +384,12 @@ class ListCachesResponseError extends ListCachesResponse
  * }
  * </code>
  */
-abstract class CacheSetResponse extends ResponseBase
+abstract class SetResponse extends ResponseBase
 {
     /**
-     * @return CacheSetResponseSuccess|null  Returns the success subtype if the request was successful and null otherwise.
+     * @return SetSuccess|null  Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheSetResponseSuccess|null
+    public function asSuccess(): SetSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -395,9 +398,9 @@ abstract class CacheSetResponse extends ResponseBase
     }
 
     /**
-     * @return CacheSetResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return SetError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheSetResponseError|null
+    public function asError(): SetError|null
     {
         if ($this->isError()) {
             return $this;
@@ -409,14 +412,14 @@ abstract class CacheSetResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheSetResponseSuccess extends CacheSetResponse
+class SetSuccess extends SetResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheSetResponseError extends CacheSetResponse
+class SetError extends SetResponse
 {
     use ErrorBody;
 }
@@ -442,13 +445,13 @@ class CacheSetResponseError extends CacheSetResponse
  * }
  * </code>
  */
-abstract class CacheGetResponse extends ResponseBase
+abstract class GetResponse extends ResponseBase
 {
 
     /**
-     * @return CacheGetResponseHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     * @return GetHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): CacheGetResponseHit|null
+    public function asHit(): GetHit|null
     {
         if ($this->isHit()) {
             return $this;
@@ -457,9 +460,9 @@ abstract class CacheGetResponse extends ResponseBase
     }
 
     /**
-     * @return CacheGetResponseMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return GetMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): CacheGetResponseMiss|null
+    public function asMiss(): GetMiss|null
     {
         if ($this->isMiss()) {
             return $this;
@@ -468,9 +471,9 @@ abstract class CacheGetResponse extends ResponseBase
     }
 
     /**
-     * @return CacheGetResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return GetError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheGetResponseError|null
+    public function asError(): GetError|null
     {
         if ($this->isError()) {
             return $this;
@@ -482,7 +485,7 @@ abstract class CacheGetResponse extends ResponseBase
 /**
  * Contains the result of a cache hit.
  */
-class CacheGetResponseHit extends CacheGetResponse
+class GetHit extends GetResponse
 {
     private string $value;
 
@@ -509,14 +512,14 @@ class CacheGetResponseHit extends CacheGetResponse
 /**
  * Indicates that the request that generated it was a cache miss.
  */
-class CacheGetResponseMiss extends CacheGetResponse
+class GetMiss extends GetResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheGetResponseError extends CacheGetResponse
+class GetError extends GetResponse
 {
     use ErrorBody;
 }
@@ -542,12 +545,12 @@ class CacheGetResponseError extends CacheGetResponse
  * }
  * </code>
  */
-abstract class CacheSetIfNotExistsResponse extends ResponseBase
+abstract class SetIfNotExistsResponse extends ResponseBase
 {
     /**
-     * @return CacheSetIfNotExistsResponseStored|null Returns the subtype for a successfully stored value and null otherwise.
+     * @return SetIfNotExistsStored|null Returns the subtype for a successfully stored value and null otherwise.
      */
-    public function asStored(): CacheSetIfNotExistsResponseStored|null
+    public function asStored(): SetIfNotExistsStored|null
     {
         if ($this->isStored()) {
             return $this;
@@ -556,9 +559,9 @@ abstract class CacheSetIfNotExistsResponse extends ResponseBase
     }
 
     /**
-     * @return CacheSetIfNotExistsResponseNotStored|null Returns the subtype indicating the value was not stored and null otherwise.
+     * @return SetIfNotExistsNotStored|null Returns the subtype indicating the value was not stored and null otherwise.
      */
-    public function asNotStored(): CacheSetIfNotExistsResponseNotStored|null
+    public function asNotStored(): SetIfNotExistsNotStored|null
     {
         if($this->isNotStored()) {
             return $this;
@@ -567,9 +570,9 @@ abstract class CacheSetIfNotExistsResponse extends ResponseBase
     }
 
     /**
-     * @return CacheSetIfNotExistsResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return SetIfNotExistsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheSetIfNotExistsResponseError|null
+    public function asError(): SetIfNotExistsError|null
     {
         if ($this->isError()) {
             return $this;
@@ -581,19 +584,19 @@ abstract class CacheSetIfNotExistsResponse extends ResponseBase
 /**
  * Indicates that the value was successfully stored.
  */
-class CacheSetIfNotExistsResponseStored extends CacheSetIfNotExistsResponse
+class SetIfNotExistsStored extends SetIfNotExistsResponse
 {
 }
 
 /**
  * Indicates that the value was not stored because the specified cache key already exists.
  */
-class CacheSetIfNotExistsResponseNotStored extends CacheSetIfNotExistsResponse {}
+class SetIfNotExistsNotStored extends SetIfNotExistsResponse {}
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheSetIfNotExistsResponseError extends CacheSetIfNotExistsResponse
+class SetIfNotExistsError extends SetIfNotExistsResponse
 {
     use ErrorBody;
 }
@@ -616,12 +619,12 @@ class CacheSetIfNotExistsResponseError extends CacheSetIfNotExistsResponse
  * }
  * </code>
  */
-abstract class CacheDeleteResponse extends ResponseBase
+abstract class DeleteResponse extends ResponseBase
 {
     /**
-     * @return CacheDeleteResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return DeleteSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheDeleteResponseSuccess|null
+    public function asSuccess(): DeleteSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -630,9 +633,9 @@ abstract class CacheDeleteResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDeleteResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return DeleteError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheDeleteResponseError|null
+    public function asError(): DeleteError|null
     {
         if ($this->isError()) {
             return $this;
@@ -644,14 +647,14 @@ abstract class CacheDeleteResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheDeleteResponseSuccess extends CacheDeleteResponse
+class DeleteSuccess extends DeleteResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheDeleteResponseError extends CacheDeleteResponse
+class DeleteError extends DeleteResponse
 {
     use ErrorBody;
 }
@@ -677,12 +680,12 @@ class CacheDeleteResponseError extends CacheDeleteResponse
  * }
  * </code>
  */
-abstract class CacheKeysExistResponse extends ResponseBase
+abstract class KeysExistResponse extends ResponseBase
 {
     /**
-     * @return CacheKeysExistResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return KeysExistSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess() : CacheKeysExistResponseSuccess|null
+    public function asSuccess() : KeysExistSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -691,9 +694,9 @@ abstract class CacheKeysExistResponse extends ResponseBase
     }
 
     /**
-     * @return CacheKeysExistResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return KeysExistError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError() : CacheKeysExistResponseError|null
+    public function asError() : KeysExistError|null
     {
         if ($this->isError()) {
             return $this;
@@ -705,7 +708,7 @@ abstract class CacheKeysExistResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheKeysExistResponseSuccess extends CacheKeysExistResponse
+class KeysExistSuccess extends KeysExistResponse
 {
     private array $values = [];
     private array $valuesDictionary = [];
@@ -737,7 +740,7 @@ class CacheKeysExistResponseSuccess extends CacheKeysExistResponse
 /**
  * Contains information about an error returned from the request.
  */
-class CacheKeysExistResponseError extends CacheKeysExistResponse
+class KeysExistError extends KeysExistResponse
 {
     use ErrorBody;
 }
@@ -760,12 +763,12 @@ class CacheKeysExistResponseError extends CacheKeysExistResponse
  * }
  * </code>
  */
-abstract class CacheKeyExistsResponse extends ResponseBase
+abstract class KeyExistsResponse extends ResponseBase
 {
     /**
-     * @return CacheKeyExistsResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return KeyExistsSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess() : CacheKeyExistsResponseSuccess|null
+    public function asSuccess() : KeyExistsSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -774,9 +777,9 @@ abstract class CacheKeyExistsResponse extends ResponseBase
     }
 
     /**
-     * @return CacheKeyExistsResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return KeyExistsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError() : CacheKeyExistsResponseError|null
+    public function asError() : KeyExistsError|null
     {
         if ($this->isError()) {
             return $this;
@@ -788,7 +791,7 @@ abstract class CacheKeyExistsResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheKeyExistsResponseSuccess extends CacheKeyExistsResponse
+class KeyExistsSuccess extends KeyExistsResponse
 {
     private bool $value;
 
@@ -807,7 +810,7 @@ class CacheKeyExistsResponseSuccess extends CacheKeyExistsResponse
 /**
  * Contains information about an error returned from the request.
  */
-class CacheKeyExistsResponseError extends CacheKeyExistsResponse
+class KeyExistsError extends KeyExistsResponse
 {
     use ErrorBody;
 }
@@ -833,12 +836,12 @@ class CacheKeyExistsResponseError extends CacheKeyExistsResponse
  * }
  * </code>
  */
-abstract class CacheListFetchResponse extends ResponseBase
+abstract class ListFetchResponse extends ResponseBase
 {
     /**
-     * @return CacheListFetchResponseHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     * @return ListFetchHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): CacheListFetchResponseHit|null
+    public function asHit(): ListFetchHit|null
     {
         if ($this->isHit()) {
             return $this;
@@ -847,9 +850,9 @@ abstract class CacheListFetchResponse extends ResponseBase
     }
 
     /**
-     * @return CacheListFetchResponseMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return ListFetchMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): CacheListFetchResponseMiss|null
+    public function asMiss(): ListFetchMiss|null
     {
         if ($this->isMiss()) {
             return $this;
@@ -858,9 +861,9 @@ abstract class CacheListFetchResponse extends ResponseBase
     }
 
     /**
-     * @return CacheListFetchResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return ListFetchError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheListFetchResponseError|null
+    public function asError(): ListFetchError|null
     {
         if ($this->isError()) {
             return $this;
@@ -872,7 +875,7 @@ abstract class CacheListFetchResponse extends ResponseBase
 /**
  * Contains the result of a cache hit.
  */
-class CacheListFetchResponseHit extends CacheListFetchResponse
+class ListFetchHit extends ListFetchResponse
 {
 
     private array $values = [];
@@ -906,14 +909,14 @@ class CacheListFetchResponseHit extends CacheListFetchResponse
 /**
  * Indicates that the request that generated it was a cache miss.
  */
-class CacheListFetchResponseMiss extends CacheListFetchResponse
+class ListFetchMiss extends ListFetchResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheListFetchResponseError extends CacheListFetchResponse
+class ListFetchError extends ListFetchResponse
 {
     use ErrorBody;
 }
@@ -936,12 +939,12 @@ class CacheListFetchResponseError extends CacheListFetchResponse
  * }
  * </code>
  */
-abstract class CacheListPushFrontResponse extends ResponseBase
+abstract class ListPushFrontResponse extends ResponseBase
 {
     /**
-     * @return CacheListPushFrontResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return ListPushFrontSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheListPushFrontResponseSuccess|null
+    public function asSuccess(): ListPushFrontSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -950,9 +953,9 @@ abstract class CacheListPushFrontResponse extends ResponseBase
     }
 
     /**
-     * @return CacheListPushFrontResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return ListPushFrontError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheListPushFrontResponseError|null
+    public function asError(): ListPushFrontError|null
     {
         if ($this->isError()) {
             return $this;
@@ -964,7 +967,7 @@ abstract class CacheListPushFrontResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse
+class ListPushFrontSuccess extends ListPushFrontResponse
 {
     private int $listLength;
 
@@ -991,7 +994,7 @@ class CacheListPushFrontResponseSuccess extends CacheListPushFrontResponse
 /**
  * Contains information about an error returned from the request.
  */
-class CacheListPushFrontResponseError extends CacheListPushFrontResponse
+class ListPushFrontError extends ListPushFrontResponse
 {
     use ErrorBody;
 }
@@ -1014,12 +1017,12 @@ class CacheListPushFrontResponseError extends CacheListPushFrontResponse
  * }
  * </code>
  */
-abstract class CacheListPushBackResponse extends ResponseBase
+abstract class ListPushBackResponse extends ResponseBase
 {
     /**
-     * @return CacheListPushBackResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return ListPushBackSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheListPushBackResponseSuccess|null
+    public function asSuccess(): ListPushBackSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1028,9 +1031,9 @@ abstract class CacheListPushBackResponse extends ResponseBase
     }
 
     /**
-     * @return CacheListPushBackResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return ListPushBackError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheListPushBackResponseError|null
+    public function asError(): ListPushBackError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1042,7 +1045,7 @@ abstract class CacheListPushBackResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheListPushBackResponseSuccess extends CacheListPushBackResponse
+class ListPushBackSuccess extends ListPushBackResponse
 {
     private int $listLength;
 
@@ -1069,7 +1072,7 @@ class CacheListPushBackResponseSuccess extends CacheListPushBackResponse
 /**
  * Contains information about an error returned from the request.
  */
-class CacheListPushBackResponseError extends CacheListPushBackResponse
+class ListPushBackError extends ListPushBackResponse
 {
     use ErrorBody;
 }
@@ -1095,12 +1098,12 @@ class CacheListPushBackResponseError extends CacheListPushBackResponse
  * }
  * </code>
  */
-abstract class CacheListPopFrontResponse extends ResponseBase
+abstract class ListPopFrontResponse extends ResponseBase
 {
     /**
-     * @return CacheListPopFrontResponseHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     * @return ListPopFrontHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): CacheListPopFrontResponseHit|null
+    public function asHit(): ListPopFrontHit|null
     {
         if ($this->isHit()) {
             return $this;
@@ -1109,9 +1112,9 @@ abstract class CacheListPopFrontResponse extends ResponseBase
     }
 
     /**
-     * @return CacheListPopFrontResponseMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return ListPopFrontMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): CacheListPopFrontResponseMiss|null
+    public function asMiss(): ListPopFrontMiss|null
     {
         if ($this->isMiss()) {
             return $this;
@@ -1120,9 +1123,9 @@ abstract class CacheListPopFrontResponse extends ResponseBase
     }
 
     /**
-     * @return CacheListPopFrontResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return ListPopFrontError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheListPopFrontResponseError|null
+    public function asError(): ListPopFrontError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1134,7 +1137,7 @@ abstract class CacheListPopFrontResponse extends ResponseBase
 /**
  * Contains the result of a cache hit.
  */
-class CacheListPopFrontResponseHit extends CacheListPopFrontResponse
+class ListPopFrontHit extends ListPopFrontResponse
 {
     private string $value;
 
@@ -1161,14 +1164,14 @@ class CacheListPopFrontResponseHit extends CacheListPopFrontResponse
 /**
  * Indicates that the request that generated it was a cache miss.
  */
-class CacheListPopFrontResponseMiss extends CacheListPopFrontResponse
+class ListPopFrontMiss extends ListPopFrontResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheListPopFrontResponseError extends CacheListPopFrontResponse
+class ListPopFrontError extends ListPopFrontResponse
 {
     use ErrorBody;
 }
@@ -1194,12 +1197,12 @@ class CacheListPopFrontResponseError extends CacheListPopFrontResponse
  * }
  * </code>
  */
-abstract class CacheListPopBackResponse extends ResponseBase
+abstract class ListPopBackResponse extends ResponseBase
 {
     /**
-     * @return CacheListPopBackResponseHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     * @return ListPopBackHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): CacheListPopBackResponseHit|null
+    public function asHit(): ListPopBackHit|null
     {
         if ($this->isHit()) {
             return $this;
@@ -1208,9 +1211,9 @@ abstract class CacheListPopBackResponse extends ResponseBase
     }
 
     /**
-     * @return CacheListPopBackResponseMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return ListPopBackMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): CacheListPopBackResponseMiss|null
+    public function asMiss(): ListPopBackMiss|null
     {
         if ($this->isMiss()) {
             return $this;
@@ -1219,9 +1222,9 @@ abstract class CacheListPopBackResponse extends ResponseBase
     }
 
     /**
-     * @return CacheListPopBackResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return ListPopBackError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheListPopBackResponseError|null
+    public function asError(): ListPopBackError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1233,7 +1236,7 @@ abstract class CacheListPopBackResponse extends ResponseBase
 /**
  * Contains the result of a cache hit.
  */
-class CacheListPopBackResponseHit extends CacheListPopBackResponse
+class ListPopBackHit extends ListPopBackResponse
 {
     private string $value;
 
@@ -1260,14 +1263,14 @@ class CacheListPopBackResponseHit extends CacheListPopBackResponse
 /**
  * Indicates that the request that generated it was a cache miss.
  */
-class CacheListPopBackResponseMiss extends CacheListPopBackResponse
+class ListPopBackMiss extends ListPopBackResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheListPopBackResponseError extends CacheListPopBackResponse
+class ListPopBackError extends ListPopBackResponse
 {
     use ErrorBody;
 }
@@ -1290,12 +1293,12 @@ class CacheListPopBackResponseError extends CacheListPopBackResponse
  * }
  * </code>
  */
-abstract class CacheListRemoveValueResponse extends ResponseBase
+abstract class ListRemoveValueResponse extends ResponseBase
 {
     /**
-     * @return CacheListRemoveValueResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return ListRemoveValueSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheListRemoveValueResponseSuccess|null
+    public function asSuccess(): ListRemoveValueSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1304,9 +1307,9 @@ abstract class CacheListRemoveValueResponse extends ResponseBase
     }
 
     /**
-     * @return CacheListRemoveValueResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return ListRemoveValueError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheListRemoveValueResponseError|null
+    public function asError(): ListRemoveValueError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1318,14 +1321,14 @@ abstract class CacheListRemoveValueResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheListRemoveValueResponseSuccess extends CacheListRemoveValueResponse
+class ListRemoveValueSuccess extends ListRemoveValueResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheListRemoveValueResponseError extends CacheListRemoveValueResponse
+class ListRemoveValueError extends ListRemoveValueResponse
 {
     use ErrorBody;
 }
@@ -1348,12 +1351,12 @@ class CacheListRemoveValueResponseError extends CacheListRemoveValueResponse
  * }
  * </code>
  */
-abstract class CacheListLengthResponse extends ResponseBase
+abstract class ListLengthResponse extends ResponseBase
 {
     /**
-     * @return CacheListLengthResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return ListLengthSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheListLengthResponseSuccess|null
+    public function asSuccess(): ListLengthSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1362,9 +1365,9 @@ abstract class CacheListLengthResponse extends ResponseBase
     }
 
     /**
-     * @return CacheListLengthResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return ListLengthError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheListLengthResponseError|null
+    public function asError(): ListLengthError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1376,7 +1379,7 @@ abstract class CacheListLengthResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheListLengthResponseSuccess extends CacheListLengthResponse
+class ListLengthSuccess extends ListLengthResponse
 {
     private int $length;
 
@@ -1403,7 +1406,7 @@ class CacheListLengthResponseSuccess extends CacheListLengthResponse
 /**
  * Contains information about an error returned from the request.
  */
-class CacheListLengthResponseError extends CacheListLengthResponse
+class ListLengthError extends ListLengthResponse
 {
     use ErrorBody;
 }
@@ -1426,12 +1429,12 @@ class CacheListLengthResponseError extends CacheListLengthResponse
  * }
  * </code>
  */
-abstract class CacheDictionarySetFieldResponse extends ResponseBase
+abstract class DictionarySetFieldResponse extends ResponseBase
 {
     /**
-     * @return CacheDictionarySetFieldResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return DictionarySetFieldSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheDictionarySetFieldResponseSuccess|null
+    public function asSuccess(): DictionarySetFieldSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1440,9 +1443,9 @@ abstract class CacheDictionarySetFieldResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionarySetFieldResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return DictionarySetFieldError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheDictionarySetFieldResponseError|null
+    public function asError(): DictionarySetFieldError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1454,14 +1457,14 @@ abstract class CacheDictionarySetFieldResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheDictionarySetFieldResponseSuccess extends CacheDictionarySetFieldResponse
+class DictionarySetFieldSuccess extends DictionarySetFieldResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheDictionarySetFieldResponseError extends CacheDictionarySetFieldResponse
+class DictionarySetFieldError extends DictionarySetFieldResponse
 {
     use ErrorBody;
 }
@@ -1487,12 +1490,12 @@ class CacheDictionarySetFieldResponseError extends CacheDictionarySetFieldRespon
  * }
  * </code>
  */
-abstract class CacheDictionaryGetFieldResponse extends ResponseBase
+abstract class DictionaryGetFieldResponse extends ResponseBase
 {
     /**
-     * @return CacheDictionaryGetFieldResponseHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     * @return DictionaryGetFieldHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): CacheDictionaryGetFieldResponseHit|null
+    public function asHit(): DictionaryGetFieldHit|null
     {
         if ($this->isHit()) {
             return $this;
@@ -1501,9 +1504,9 @@ abstract class CacheDictionaryGetFieldResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionaryGetFieldResponseMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return DictionaryGetFieldMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): CacheDictionaryGetFieldResponseMiss|null
+    public function asMiss(): DictionaryGetFieldMiss|null
     {
         if ($this->isMiss()) {
             return $this;
@@ -1512,9 +1515,9 @@ abstract class CacheDictionaryGetFieldResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionaryGetFieldResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return DictionaryGetFieldError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheDictionaryGetFieldResponseError|null
+    public function asError(): DictionaryGetFieldError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1526,7 +1529,7 @@ abstract class CacheDictionaryGetFieldResponse extends ResponseBase
 /**
  * Contains the result of a cache hit.
  */
-class CacheDictionaryGetFieldResponseHit extends CacheDictionaryGetFieldResponse
+class DictionaryGetFieldHit extends DictionaryGetFieldResponse
 {
     private string $value;
     private string $field;
@@ -1568,14 +1571,14 @@ class CacheDictionaryGetFieldResponseHit extends CacheDictionaryGetFieldResponse
 /**
  * Indicates that the request that generated it was a cache miss.
  */
-class CacheDictionaryGetFieldResponseMiss extends CacheDictionaryGetFieldResponse
+class DictionaryGetFieldMiss extends DictionaryGetFieldResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheDictionaryGetFieldResponseError extends CacheDictionaryGetFieldResponse
+class DictionaryGetFieldError extends DictionaryGetFieldResponse
 {
     use ErrorBody;
 }
@@ -1601,12 +1604,12 @@ class CacheDictionaryGetFieldResponseError extends CacheDictionaryGetFieldRespon
  * }
  * </code>
  */
-abstract class CacheDictionaryFetchResponse extends ResponseBase
+abstract class DictionaryFetchResponse extends ResponseBase
 {
     /**
-     * @return CacheDictionaryFetchResponseHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     * @return DictionaryFetchHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): CacheDictionaryFetchResponseHit|null
+    public function asHit(): DictionaryFetchHit|null
     {
         if ($this->isHit()) {
             return $this;
@@ -1615,9 +1618,9 @@ abstract class CacheDictionaryFetchResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionaryFetchResponseMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return DictionaryFetchMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): CacheDictionaryFetchResponseMiss|null
+    public function asMiss(): DictionaryFetchMiss|null
     {
         if ($this->isMiss()) {
             return $this;
@@ -1626,9 +1629,9 @@ abstract class CacheDictionaryFetchResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionaryFetchResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return DictionaryFetchError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheDictionaryFetchResponseError|null
+    public function asError(): DictionaryFetchError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1640,7 +1643,7 @@ abstract class CacheDictionaryFetchResponse extends ResponseBase
 /**
  * Contains the result of a cache hit.
  */
-class CacheDictionaryFetchResponseHit extends CacheDictionaryFetchResponse
+class DictionaryFetchHit extends DictionaryFetchResponse
 {
     private array $valuesDictionary;
 
@@ -1671,14 +1674,14 @@ class CacheDictionaryFetchResponseHit extends CacheDictionaryFetchResponse
 /**
  * Indicates that the request that generated it was a cache miss.
  */
-class CacheDictionaryFetchResponseMiss extends CacheDictionaryFetchResponse
+class DictionaryFetchMiss extends DictionaryFetchResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheDictionaryFetchResponseError extends CacheDictionaryFetchResponse
+class DictionaryFetchError extends DictionaryFetchResponse
 {
     use ErrorBody;
 }
@@ -1701,12 +1704,12 @@ class CacheDictionaryFetchResponseError extends CacheDictionaryFetchResponse
  * }
  * </code>
  */
-abstract class CacheDictionarySetFieldsResponse extends ResponseBase
+abstract class DictionarySetFieldsResponse extends ResponseBase
 {
     /**
-     * @return CacheDictionarySetFieldsResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return DictionarySetFieldsSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheDictionarySetFieldsResponseSuccess|null
+    public function asSuccess(): DictionarySetFieldsSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1715,9 +1718,9 @@ abstract class CacheDictionarySetFieldsResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionarySetFieldsResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return DictionarySetFieldsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheDictionarySetFieldsResponseError|null
+    public function asError(): DictionarySetFieldsError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1729,14 +1732,14 @@ abstract class CacheDictionarySetFieldsResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheDictionarySetFieldsResponseSuccess extends CacheDictionarySetFieldsResponse
+class DictionarySetFieldsSuccess extends DictionarySetFieldsResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheDictionarySetFieldsResponseError extends CacheDictionarySetFieldsResponse
+class DictionarySetFieldsError extends DictionarySetFieldsResponse
 {
     use ErrorBody;
 }
@@ -1763,12 +1766,12 @@ class CacheDictionarySetFieldsResponseError extends CacheDictionarySetFieldsResp
  * }
  * </code>
  */
-abstract class CacheDictionaryGetFieldsResponse extends ResponseBase
+abstract class DictionaryGetFieldsResponse extends ResponseBase
 {
     /**
-     * @return CacheDictionaryGetFieldsResponseHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     * @return DictionaryGetFieldsHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): CacheDictionaryGetFieldsResponseHit|null
+    public function asHit(): DictionaryGetFieldsHit|null
     {
         if ($this->isHit()) {
             return $this;
@@ -1777,9 +1780,9 @@ abstract class CacheDictionaryGetFieldsResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionaryGetFieldsResponseMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return DictionaryGetFieldsMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): CacheDictionaryGetFieldsResponseMiss|null
+    public function asMiss(): DictionaryGetFieldsMiss|null
     {
         if ($this->isMiss()) {
             return $this;
@@ -1788,9 +1791,9 @@ abstract class CacheDictionaryGetFieldsResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionaryGetFieldsResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return DictionaryGetFieldsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheDictionaryGetFieldsResponseError|null
+    public function asError(): DictionaryGetFieldsError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1802,7 +1805,7 @@ abstract class CacheDictionaryGetFieldsResponse extends ResponseBase
 /**
  * Contains the result of a cache hit.
  */
-class CacheDictionaryGetFieldsResponseHit extends CacheDictionaryGetFieldsResponse
+class DictionaryGetFieldsHit extends DictionaryGetFieldsResponse
 {
     private array $responses = [];
     private array $valuesDictionary = [];
@@ -1813,12 +1816,12 @@ class CacheDictionaryGetFieldsResponseHit extends CacheDictionaryGetFieldsRespon
         $counter = 0;
         foreach ($responses->getFound()->getItems() as $response) {
             if ($response->getResult() == ECacheResult::Hit) {
-                $this->responses[] = new CacheDictionaryGetFieldResponseHit($fields[$counter], null, $response->getCacheBody());
+                $this->responses[] = new DictionaryGetFieldHit($fields[$counter], null, $response->getCacheBody());
                 $this->valuesDictionary[$fields[$counter]] = $response->getCacheBody();
             } elseif ($response->getResult() == ECacheResult::Miss) {
-                $this->responses[] = new CacheDictionaryGetFieldResponseMiss();
+                $this->responses[] = new DictionaryGetFieldMiss();
             } else {
-                $this->responses[] = new CacheDictionaryGetFieldResponseError(new UnknownError(strval($response->getResult())));
+                $this->responses[] = new DictionaryGetFieldError(new UnknownError(strval($response->getResult())));
             }
             $counter++;
         }
@@ -1851,14 +1854,14 @@ class CacheDictionaryGetFieldsResponseHit extends CacheDictionaryGetFieldsRespon
 /**
  * Indicates that the request that generated it was a cache miss.
  */
-class CacheDictionaryGetFieldsResponseMiss extends CacheDictionaryGetFieldsResponse
+class DictionaryGetFieldsMiss extends DictionaryGetFieldsResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheDictionaryGetFieldsResponseError extends CacheDictionaryGetFieldsResponse
+class DictionaryGetFieldsError extends DictionaryGetFieldsResponse
 {
     use ErrorBody;
 }
@@ -1881,12 +1884,12 @@ class CacheDictionaryGetFieldsResponseError extends CacheDictionaryGetFieldsResp
  * }
  * </code>
  */
-abstract class CacheDictionaryIncrementResponse extends ResponseBase
+abstract class DictionaryIncrementResponse extends ResponseBase
 {
     /**
-     * @return CacheDictionaryIncrementResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return DictionaryIncrementSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheDictionaryIncrementResponseSuccess|null
+    public function asSuccess(): DictionaryIncrementSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1895,9 +1898,9 @@ abstract class CacheDictionaryIncrementResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionaryIncrementResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return DictionaryIncrementError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheDictionaryIncrementResponseError|null
+    public function asError(): DictionaryIncrementError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1909,7 +1912,7 @@ abstract class CacheDictionaryIncrementResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheDictionaryIncrementResponseSuccess extends CacheDictionaryIncrementResponse
+class DictionaryIncrementSuccess extends DictionaryIncrementResponse
 {
 
     private int $value;
@@ -1937,7 +1940,7 @@ class CacheDictionaryIncrementResponseSuccess extends CacheDictionaryIncrementRe
 /**
  * Contains information about an error returned from the request.
  */
-class CacheDictionaryIncrementResponseError extends CacheDictionaryIncrementResponse
+class DictionaryIncrementError extends DictionaryIncrementResponse
 {
     use ErrorBody;
 }
@@ -1960,12 +1963,12 @@ class CacheDictionaryIncrementResponseError extends CacheDictionaryIncrementResp
  * }
  * </code>
  */
-abstract class CacheDictionaryRemoveFieldResponse extends ResponseBase
+abstract class DictionaryRemoveFieldResponse extends ResponseBase
 {
     /**
-     * @return CacheDictionaryRemoveFieldResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return DictionaryRemoveFieldSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheDictionaryRemoveFieldResponseSuccess|null
+    public function asSuccess(): DictionaryRemoveFieldSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1974,9 +1977,9 @@ abstract class CacheDictionaryRemoveFieldResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionaryRemoveFieldResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return DictionaryRemoveFieldError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheDictionaryRemoveFieldResponseError|null
+    public function asError(): DictionaryRemoveFieldError|null
     {
         if ($this->isError()) {
             return $this;
@@ -1988,14 +1991,14 @@ abstract class CacheDictionaryRemoveFieldResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheDictionaryRemoveFieldResponseSuccess extends CacheDictionaryRemoveFieldResponse
+class DictionaryRemoveFieldSuccess extends DictionaryRemoveFieldResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheDictionaryRemoveFieldResponseError extends CacheDictionaryRemoveFieldResponse
+class DictionaryRemoveFieldError extends DictionaryRemoveFieldResponse
 {
     use ErrorBody;
 }
@@ -2018,12 +2021,12 @@ class CacheDictionaryRemoveFieldResponseError extends CacheDictionaryRemoveField
  * }
  * </code>
  */
-abstract class CacheDictionaryRemoveFieldsResponse extends ResponseBase
+abstract class DictionaryRemoveFieldsResponse extends ResponseBase
 {
     /**
-     * @return CacheDictionaryRemoveFieldsResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return DictionaryRemoveFieldsSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheDictionaryRemoveFieldsResponseSuccess|null
+    public function asSuccess(): DictionaryRemoveFieldsSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2032,9 +2035,9 @@ abstract class CacheDictionaryRemoveFieldsResponse extends ResponseBase
     }
 
     /**
-     * @return CacheDictionaryRemoveFieldsResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return DictionaryRemoveFieldsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheDictionaryRemoveFieldsResponseError|null
+    public function asError(): DictionaryRemoveFieldsError|null
     {
         if ($this->isError()) {
             return $this;
@@ -2046,14 +2049,14 @@ abstract class CacheDictionaryRemoveFieldsResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheDictionaryRemoveFieldsResponseSuccess extends CacheDictionaryRemoveFieldsResponse
+class DictionaryRemoveFieldsSuccess extends DictionaryRemoveFieldsResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheDictionaryRemoveFieldsResponseError extends CacheDictionaryRemoveFieldsResponse
+class DictionaryRemoveFieldsError extends DictionaryRemoveFieldsResponse
 {
     use ErrorBody;
 }
@@ -2076,12 +2079,12 @@ class CacheDictionaryRemoveFieldsResponseError extends CacheDictionaryRemoveFiel
  * }
  * </code>
  */
-abstract class CacheSetAddElementResponse extends ResponseBase
+abstract class SetAddElementResponse extends ResponseBase
 {
     /**
-     * @return CacheSetAddElementResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return SetAddElementSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheSetAddElementResponseSuccess|null
+    public function asSuccess(): SetAddElementSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2090,9 +2093,9 @@ abstract class CacheSetAddElementResponse extends ResponseBase
     }
 
     /**
-     * @return CacheSetAddElementResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return SetAddElementError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheSetAddElementResponseError|null
+    public function asError(): SetAddElementError|null
     {
         if ($this->isError()) {
             return $this;
@@ -2104,14 +2107,14 @@ abstract class CacheSetAddElementResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheSetAddElementResponseSuccess extends CacheSetAddElementResponse
+class SetAddElementSuccess extends SetAddElementResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheSetAddElementResponseError extends CacheSetAddElementResponse
+class SetAddElementError extends SetAddElementResponse
 {
     use ErrorBody;
 }
@@ -2137,13 +2140,13 @@ class CacheSetAddElementResponseError extends CacheSetAddElementResponse
  * }
  * </code>
  */
-abstract class CacheSetFetchResponse extends ResponseBase
+abstract class SetFetchResponse extends ResponseBase
 {
 
     /**
-     * @return CacheSetFetchResponseHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     * @return SetFetchHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): CacheSetFetchResponseHit|null
+    public function asHit(): SetFetchHit|null
     {
         if ($this->isHit()) {
             return $this;
@@ -2152,9 +2155,9 @@ abstract class CacheSetFetchResponse extends ResponseBase
     }
 
     /**
-     * @return CacheSetFetchResponseMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return SetFetchMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): CacheSetFetchResponseMiss|null
+    public function asMiss(): SetFetchMiss|null
     {
         if ($this->isMiss()) {
             return $this;
@@ -2163,9 +2166,9 @@ abstract class CacheSetFetchResponse extends ResponseBase
     }
 
     /**
-     * @return CacheSetFetchResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return SetFetchError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheSetFetchResponseError|null
+    public function asError(): SetFetchError|null
     {
         if ($this->isError()) {
             return $this;
@@ -2177,7 +2180,7 @@ abstract class CacheSetFetchResponse extends ResponseBase
 /**
  * Contains the result of a cache hit.
  */
-class CacheSetFetchResponseHit extends CacheSetFetchResponse
+class SetFetchHit extends SetFetchResponse
 {
     private array $stringSet;
 
@@ -2207,14 +2210,14 @@ class CacheSetFetchResponseHit extends CacheSetFetchResponse
 /**
  * Indicates that the request that generated it was a cache miss.
  */
-class CacheSetFetchResponseMiss extends CacheSetFetchResponse
+class SetFetchMiss extends SetFetchResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheSetFetchResponseError extends CacheSetFetchResponse
+class SetFetchError extends SetFetchResponse
 {
     use ErrorBody;
 }
@@ -2237,12 +2240,12 @@ class CacheSetFetchResponseError extends CacheSetFetchResponse
  * }
  * </code>
  */
-abstract class CacheSetRemoveElementResponse extends ResponseBase
+abstract class SetRemoveElementResponse extends ResponseBase
 {
     /**
-     * @return CacheSetRemoveElementResponseSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return SetRemoveElementSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CacheSetRemoveElementResponseSuccess|null
+    public function asSuccess(): SetRemoveElementSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2251,9 +2254,9 @@ abstract class CacheSetRemoveElementResponse extends ResponseBase
     }
 
     /**
-     * @return CacheSetRemoveElementResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return SetRemoveElementError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): CacheSetRemoveElementResponseError|null
+    public function asError(): SetRemoveElementError|null
     {
         if ($this->isError()) {
             return $this;
@@ -2265,14 +2268,14 @@ abstract class CacheSetRemoveElementResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class CacheSetRemoveElementResponseSuccess extends CacheSetRemoveElementResponse
+class SetRemoveElementSuccess extends SetRemoveElementResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class CacheSetRemoveElementResponseError extends CacheSetRemoveElementResponse
+class SetRemoveElementError extends SetRemoveElementResponse
 {
     use ErrorBody;
 }

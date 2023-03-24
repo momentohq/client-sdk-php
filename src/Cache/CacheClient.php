@@ -4,30 +4,30 @@ declare(strict_types=1);
 namespace Momento\Cache;
 
 use Momento\Auth\ICredentialProvider;
-use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldsResponse;
-use Momento\Cache\CacheOperationTypes\CacheGetResponse;
-use Momento\Cache\CacheOperationTypes\CacheKeyExistsResponse;
-use Momento\Cache\CacheOperationTypes\CacheKeysExistResponse;
-use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
-use Momento\Cache\CacheOperationTypes\CacheListLengthResponse;
-use Momento\Cache\CacheOperationTypes\CacheListPopBackResponse;
-use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponse;
-use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
-use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
-use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetResponse;
+use Momento\Cache\CacheOperationTypes\DeleteResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryFetchResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldsResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryIncrementResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldsResponse;
+use Momento\Cache\CacheOperationTypes\DictionarySetFieldResponse;
+use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
+use Momento\Cache\CacheOperationTypes\GetResponse;
+use Momento\Cache\CacheOperationTypes\KeyExistsResponse;
+use Momento\Cache\CacheOperationTypes\KeysExistResponse;
+use Momento\Cache\CacheOperationTypes\ListFetchResponse;
+use Momento\Cache\CacheOperationTypes\ListLengthResponse;
+use Momento\Cache\CacheOperationTypes\ListPopBackResponse;
+use Momento\Cache\CacheOperationTypes\ListPopFrontResponse;
+use Momento\Cache\CacheOperationTypes\ListPushBackResponse;
+use Momento\Cache\CacheOperationTypes\ListPushFrontResponse;
+use Momento\Cache\CacheOperationTypes\ListRemoveValueResponse;
+use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
+use Momento\Cache\CacheOperationTypes\SetFetchResponse;
+use Momento\Cache\CacheOperationTypes\SetIfNotExistsResponse;
+use Momento\Cache\CacheOperationTypes\SetRemoveElementResponse;
+use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
@@ -144,7 +144,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $value The value to be stored.
      * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
-     * @return CacheSetResponse Represents the result of the set operation. This result is
+     * @return SetResponse Represents the result of the set operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
      * * CacheSetResponseSuccess<br>
      * * CacheSetResponseError<br>
@@ -153,7 +153,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function set(string $cacheName, string $key, string $value, int $ttlSeconds = 0): CacheSetResponse
+    public function set(string $cacheName, string $key, string $value, int $ttlSeconds = 0): SetResponse
     {
         return $this->dataClient->set($cacheName, $key, $value, $ttlSeconds);
     }
@@ -163,7 +163,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache to perform the lookup in.
      * @param string $key The key to look up.
-     * @return CacheGetResponse Represents the result of the get operation and stores the retrieved value. This
+     * @return GetResponse Represents the result of the get operation and stores the retrieved value. This
      * result is resolved to a type-safe object of one of the following types:<br>
      * * CacheGetResponseHit<br>
      * * CacheGetResponseMiss<br>
@@ -175,7 +175,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error response<br>
      * }</code>
      */
-    public function get(string $cacheName, string $key): CacheGetResponse
+    public function get(string $cacheName, string $key): GetResponse
     {
         return $this->dataClient->get($cacheName, $key);
     }
@@ -189,7 +189,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $value The value to be stored.
      * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
-     * @return CacheSetIfNotExistsResponse Represents the result of the setIfNotExists operation. This
+     * @return SetIfNotExistsResponse Represents the result of the setIfNotExists operation. This
      * result is resolved to a type-safe object of one of the following types:<br>
      * * CacheSetIfNotExistsResponseStored<br>
      * * CacheSetIfNotExistsResponseNotStored<br>
@@ -203,7 +203,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error response<br>
      * }</code>
      */
-    public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = 0): CacheSetIfNotExistsResponse
+    public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = 0): SetIfNotExistsResponse
     {
         return $this->dataClient->setIfNotExists($cacheName, $key, $value, $ttlSeconds);
     }
@@ -213,7 +213,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache from which to remove the key
      * @param string $key The key to remove
-     * @return CacheDeleteResponse Represents the result of the delete operation. This result is
+     * @return DeleteResponse Represents the result of the delete operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
      * * CacheDeleteResponseSuccess<br>
      * * CacheDeleteResponseError<br>
@@ -222,7 +222,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function delete(string $cacheName, string $key): CacheDeleteResponse
+    public function delete(string $cacheName, string $key): DeleteResponse
     {
         return $this->dataClient->delete($cacheName, $key);
     }
@@ -232,7 +232,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache in which to look for keys
      * @param array $keys List of keys to check
-     * @return CacheKeysExistResponse Represents the result of the keys exist operation. This result is
+     * @return KeysExistResponse Represents the result of the keys exist operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
      * * CacheKeysExistResponseSuccess<br>
      * * CacheKeysExistResponseError<br>
@@ -246,7 +246,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;$asDict = $success->existsDictionary();<br>
      * }</code>
      */
-    public function keysExist(string $cacheName, array $keys): CacheKeysExistResponse
+    public function keysExist(string $cacheName, array $keys): KeysExistResponse
     {
         return $this->dataClient->keysExist($cacheName, $keys);
     }
@@ -256,7 +256,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache in which to look for the key
      * @param string $key The key to check
-     * @return CacheKeyExistsResponse Represents the result of the keys exist operation. This result is
+     * @return KeyExistsResponse Represents the result of the keys exist operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
      * * CacheKeyExistsResponseSuccess<br>
      * * CacheKeyExistsResponseError<br>
@@ -267,7 +267,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;$keyIsInCache = $success->exists();<br>
      * }</code>
      */
-    public function keyExists(string $cacheName, string $key): CacheKeyExistsResponse
+    public function keyExists(string $cacheName, string $key): KeyExistsResponse
     {
         return $this->dataClient->keyExists($cacheName, $key);
     }
@@ -277,7 +277,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache to perform the lookup in.
      * @param string $listName The list to fetch.
-     * @return CacheListFetchResponse Represents the result of the list fetch operation and the associated list.
+     * @return ListFetchResponse Represents the result of the list fetch operation and the associated list.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheListFetchResponseHit<br>
      * * CacheListFetchResponseMiss<br>
@@ -289,7 +289,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function listFetch(string $cacheName, string $listName): CacheListFetchResponse
+    public function listFetch(string $cacheName, string $listName): ListFetchResponse
     {
         return $this->dataClient->listFetch($cacheName, $listName);
     }
@@ -302,7 +302,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $value The value to push to the front of the list.
      * @param int|null $truncateBackToSize Ensure the list does not exceed this length. Remove excess from the end of the list. Must be a positive number.
      * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
-     * @return CacheListPushFrontResponse Represents the result of the operation and the length of the list after the push.
+     * @return ListPushFrontResponse Represents the result of the operation and the length of the list after the push.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheListPushFrontResponseSuccess<br>
      * * CacheListPushFrontResponseError<br>
@@ -315,7 +315,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function listPushFront(
         string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, ?CollectionTtl $ttl = null
-    ): CacheListPushFrontResponse
+    ): ListPushFrontResponse
     {
         return $this->dataClient->listPushFront($cacheName, $listName, $value, $truncateBackToSize, $ttl);
     }
@@ -328,7 +328,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $value The value to push to the front of the list.
      * @param int|null $truncateFrontToSize Ensure the list does not exceed this length. Remove excess from the front of the list. Must be a positive number.
      * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
-     * @return CacheListPushBackResponse Represents the result of the operation and the length of the list after the push.
+     * @return ListPushBackResponse Represents the result of the operation and the length of the list after the push.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheListPushBackResponseSuccess<br>
      * * CacheListPushBackResponseError<br>
@@ -341,7 +341,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function listPushBack(
         string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, ?CollectionTtl $ttl = null
-    ): CacheListPushBackResponse
+    ): ListPushBackResponse
     {
         return $this->dataClient->listPushBack($cacheName, $listName, $value, $truncateFrontToSize, $ttl);
     }
@@ -351,7 +351,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the list.
      * @param string $listName The list to pop the value from.
-     * @return CacheListPopFrontResponse Represents the result of the operation and the popped value.
+     * @return ListPopFrontResponse Represents the result of the operation and the popped value.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheListPopFrontResponseHit<br>
      * * CacheListPopFrontResponseMiss<br>
@@ -363,7 +363,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function listPopFront(string $cacheName, string $listName): CacheListPopFrontResponse
+    public function listPopFront(string $cacheName, string $listName): ListPopFrontResponse
     {
         return $this->dataClient->listPopFront($cacheName, $listName);
     }
@@ -373,7 +373,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the list.
      * @param string $listName The list to pop the value from.
-     * @return CacheListPopBackResponse Represents the result of the operation and the popped value.
+     * @return ListPopBackResponse Represents the result of the operation and the popped value.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheListPopBackResponseHit<br>
      * * CacheListPopBackResponseMiss<br>
@@ -385,7 +385,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function listPopBack(string $cacheName, string $listName): CacheListPopBackResponse
+    public function listPopBack(string $cacheName, string $listName): ListPopBackResponse
     {
         return $this->dataClient->listPopBack($cacheName, $listName);
     }
@@ -396,7 +396,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the list.
      * @param string $listName The list from which to remove the matching elements.
      * @param string $value The value to completely remove from the list.
-     * @return CacheListRemoveValueResponse Represents the result of the list remove value operation.
+     * @return ListRemoveValueResponse Represents the result of the list remove value operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheListRemoveValueResponseSuccess<br>
      * * CacheListRemoveValueResponseError<br>
@@ -405,7 +405,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function listRemoveValue(string $cacheName, string $listName, string $value): CacheListRemoveValueResponse
+    public function listRemoveValue(string $cacheName, string $listName, string $value): ListRemoveValueResponse
     {
         return $this->dataClient->listRemoveValue($cacheName, $listName, $value);
     }
@@ -415,7 +415,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the list.
      * @param string $listName The list to calculate the length.
-     * @return CacheListLengthResponse Represents the result of the list length operation and contains the list length.
+     * @return ListLengthResponse Represents the result of the list length operation and contains the list length.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheListLengthResponseSuccess<br>
      * * CacheListLengthResponseError<br>
@@ -426,7 +426,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function listLength(string $cacheName, string $listName): CacheListLengthResponse
+    public function listLength(string $cacheName, string $listName): ListLengthResponse
     {
         return $this->dataClient->listLength($cacheName, $listName);
     }
@@ -439,7 +439,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $field The field in the dictionary to set.
      * @param string $value The value to be stored.
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
-     * @return CacheDictionarySetFieldResponse Represents the result of the dictionary set field operation.
+     * @return DictionarySetFieldResponse Represents the result of the dictionary set field operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheDictionarySetFieldResponseSuccess<br>
      * * CacheDictionarySetFieldResponseError<br>
@@ -448,7 +448,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): CacheDictionarySetFieldResponse
+    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): DictionarySetFieldResponse
     {
         return $this->dataClient->dictionarySetField($cacheName, $dictionaryName, $field, $value, $ttl);
     }
@@ -459,7 +459,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the dictionary.
      * @param string $dictionaryName The dictionary to get the field from.
      * @param string $field The field in the dictionary to get.
-     * @return CacheDictionaryGetFieldResponse Represents the result of the get field operation.
+     * @return DictionaryGetFieldResponse Represents the result of the get field operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheDictionaryGetFieldResponseHit<br>
      * * CacheDictionaryGetFieldResponseMiss<br>
@@ -471,7 +471,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function dictionaryGetField(string $cacheName, string $dictionaryName, string $field): CacheDictionaryGetFieldResponse
+    public function dictionaryGetField(string $cacheName, string $dictionaryName, string $field): DictionaryGetFieldResponse
     {
         return $this->dataClient->dictionaryGetField($cacheName, $dictionaryName, $field);
     }
@@ -481,7 +481,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the dictionary.
      * @param string $dictionaryName The dictionary to fetch.
-     * @return CacheDictionaryFetchResponse Represents the result of the fetch operation.
+     * @return DictionaryFetchResponse Represents the result of the fetch operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheDictionaryFetchResponseHit<br>
      * * CacheDictionaryFetchResponseMiss<br>
@@ -493,7 +493,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function dictionaryFetch(string $cacheName, string $dictionaryName): CacheDictionaryFetchResponse
+    public function dictionaryFetch(string $cacheName, string $dictionaryName): DictionaryFetchResponse
     {
         return $this->dataClient->dictionaryFetch($cacheName, $dictionaryName);
     }
@@ -505,7 +505,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $dictionaryName The dictionary to set the field in. Will be created if it doesn't exist.
      * @param array $items The field-value pairs o be stored.
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
-     * @return CacheDictionarySetFieldsResponse Represents the result of the dictionary set field operation.
+     * @return DictionarySetFieldsResponse Represents the result of the dictionary set field operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheDictionarySetFieldsResponseSuccess<br>
      * * CacheDictionarySetFieldsResponseError<br>
@@ -514,7 +514,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, ?CollectionTtl $ttl = null): CacheDictionarySetFieldsResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, ?CollectionTtl $ttl = null): DictionarySetFieldsResponse
     {
         return $this->dataClient->dictionarySetFields($cacheName, $dictionaryName, $items, $ttl);
     }
@@ -525,7 +525,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the dictionary.
      * @param string $dictionaryName The dictionary to get the fields from.
      * @param array $fields The fields in the dictionary to lookup.
-     * @return CacheDictionaryGetFieldsResponse Represents the result of the get fields operation.
+     * @return DictionaryGetFieldsResponse Represents the result of the get fields operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheDictionaryGetFieldsResponseHit<br>
      * * CacheDictionaryGetFieldsResponseMiss<br>
@@ -545,7 +545,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function dictionaryGetFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetFieldsResponse
+    public function dictionaryGetFields(string $cacheName, string $dictionaryName, array $fields): DictionaryGetFieldsResponse
     {
         return $this->dataClient->dictionaryGetFields($cacheName, $dictionaryName, $fields);
     }
@@ -561,7 +561,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $field The field to increment.
      * @param int $amount The quantity, negative, positive, or zero, to increment the field by. Defaults to 1.
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
-     * @return CacheDictionaryIncrementResponse Represents the result of the dictionary increment operation.
+     * @return DictionaryIncrementResponse Represents the result of the dictionary increment operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheDictionaryIncrementResponseSuccess<br>
      * * CacheDictionaryIncrementResponseError<br>
@@ -574,7 +574,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function dictionaryIncrement(
         string $cacheName, string $dictionaryName, string $field, int $amount = 1, ?CollectionTtl $ttl = null
-    ): CacheDictionaryIncrementResponse
+    ): DictionaryIncrementResponse
     {
         return $this->dataClient->dictionaryIncrement($cacheName, $dictionaryName, $field, $amount, $ttl);
     }
@@ -585,7 +585,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the dictionary.
      * @param string $dictionaryName The dictionary from which to remove the field.
      * @param string $field The field to remove.
-     * @return CacheDictionaryRemoveFieldResponse Represents the result of the dictionary remove field operation.
+     * @return DictionaryRemoveFieldResponse Represents the result of the dictionary remove field operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheDictionaryRemoveFieldResponseSuccess<br>
      * * CacheDictionaryRemoveFieldResponseError<br>
@@ -593,7 +593,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function dictionaryRemoveField(string $cacheName, string $dictionaryName, string $field): CacheDictionaryRemoveFieldResponse
+    public function dictionaryRemoveField(string $cacheName, string $dictionaryName, string $field): DictionaryRemoveFieldResponse
     {
         return $this->dataClient->dictionaryRemoveField($cacheName, $dictionaryName, $field);
     }
@@ -604,7 +604,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the dictionary.
      * @param string $dictionaryName The dictionary from which to remove the fields.
      * @param array $fields The fields to remove.
-     * @return CacheDictionaryRemoveFieldsResponse Represents the result of the dictionary remove fields operation.
+     * @return DictionaryRemoveFieldsResponse Represents the result of the dictionary remove fields operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheDictionaryRemoveFieldsResponseSuccess<br>
      * * CacheDictionaryRemoveFieldsResponseError<br>
@@ -612,7 +612,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function dictionaryRemoveFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryRemoveFieldsResponse
+    public function dictionaryRemoveFields(string $cacheName, string $dictionaryName, array $fields): DictionaryRemoveFieldsResponse
     {
         return $this->dataClient->dictionaryRemoveFields($cacheName, $dictionaryName, $fields);
     }
@@ -624,7 +624,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $setName The set to add the element to.
      * @param string $element The element to add.
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
-     * @return CacheSetAddElementResponse Represents the result of the set add element operation.
+     * @return SetAddElementResponse Represents the result of the set add element operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheSetAddElementResponseSuccess<br>
      * * CacheSetAddElementResponseError<br>
@@ -632,7 +632,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): CacheSetAddElementResponse
+    public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): SetAddElementResponse
     {
         return $this->dataClient->setAddElement($cacheName, $setName, $element, $ttl);
     }
@@ -642,7 +642,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $setName The set to fetch.
-     * @return CacheSetFetchResponse Represents the result of the set fetch operation.
+     * @return SetFetchResponse Represents the result of the set fetch operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheSetFetchResponseHit<br>
      * * CacheSetFetchResponseMiss<br>
@@ -654,7 +654,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function setFetch(string $cacheName, string $setName): CacheSetFetchResponse
+    public function setFetch(string $cacheName, string $setName): SetFetchResponse
     {
         return $this->dataClient->setFetch($cacheName, $setName);
     }
@@ -665,7 +665,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $setName The set from which to remove the element.
      * @param string $element The element to remove.
-     * @return CacheSetRemoveElementResponse Represents the result of the set remove element operation.
+     * @return SetRemoveElementResponse Represents the result of the set remove element operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * CacheSetRemoveElementResponseSuccess<br>
      * * CacheSetRemoveElementResponseError<br>
@@ -673,7 +673,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function setRemoveElement(string $cacheName, string $setName, string $element): CacheSetRemoveElementResponse
+    public function setRemoveElement(string $cacheName, string $setName, string $element): SetRemoveElementResponse
     {
         return $this->dataClient->setRemoveElement($cacheName, $setName, $element);
     }

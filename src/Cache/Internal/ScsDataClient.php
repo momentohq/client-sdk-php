@@ -30,87 +30,87 @@ use Cache_client\ECacheResult;
 use Exception;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
-use Momento\Cache\CacheOperationTypes\CacheDeleteResponse;
-use Momento\Cache\CacheOperationTypes\CacheDeleteResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDeleteResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseHit;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryFetchResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseHit;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseHit;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldsResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryIncrementResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryRemoveFieldsResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldsResponse;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldsResponseError;
-use Momento\Cache\CacheOperationTypes\CacheDictionarySetFieldsResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheGetResponse;
-use Momento\Cache\CacheOperationTypes\CacheGetResponseError;
-use Momento\Cache\CacheOperationTypes\CacheGetResponseHit;
-use Momento\Cache\CacheOperationTypes\CacheGetResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheKeyExistsResponse;
-use Momento\Cache\CacheOperationTypes\CacheKeyExistsResponseError;
-use Momento\Cache\CacheOperationTypes\CacheKeyExistsResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheKeysExistResponse;
-use Momento\Cache\CacheOperationTypes\CacheKeysExistResponseError;
-use Momento\Cache\CacheOperationTypes\CacheKeysExistResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheListFetchResponse;
-use Momento\Cache\CacheOperationTypes\CacheListFetchResponseError;
-use Momento\Cache\CacheOperationTypes\CacheListFetchResponseHit;
-use Momento\Cache\CacheOperationTypes\CacheListFetchResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheListLengthResponse;
-use Momento\Cache\CacheOperationTypes\CacheListLengthResponseError;
-use Momento\Cache\CacheOperationTypes\CacheListLengthResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheListPopBackResponse;
-use Momento\Cache\CacheOperationTypes\CacheListPopBackResponseError;
-use Momento\Cache\CacheOperationTypes\CacheListPopBackResponseHit;
-use Momento\Cache\CacheOperationTypes\CacheListPopBackResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponse;
-use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponseError;
-use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponseHit;
-use Momento\Cache\CacheOperationTypes\CacheListPopFrontResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheListPushBackResponse;
-use Momento\Cache\CacheOperationTypes\CacheListPushBackResponseError;
-use Momento\Cache\CacheOperationTypes\CacheListPushBackResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponse;
-use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponseError;
-use Momento\Cache\CacheOperationTypes\CacheListPushFrontResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponse;
-use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponseError;
-use Momento\Cache\CacheOperationTypes\CacheListRemoveValueResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponseError;
-use Momento\Cache\CacheOperationTypes\CacheSetAddElementResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheSetFetchResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseError;
-use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseHit;
-use Momento\Cache\CacheOperationTypes\CacheSetFetchResponseMiss;
-use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponseError;
-use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponseNotStored;
-use Momento\Cache\CacheOperationTypes\CacheSetIfNotExistsResponseStored;
-use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponseError;
-use Momento\Cache\CacheOperationTypes\CacheSetRemoveElementResponseSuccess;
-use Momento\Cache\CacheOperationTypes\CacheSetResponse;
-use Momento\Cache\CacheOperationTypes\CacheSetResponseError;
-use Momento\Cache\CacheOperationTypes\CacheSetResponseSuccess;
+use Momento\Cache\CacheOperationTypes\DeleteResponse;
+use Momento\Cache\CacheOperationTypes\DeleteError;
+use Momento\Cache\CacheOperationTypes\DeleteSuccess;
+use Momento\Cache\CacheOperationTypes\DictionaryFetchResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryFetchError;
+use Momento\Cache\CacheOperationTypes\DictionaryFetchHit;
+use Momento\Cache\CacheOperationTypes\DictionaryFetchMiss;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldError;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldHit;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldMiss;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldsResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldsError;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldsHit;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldsMiss;
+use Momento\Cache\CacheOperationTypes\DictionaryIncrementResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryIncrementError;
+use Momento\Cache\CacheOperationTypes\DictionaryIncrementSuccess;
+use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldError;
+use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldSuccess;
+use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldsResponse;
+use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldsError;
+use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldsSuccess;
+use Momento\Cache\CacheOperationTypes\DictionarySetFieldResponse;
+use Momento\Cache\CacheOperationTypes\DictionarySetFieldError;
+use Momento\Cache\CacheOperationTypes\DictionarySetFieldSuccess;
+use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
+use Momento\Cache\CacheOperationTypes\DictionarySetFieldsError;
+use Momento\Cache\CacheOperationTypes\DictionarySetFieldsSuccess;
+use Momento\Cache\CacheOperationTypes\GetResponse;
+use Momento\Cache\CacheOperationTypes\GetError;
+use Momento\Cache\CacheOperationTypes\GetHit;
+use Momento\Cache\CacheOperationTypes\GetMiss;
+use Momento\Cache\CacheOperationTypes\KeyExistsResponse;
+use Momento\Cache\CacheOperationTypes\KeyExistsError;
+use Momento\Cache\CacheOperationTypes\KeyExistsSuccess;
+use Momento\Cache\CacheOperationTypes\KeysExistResponse;
+use Momento\Cache\CacheOperationTypes\KeysExistError;
+use Momento\Cache\CacheOperationTypes\KeysExistSuccess;
+use Momento\Cache\CacheOperationTypes\ListFetchResponse;
+use Momento\Cache\CacheOperationTypes\ListFetchError;
+use Momento\Cache\CacheOperationTypes\ListFetchHit;
+use Momento\Cache\CacheOperationTypes\ListFetchMiss;
+use Momento\Cache\CacheOperationTypes\ListLengthResponse;
+use Momento\Cache\CacheOperationTypes\ListLengthError;
+use Momento\Cache\CacheOperationTypes\ListLengthSuccess;
+use Momento\Cache\CacheOperationTypes\ListPopBackResponse;
+use Momento\Cache\CacheOperationTypes\ListPopBackError;
+use Momento\Cache\CacheOperationTypes\ListPopBackHit;
+use Momento\Cache\CacheOperationTypes\ListPopBackMiss;
+use Momento\Cache\CacheOperationTypes\ListPopFrontResponse;
+use Momento\Cache\CacheOperationTypes\ListPopFrontError;
+use Momento\Cache\CacheOperationTypes\ListPopFrontHit;
+use Momento\Cache\CacheOperationTypes\ListPopFrontMiss;
+use Momento\Cache\CacheOperationTypes\ListPushBackResponse;
+use Momento\Cache\CacheOperationTypes\ListPushBackError;
+use Momento\Cache\CacheOperationTypes\ListPushBackSuccess;
+use Momento\Cache\CacheOperationTypes\ListPushFrontResponse;
+use Momento\Cache\CacheOperationTypes\ListPushFrontError;
+use Momento\Cache\CacheOperationTypes\ListPushFrontSuccess;
+use Momento\Cache\CacheOperationTypes\ListRemoveValueResponse;
+use Momento\Cache\CacheOperationTypes\ListRemoveValueError;
+use Momento\Cache\CacheOperationTypes\ListRemoveValueSuccess;
+use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
+use Momento\Cache\CacheOperationTypes\SetAddElementError;
+use Momento\Cache\CacheOperationTypes\SetAddElementSuccess;
+use Momento\Cache\CacheOperationTypes\SetFetchResponse;
+use Momento\Cache\CacheOperationTypes\SetFetchError;
+use Momento\Cache\CacheOperationTypes\SetFetchHit;
+use Momento\Cache\CacheOperationTypes\SetFetchMiss;
+use Momento\Cache\CacheOperationTypes\SetIfNotExistsResponse;
+use Momento\Cache\CacheOperationTypes\SetIfNotExistsError;
+use Momento\Cache\CacheOperationTypes\SetIfNotExistsNotStored;
+use Momento\Cache\CacheOperationTypes\SetIfNotExistsStored;
+use Momento\Cache\CacheOperationTypes\SetRemoveElementResponse;
+use Momento\Cache\CacheOperationTypes\SetRemoveElementError;
+use Momento\Cache\CacheOperationTypes\SetRemoveElementSuccess;
+use Momento\Cache\CacheOperationTypes\SetResponse;
+use Momento\Cache\CacheOperationTypes\SetError;
+use Momento\Cache\CacheOperationTypes\SetSuccess;
 use Momento\Cache\Errors\InternalServerError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
@@ -191,7 +191,7 @@ class ScsDataClient implements LoggerAwareInterface
         return $response;
     }
 
-    public function set(string $cacheName, string $key, string $value, int $ttlSeconds = null): CacheSetResponse
+    public function set(string $cacheName, string $key, string $value, int $ttlSeconds = null): SetResponse
     {
         try {
             validateCacheName($cacheName);
@@ -205,14 +205,14 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheSetResponseError($e);
+            return new SetError($e);
         } catch (Exception $e) {
-            return new CacheSetResponseError(new UnknownError($e->getMessage()));
+            return new SetError(new UnknownError($e->getMessage()));
         }
-        return new CacheSetResponseSuccess($response, $key, $value);
+        return new SetSuccess($response, $key, $value);
     }
 
-    public function get(string $cacheName, string $key): CacheGetResponse
+    public function get(string $cacheName, string $key): GetResponse
     {
         try {
             validateCacheName($cacheName);
@@ -224,20 +224,20 @@ class ScsDataClient implements LoggerAwareInterface
             $response = $this->processCall($call);
             $ecacheResult = $response->getResult();
             if ($ecacheResult == ECacheResult::Hit) {
-                return new CacheGetResponseHit($response);
+                return new GetHit($response);
             } elseif ($ecacheResult == ECacheResult::Miss) {
-                return new CacheGetResponseMiss();
+                return new GetMiss();
             } else {
                 throw new InternalServerError("CacheService returned an unexpected result: $ecacheResult");
             }
         } catch (SdkError $e) {
-            return new CacheGetResponseError($e);
+            return new GetError($e);
         } catch (Exception $e) {
-            return new CacheGetResponseError(new UnknownError($e->getMessage()));
+            return new GetError(new UnknownError($e->getMessage()));
         }
     }
 
-    public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = null): CacheSetIfNotExistsResponse
+    public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = null): SetIfNotExistsResponse
     {
         try {
             validateCacheName($cacheName);
@@ -251,18 +251,18 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $setIfNotExistsResponse = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheSetIfNotExistsResponseError($e);
+            return new SetIfNotExistsError($e);
         } catch (Exception $e) {
-            return new CacheSetIfNotExistsResponseError(new UnknownError($e->getMessage()));
+            return new SetIfNotExistsError(new UnknownError($e->getMessage()));
         }
         if ($setIfNotExistsResponse->hasStored()) {
-            return new CacheSetIfNotExistsResponseStored($setIfNotExistsResponse, $key, $value);
+            return new SetIfNotExistsStored($setIfNotExistsResponse, $key, $value);
         }
-        return new CacheSetIfNotExistsResponseNotStored();
+        return new SetIfNotExistsNotStored();
     }
 
 
-    public function delete(string $cacheName, string $key): CacheDeleteResponse
+    public function delete(string $cacheName, string $key): DeleteResponse
     {
         try {
             validateCacheName($cacheName);
@@ -273,14 +273,14 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDeleteResponseError($e);
+            return new DeleteError($e);
         } catch (Exception $e) {
-            return new CacheDeleteResponseError(new UnknownError($e->getMessage()));
+            return new DeleteError(new UnknownError($e->getMessage()));
         }
-        return new CacheDeleteResponseSuccess();
+        return new DeleteSuccess();
     }
 
-    public function keysExist(string $cacheName, array $keys): CacheKeysExistResponse
+    public function keysExist(string $cacheName, array $keys): KeysExistResponse
     {
         try {
             validateCacheName($cacheName);
@@ -292,23 +292,23 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheKeysExistResponseError($e);
+            return new KeysExistError($e);
         } catch (Exception $e) {
-            return new CacheKeysExistResponseError(new UnknownError($e->getMessage()));
+            return new KeysExistError(new UnknownError($e->getMessage()));
         }
-        return new CacheKeysExistResponseSuccess($response, $keys);
+        return new KeysExistSuccess($response, $keys);
     }
 
-    public function keyExists(string $cacheName, string $key): CacheKeyExistsResponse
+    public function keyExists(string $cacheName, string $key): KeyExistsResponse
     {
         $response = $this->keysExist($cacheName, [$key]);
-        if ($response instanceof CacheKeysExistResponseError) {
-            return new CacheKeyExistsResponseError($response->innerException());
+        if ($response instanceof KeysExistError) {
+            return new KeyExistsError($response->innerException());
         }
-        return new CacheKeyExistsResponseSuccess($response->asSuccess()->exists()[0]);
+        return new KeyExistsSuccess($response->asSuccess()->exists()[0]);
     }
 
-    public function listFetch(string $cacheName, string $listName): CacheListFetchResponse
+    public function listFetch(string $cacheName, string $listName): ListFetchResponse
     {
         try {
             validateCacheName($cacheName);
@@ -320,19 +320,19 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheListFetchResponseError($e);
+            return new ListFetchError($e);
         } catch (Exception $e) {
-            return new CacheListFetchResponseError(new UnknownError($e->getMessage()));
+            return new ListFetchError(new UnknownError($e->getMessage()));
         }
         if (!$response->hasFound()) {
-            return new CacheListFetchResponseMiss();
+            return new ListFetchMiss();
         }
-        return new CacheListFetchResponseHit($response);
+        return new ListFetchHit($response);
     }
 
     public function listPushFront(
         string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, ?CollectionTtl $ttl = null
-    ): CacheListPushFrontResponse
+    ): ListPushFrontResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -353,16 +353,16 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheListPushFrontResponseError($e);
+            return new ListPushFrontError($e);
         } catch (Exception $e) {
-            return new CacheListPushFrontResponseError(new UnknownError($e->getMessage()));
+            return new ListPushFrontError(new UnknownError($e->getMessage()));
         }
-        return new CacheListPushFrontResponseSuccess($response);
+        return new ListPushFrontSuccess($response);
     }
 
     public function listPushBack(
         string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, ?CollectionTtl $ttl = null
-    ): CacheListPushBackResponse
+    ): ListPushBackResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -383,14 +383,14 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheListPushBackResponseError($e);
+            return new ListPushBackError($e);
         } catch (Exception $e) {
-            return new CacheListPushBackResponseError(new UnknownError($e->getMessage()));
+            return new ListPushBackError(new UnknownError($e->getMessage()));
         }
-        return new CacheListPushBackResponseSuccess($response);
+        return new ListPushBackSuccess($response);
     }
 
-    public function listPopFront(string $cacheName, string $listName): CacheListPopFrontResponse
+    public function listPopFront(string $cacheName, string $listName): ListPopFrontResponse
     {
         try {
             validateCacheName($cacheName);
@@ -402,17 +402,17 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheListPopFrontResponseError($e);
+            return new ListPopFrontError($e);
         } catch (Exception $e) {
-            return new CacheListPopFrontResponseError(new UnknownError($e->getMessage()));
+            return new ListPopFrontError(new UnknownError($e->getMessage()));
         }
         if (!$response->hasFound()) {
-            return new CacheListPopFrontResponseMiss();
+            return new ListPopFrontMiss();
         }
-        return new CacheListPopFrontResponseHit($response);
+        return new ListPopFrontHit($response);
     }
 
-    public function listPopBack(string $cacheName, string $listName): CacheListPopBackResponse
+    public function listPopBack(string $cacheName, string $listName): ListPopBackResponse
     {
         try {
             validateCacheName($cacheName);
@@ -424,17 +424,17 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheListPopBackResponseError($e);
+            return new ListPopBackError($e);
         } catch (Exception $e) {
-            return new CacheListPopBackResponseError(new UnknownError($e->getMessage()));
+            return new ListPopBackError(new UnknownError($e->getMessage()));
         }
         if (!$response->hasFound()) {
-            return new CacheListPopBackResponseMiss();
+            return new ListPopBackMiss();
         }
-        return new CacheListPopBackResponseHit($response);
+        return new ListPopBackHit($response);
     }
 
-    public function listRemoveValue(string $cacheName, string $listName, string $value): CacheListRemoveValueResponse
+    public function listRemoveValue(string $cacheName, string $listName, string $value): ListRemoveValueResponse
     {
         try {
             validateCacheName($cacheName);
@@ -447,14 +447,14 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheListRemoveValueResponseError($e);
+            return new ListRemoveValueError($e);
         } catch (Exception $e) {
-            return new CacheListRemoveValueResponseError(new UnknownError($e->getMessage()));
+            return new ListRemoveValueError(new UnknownError($e->getMessage()));
         }
-        return new CacheListRemoveValueResponseSuccess();
+        return new ListRemoveValueSuccess();
     }
 
-    public function listLength(string $cacheName, string $listName): CacheListLengthResponse
+    public function listLength(string $cacheName, string $listName): ListLengthResponse
     {
         try {
             validateCacheName($cacheName);
@@ -466,14 +466,14 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheListLengthResponseError($e);
+            return new ListLengthError($e);
         } catch (Exception $e) {
-            return new CacheListLengthResponseError(new UnknownError($e->getMessage()));
+            return new ListLengthError(new UnknownError($e->getMessage()));
         }
-        return new CacheListLengthResponseSuccess($response);
+        return new ListLengthSuccess($response);
     }
 
-    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): CacheDictionarySetFieldResponse
+    public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): DictionarySetFieldResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -491,11 +491,11 @@ class ScsDataClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionarySetFieldResponseError($e);
+            return new DictionarySetFieldError($e);
         } catch (Exception $e) {
-            return new CacheDictionarySetFieldResponseError(new UnknownError($e->getMessage()));
+            return new DictionarySetFieldError(new UnknownError($e->getMessage()));
         }
-        return new CacheDictionarySetFieldResponseSuccess();
+        return new DictionarySetFieldSuccess();
     }
 
     private function toSingletonFieldValuePair(string $field, string $value): _DictionaryFieldValuePair
@@ -506,7 +506,7 @@ class ScsDataClient implements LoggerAwareInterface
         return $singletonPair;
     }
 
-    public function dictionaryGetField(string $cacheName, string $dictionaryName, string $field): CacheDictionaryGetFieldResponse
+    public function dictionaryGetField(string $cacheName, string $dictionaryName, string $field): DictionaryGetFieldResponse
     {
         try {
             validateCacheName($cacheName);
@@ -518,23 +518,23 @@ class ScsDataClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $dictionaryGetFieldResponse = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionaryGetFieldResponseError($e);
+            return new DictionaryGetFieldError($e);
         } catch (Exception $e) {
-            return new CacheDictionaryGetFieldResponseError(new UnknownError($e->getMessage()));
+            return new DictionaryGetFieldError(new UnknownError($e->getMessage()));
         }
         if ($dictionaryGetFieldResponse->hasMissing()) {
-            return new CacheDictionaryGetFieldResponseMiss($field);
+            return new DictionaryGetFieldMiss($field);
         }
         if ($dictionaryGetFieldResponse->getFound()->getItems()->count() == 0) {
-            return new CacheDictionaryGetFieldResponseError(new UnknownError("_DictionaryGetResponseResponse contained no data but was found"));
+            return new DictionaryGetFieldError(new UnknownError("_DictionaryGetResponseResponse contained no data but was found"));
         }
         if ($dictionaryGetFieldResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
-            return new CacheDictionaryGetFieldResponseMiss($field);
+            return new DictionaryGetFieldMiss($field);
         }
-        return new CacheDictionaryGetFieldResponseHit($field, $dictionaryGetFieldResponse);
+        return new DictionaryGetFieldHit($field, $dictionaryGetFieldResponse);
     }
 
-    public function dictionaryFetch(string $cacheName, string $dictionaryName): CacheDictionaryFetchResponse
+    public function dictionaryFetch(string $cacheName, string $dictionaryName): DictionaryFetchResponse
     {
         try {
             validateCacheName($cacheName);
@@ -544,17 +544,17 @@ class ScsDataClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->DictionaryFetch($dictionaryFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $dictionaryFetchResponse = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionaryFetchResponseError($e);
+            return new DictionaryFetchError($e);
         } catch (Exception $e) {
-            return new CacheDictionaryFetchResponseError(new UnknownError($e->getMessage()));
+            return new DictionaryFetchError(new UnknownError($e->getMessage()));
         }
         if ($dictionaryFetchResponse->hasFound()) {
-            return new CacheDictionaryFetchResponseHit($dictionaryFetchResponse);
+            return new DictionaryFetchHit($dictionaryFetchResponse);
         }
-        return new CacheDictionaryFetchResponseMiss();
+        return new DictionaryFetchMiss();
     }
 
-    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, ?CollectionTtl $ttl = null): CacheDictionarySetFieldsResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, ?CollectionTtl $ttl = null): DictionarySetFieldsResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -577,14 +577,14 @@ class ScsDataClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionarySetFieldsResponseError($e);
+            return new DictionarySetFieldsError($e);
         } catch (Exception $e) {
-            return new CacheDictionarySetFieldsResponseError(new UnknownError($e->getMessage()));
+            return new DictionarySetFieldsError(new UnknownError($e->getMessage()));
         }
-        return new CacheDictionarySetFieldsResponseSuccess();
+        return new DictionarySetFieldsSuccess();
     }
 
-    public function dictionaryGetFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryGetFieldsResponse
+    public function dictionaryGetFields(string $cacheName, string $dictionaryName, array $fields): DictionaryGetFieldsResponse
     {
         try {
             validateCacheName($cacheName);
@@ -596,20 +596,20 @@ class ScsDataClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $dictionaryGetFieldsResponse = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionaryGetFieldsResponseError($e);
+            return new DictionaryGetFieldsError($e);
         } catch (Exception $e) {
-            return new CacheDictionaryGetFieldsResponseError(new UnknownError($e->getMessage()));
+            return new DictionaryGetFieldsError(new UnknownError($e->getMessage()));
         }
         if ($dictionaryGetFieldsResponse->hasFound()) {
-            return new CacheDictionaryGetFieldsResponseHit($dictionaryGetFieldsResponse, fields: $fields);
+            return new DictionaryGetFieldsHit($dictionaryGetFieldsResponse, fields: $fields);
         }
-        return new CacheDictionaryGetFieldsResponseMiss();
+        return new DictionaryGetFieldsMiss();
 
     }
 
     public function dictionaryIncrement(
         string $cacheName, string $dictionaryName, string $field, int $amount = 1, ?CollectionTtl $ttl = null
-    ): CacheDictionaryIncrementResponse
+    ): DictionaryIncrementResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -630,14 +630,14 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionaryIncrementResponseError($e);
+            return new DictionaryIncrementError($e);
         } catch (Exception $e) {
-            return new CacheDictionaryIncrementResponseError(new UnknownError($e->getMessage()));
+            return new DictionaryIncrementError(new UnknownError($e->getMessage()));
         }
-        return new CacheDictionaryIncrementResponseSuccess($response);
+        return new DictionaryIncrementSuccess($response);
     }
 
-    public function dictionaryRemoveField(string $cacheName, string $dictionaryName, string $field): CacheDictionaryRemoveFieldResponse
+    public function dictionaryRemoveField(string $cacheName, string $dictionaryName, string $field): DictionaryRemoveFieldResponse
     {
         try {
             validateCacheName($cacheName);
@@ -653,14 +653,14 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionaryRemoveFieldResponseError($e);
+            return new DictionaryRemoveFieldError($e);
         } catch (Exception $e) {
-            return new CacheDictionaryRemoveFieldResponseError(new UnknownError($e->getMessage()));
+            return new DictionaryRemoveFieldError(new UnknownError($e->getMessage()));
         }
-        return new CacheDictionaryRemoveFieldResponseSuccess();
+        return new DictionaryRemoveFieldSuccess();
     }
 
-    public function dictionaryRemoveFields(string $cacheName, string $dictionaryName, array $fields): CacheDictionaryRemoveFieldsResponse
+    public function dictionaryRemoveFields(string $cacheName, string $dictionaryName, array $fields): DictionaryRemoveFieldsResponse
     {
         try {
             validateCacheName($cacheName);
@@ -676,14 +676,14 @@ class ScsDataClient implements LoggerAwareInterface
             );
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheDictionaryRemoveFieldsResponseError($e);
+            return new DictionaryRemoveFieldsError($e);
         } catch (Exception $e) {
-            return new CacheDictionaryRemoveFieldsResponseError(new UnknownError($e->getMessage()));
+            return new DictionaryRemoveFieldsError(new UnknownError($e->getMessage()));
         }
-        return new CacheDictionaryRemoveFieldsResponseSuccess();
+        return new DictionaryRemoveFieldsSuccess();
     }
 
-    public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): CacheSetAddElementResponse
+    public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): SetAddElementResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -700,14 +700,14 @@ class ScsDataClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->SetUnion($setAddElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheSetAddElementResponseError($e);
+            return new SetAddElementError($e);
         } catch (Exception $e) {
-            return new CacheSetAddElementResponseError(new UnknownError($e->getMessage()));
+            return new SetAddElementError(new UnknownError($e->getMessage()));
         }
-        return new CacheSetAddElementResponseSuccess();
+        return new SetAddElementSuccess();
     }
 
-    public function setFetch(string $cacheName, string $setName): CacheSetFetchResponse
+    public function setFetch(string $cacheName, string $setName): SetFetchResponse
     {
         try {
             validateCacheName($cacheName);
@@ -717,17 +717,17 @@ class ScsDataClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->SetFetch($setFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $setFetchResponse = $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheSetFetchResponseError($e);
+            return new SetFetchError($e);
         } catch (Exception $e) {
-            return new CacheSetFetchResponseError(new UnknownError($e->getMessage()));
+            return new SetFetchError(new UnknownError($e->getMessage()));
         }
         if ($setFetchResponse->hasFound()) {
-            return new CacheSetFetchResponseHit($setFetchResponse);
+            return new SetFetchHit($setFetchResponse);
         }
-        return new CacheSetFetchResponseMiss();
+        return new SetFetchMiss();
     }
 
-    public function setRemoveElement(string $cacheName, string $setName, string $element): CacheSetRemoveElementResponse
+    public function setRemoveElement(string $cacheName, string $setName, string $element): SetRemoveElementResponse
     {
         try {
             validateCacheName($cacheName);
@@ -743,10 +743,10 @@ class ScsDataClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->SetDifference($setRemoveElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new CacheSetRemoveElementResponseError($e);
+            return new SetRemoveElementError($e);
         } catch (Exception $e) {
-            return new CacheSetRemoveElementResponseError(new UnknownError($e->getMessage()));
+            return new SetRemoveElementError(new UnknownError($e->getMessage()));
         }
-        return new CacheSetRemoveElementResponseSuccess();
+        return new SetRemoveElementSuccess();
     }
 }
