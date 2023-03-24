@@ -165,9 +165,9 @@ class CacheClient implements LoggerAwareInterface
      * @param string $key The key to look up.
      * @return GetResponse Represents the result of the get operation and stores the retrieved value. This
      * result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheGetHit<br>
-     * * CacheGetMiss<br>
-     * * SetError<br>
+     * * GetHit<br>
+     * * GetMiss<br>
+     * * GetError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asHit()) {<br>
      * &nbsp;&nbsp;$value = $hit->valueString();<br>
@@ -215,8 +215,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $key The key to remove
      * @return DeleteResponse Represents the result of the delete operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * CacheDeleteSuccess<br>
-     * * CacheDeleteError<br>
+     * * DeleteSuccess<br>
+     * * DeleteError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -234,8 +234,8 @@ class CacheClient implements LoggerAwareInterface
      * @param array $keys List of keys to check
      * @return KeysExistResponse Represents the result of the keys exist operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * CacheKeysExistSuccess<br>
-     * * CacheKeysExistError<br>
+     * * KeysExistSuccess<br>
+     * * KeysExistError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -258,8 +258,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $key The key to check
      * @return KeyExistsResponse Represents the result of the keys exist operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * CacheKeyExistsSuccess<br>
-     * * CacheKeyExistsError<br>
+     * * KeyExistsSuccess<br>
+     * * KeyExistsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
