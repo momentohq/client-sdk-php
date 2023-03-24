@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Factory class for returning the PSR-3 logger passed to its constructor.
  */
-class PassthroughLoggerFactory implements ILoggerFactory
+class PassthroughLoggerFactory extends LoggerFactoryBase
 {
 
     private LoggerInterface $logger;
@@ -18,7 +18,7 @@ class PassthroughLoggerFactory implements ILoggerFactory
         $this->logger = $logger;
     }
 
-    public function getLogger(?string $name): LoggerInterface
+    public function getLogger(?string $name=null): LoggerInterface
     {
         return $this->logger;
     }
