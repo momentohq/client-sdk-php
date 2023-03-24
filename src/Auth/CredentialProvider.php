@@ -5,16 +5,34 @@ namespace Momento\Auth;
 
 use Momento\Cache\Errors\InvalidArgumentError;
 
+/**
+ * Base class for credential provider types.
+ */
 abstract class CredentialProvider implements ICredentialProvider
 {
+    /**
+     * @return string Auth token provided by user, required to authenticate with the service.
+     */
     public abstract function getAuthToken(): string;
 
+    /**
+     * @return string The host which the Momento client will connect to for Momento control plane operations.
+     */
     public abstract function getControlEndpoint(): string;
 
+    /**
+     * @return string The host which the Momento client will connect to for Momento data plane operations.
+     */
     public abstract function getCacheEndpoint(): string;
 
+    /**
+     * @return string|null Used for routing gRPC calls through a proxy server
+     */
     public abstract function getTrustedControlEndpointCertificateName(): string|null;
 
+    /**
+     * @return string|null Used for routing gRPC calls through a proxy server
+     */
     public abstract function getTrustedCacheEndpointCertificateName(): string|null;
 
     /**
