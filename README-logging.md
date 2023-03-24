@@ -14,19 +14,20 @@ needs or you can use one provided by the SDK.
 The Momento PHP SDK provides a few bare-bones logger factories to provide logging facilities for the client. The
 built-in logging factories include:
 
-* Momento\Logging\StderrLoggerFactory - provides a logger that prints all incoming messages to stderr
+* Momento\Logging\StderrLoggerFactory - provides a logger that prints messages to stderr depending on the configured log level
 * Momento\Logging\NullLoggerFactory - provides a logger that swallows all incoming messages
 * Momento\Logging\PassthroughLoggerFactory - returns the logger that it is constructed with
 
 Each of these factories provides a `getLogger(?string $name)` method that returns a PSR-3 `LoggerInterface` type:
 
 ```php
-$loggerFactory = new Momento\Logging\StderrLoggerFactory();
+// Default LogLevel for StderrLoggerFactory is INFO, but we can change it to any of the PSR-3 log levels.
+$loggerFactory = new Momento\Logging\StderrLoggerFactory(\Psr\Log\LogLevel::DEBUG);
 $logger = $loggerFactory->getLogger("main");
 $logger->debug("An important message");
 ```
 
-Note that the `$name` parameter is optional, as not all logging implementations make use of it. The `StderrEchoLogger`
+Note that the `$name` parameter is optional, as not all logging implementations make use of it. The `StderrLogger`
 provided by the factory in the example above prefixes each message with the provided name in square brackets.
 
 The `PassthroughLoggerFactory` is a simple way to stash a logging object that is returned anytime `getLogger()` is
@@ -47,7 +48,7 @@ your own logging factory implementation. For example, we can implement a `getLog
 returns a `Monolog` logging instance:
 
 ```php
-class MonologFactory implements \Momento\Logging\ILoggerFactory
+class MonologFactory extends \Momento\Logging\LoggerFactoryBase
 {
     public function getLogger(?string $name): LoggerInterface
     {
