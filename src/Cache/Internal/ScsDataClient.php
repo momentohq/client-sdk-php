@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Momento\Cache;
+namespace Momento\Cache\Internal;
 
 use Cache_client\_DeleteRequest;
 use Cache_client\_DictionaryDeleteRequest;
@@ -133,7 +133,7 @@ use function Momento\Utilities\validateTruncateSize;
 use function Momento\Utilities\validateTtl;
 use function Momento\Utilities\validateValueName;
 
-class _ScsDataClient implements LoggerAwareInterface
+class ScsDataClient implements LoggerAwareInterface
 {
 
     private static int $DEFAULT_DEADLINE_MILLISECONDS = 5000;
@@ -141,7 +141,7 @@ class _ScsDataClient implements LoggerAwareInterface
     // Used to convert deadline_milliseconds into microseconds for gRPC
     private static int $TIMEOUT_MULTIPLIER = 1000;
     private int $defaultTtlSeconds;
-    private _DataGrpcManager $grpcManager;
+    private DataGrpcManager $grpcManager;
     private LoggerInterface $logger;
     private int $timeout;
 
@@ -156,7 +156,7 @@ class _ScsDataClient implements LoggerAwareInterface
         validateOperationTimeout($operationTimeoutMs);
         $this->deadline_milliseconds = $operationTimeoutMs ?? self::$DEFAULT_DEADLINE_MILLISECONDS;
         $this->timeout = $this->deadline_milliseconds * self::$TIMEOUT_MULTIPLIER;
-        $this->grpcManager = new _DataGrpcManager($authProvider);
+        $this->grpcManager = new DataGrpcManager($authProvider);
         $this->setLogger($configuration->getLoggerFactory()->getLogger(get_class($this)));
     }
 

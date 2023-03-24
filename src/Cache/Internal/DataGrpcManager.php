@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Momento\Cache;
+namespace Momento\Cache\Internal;
 
 use Cache_client\ScsClient;
 use Grpc\Channel;
@@ -11,7 +11,7 @@ use Momento\Auth\ICredentialProvider;
 use Momento\Cache\Interceptors\AgentInterceptor;
 use Momento\Cache\Interceptors\AuthorizationInterceptor;
 
-class _DataGrpcManager
+class DataGrpcManager
 {
 
     public ScsClient $client;
