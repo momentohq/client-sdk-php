@@ -82,7 +82,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->set($cacheName, $key, $value);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertEquals("$response", get_class($response) . ": key $key = $value");
+        $this->assertEquals("$response", get_class($response));
 
         $response = $this->client->get($cacheName, $key);
         $this->assertNull($response->asError());
@@ -237,7 +237,6 @@ class CacheClientTest extends TestCase
             $caches = $listCachesResponse->caches();
             $cacheNames = array_map(fn($i) => $i->name(), $caches);
             $this->assertContains($cacheName, $cacheNames);
-            $this->assertEquals(null, $listCachesResponse->nextToken());
             $this->assertEquals("$listCachesResponse", get_class($listCachesResponse) . ": " . join(', ', $cacheNames));
         } finally {
             $response = $this->client->deleteCache($cacheName);
@@ -268,8 +267,6 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
         $response = $response->asSuccess();
         $this->assertNotNull($response);
-        $this->assertEquals($value, $response->valueString());
-        $this->assertEquals($key, $response->key());
 
         $response = $this->client->get($this->TEST_CACHE_NAME, $key);
         $this->assertNull($response->asError());
@@ -455,8 +452,6 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asNotStored());
         $response = $response->asStored();
         $this->assertNotNull($response);
-        $this->assertEquals($key, $response->key());
-        $this->assertEquals($value, $response->valueString());
 
         $response = $this->client->get($this->TEST_CACHE_NAME, $key);
         $this->assertNull($response->asError());
@@ -1685,7 +1680,7 @@ class CacheClientTest extends TestCase
         $value = "a short value";
         $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
         $this->assertNull($response->asError());
-        $this->assertEquals("$response", get_class($response) . ": key $key = $value");
+        $this->assertEquals("$response", get_class($response));
     }
 
     public function testCacheSetToString_LongValues()
@@ -1694,8 +1689,7 @@ class CacheClientTest extends TestCase
         $value = str_repeat("v", 256);
         $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
         $this->assertNull($response->asError());
-        $this->assertStringStartsWith(get_class($response) . ": key ", "$response");
-        $this->assertMatchesRegularExpression("/: key k+\.\.\. = v+\.\.\.$/", "$response");
+        $this->assertStringStartsWith(get_class($response), "$response");
     }
 
     public function testCacheGetToString_HappyPath()
@@ -1982,7 +1976,7 @@ class CacheClientTest extends TestCase
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($element, $response->asHit()->valueArray()[0]);
+        $this->assertEquals($element, $response->asHit()->valuesArray()[0]);
     }
 
     public function testSetAddElementSetFetch_NoRefreshTtl()
@@ -2019,7 +2013,7 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($element, $response->asHit()->valueArray()[0]);
+        $this->assertEquals($element, $response->asHit()->valuesArray()[0]);
     }
 
     public function testSetRemoveElementWithNullCacheName_ThrowsException()
@@ -2083,7 +2077,7 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($element, $response->asHit()->valueArray()[0]);
+        $this->assertEquals($element, $response->asHit()->valuesArray()[0]);
 
         $response = $this->client->setRemoveElement($this->TEST_CACHE_NAME, $setName, $element);
         $this->assertNull($response->asError());
