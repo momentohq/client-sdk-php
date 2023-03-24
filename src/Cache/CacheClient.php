@@ -88,8 +88,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache to create
      * @return CreateCacheResponse Represents the result of the create cache operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * CreateCacheResponseSuccess<br>
-     * * CreateCacheResponseError<br>
+     * * CreateCacheSuccess<br>
+     * * CreateCacheError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -106,8 +106,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string|null $nextToken
      * @return ListCachesResponse Represents the result of the list caches operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * ListCachesResponseSuccess<br>
-     * * ListCachesResponseError<br>
+     * * ListCachesSuccess<br>
+     * * ListCachesError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -124,8 +124,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache to delete.
      * @return DeleteCacheResponse Represents the result of the delete cache operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * DeleteCacheResponseSuccess<br>
-     * * DeleteCacheResponseError<br>
+     * * DeleteCacheSuccess<br>
+     * * DeleteCacheError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -146,8 +146,8 @@ class CacheClient implements LoggerAwareInterface
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return SetResponse Represents the result of the set operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * CacheSetResponseSuccess<br>
-     * * CacheSetResponseError<br>
+     * * SetSuccess<br>
+     * * SetError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -165,9 +165,9 @@ class CacheClient implements LoggerAwareInterface
      * @param string $key The key to look up.
      * @return GetResponse Represents the result of the get operation and stores the retrieved value. This
      * result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheGetResponseHit<br>
-     * * CacheGetResponseMiss<br>
-     * * CacheSetResponseError<br>
+     * * CacheGetHit<br>
+     * * CacheGetMiss<br>
+     * * SetError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asHit()) {<br>
      * &nbsp;&nbsp;$value = $hit->valueString();<br>
@@ -191,9 +191,9 @@ class CacheClient implements LoggerAwareInterface
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return SetIfNotExistsResponse Represents the result of the setIfNotExists operation. This
      * result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheSetIfNotExistsResponseStored<br>
-     * * CacheSetIfNotExistsResponseNotStored<br>
-     * * CacheSetIfNotExistsResponseError<br>
+     * * SetIfNotExistsResponseStored<br>
+     * * SetIfNotExistsResponseNotStored<br>
+     * * SetIfNotExistsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asStored()) {<br>
      * &nbsp;&nbsp;$value = $hit->valueString();<br>
@@ -215,8 +215,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $key The key to remove
      * @return DeleteResponse Represents the result of the delete operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * CacheDeleteResponseSuccess<br>
-     * * CacheDeleteResponseError<br>
+     * * CacheDeleteSuccess<br>
+     * * CacheDeleteError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -234,8 +234,8 @@ class CacheClient implements LoggerAwareInterface
      * @param array $keys List of keys to check
      * @return KeysExistResponse Represents the result of the keys exist operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * CacheKeysExistResponseSuccess<br>
-     * * CacheKeysExistResponseError<br>
+     * * CacheKeysExistSuccess<br>
+     * * CacheKeysExistError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -258,8 +258,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $key The key to check
      * @return KeyExistsResponse Represents the result of the keys exist operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * CacheKeyExistsResponseSuccess<br>
-     * * CacheKeyExistsResponseError<br>
+     * * CacheKeyExistsSuccess<br>
+     * * CacheKeyExistsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -279,9 +279,9 @@ class CacheClient implements LoggerAwareInterface
      * @param string $listName The list to fetch.
      * @return ListFetchResponse Represents the result of the list fetch operation and the associated list.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheListFetchResponseHit<br>
-     * * CacheListFetchResponseMiss<br>
-     * * CacheListFetchResponseError<br>
+     * * ListFetchHit<br>
+     * * ListFetchMiss<br>
+     * * ListFetchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asHit()) {<br>
      * &nbsp;&nbsp;$theList = $hit->valuesArray();<br>
@@ -304,8 +304,8 @@ class CacheClient implements LoggerAwareInterface
      * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
      * @return ListPushFrontResponse Represents the result of the operation and the length of the list after the push.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheListPushFrontResponseSuccess<br>
-     * * CacheListPushFrontResponseError<br>
+     * * ListPushFrontSuccess<br>
+     * * ListPushFrontError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($success = $response->asSuccess()) {<br>
      * &nbsp;&nbsp;$listLength = $success->listLength();<br>
@@ -330,8 +330,8 @@ class CacheClient implements LoggerAwareInterface
      * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
      * @return ListPushBackResponse Represents the result of the operation and the length of the list after the push.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheListPushBackResponseSuccess<br>
-     * * CacheListPushBackResponseError<br>
+     * * ListPushBackSuccess<br>
+     * * ListPushBackError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($success = $response->asSuccess()) {<br>
      * &nbsp;&nbsp;$listLength = $success->listLength();<br>
@@ -353,9 +353,9 @@ class CacheClient implements LoggerAwareInterface
      * @param string $listName The list to pop the value from.
      * @return ListPopFrontResponse Represents the result of the operation and the popped value.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheListPopFrontResponseHit<br>
-     * * CacheListPopFrontResponseMiss<br>
-     * * CacheListPushFrontResponseError<br>
+     * * ListPopFrontHit<br>
+     * * ListPopFrontMiss<br>
+     * * ListPushFrontError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asHit()) {<br>
      * &nbsp;&nbsp;$poppedValue = $hit->valueString();<br>
@@ -375,9 +375,9 @@ class CacheClient implements LoggerAwareInterface
      * @param string $listName The list to pop the value from.
      * @return ListPopBackResponse Represents the result of the operation and the popped value.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheListPopBackResponseHit<br>
-     * * CacheListPopBackResponseMiss<br>
-     * * CacheListPushBackResponseError<br>
+     * * ListPopBackHit<br>
+     * * ListPopBackMiss<br>
+     * * ListPushBackError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asHit()) {<br>
      * &nbsp;&nbsp;$poppedValue = $hit->valueString();<br>
@@ -398,8 +398,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $value The value to completely remove from the list.
      * @return ListRemoveValueResponse Represents the result of the list remove value operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheListRemoveValueResponseSuccess<br>
-     * * CacheListRemoveValueResponseError<br>
+     * * ListRemoveValueSuccess<br>
+     * * ListRemoveValueError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -417,8 +417,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $listName The list to calculate the length.
      * @return ListLengthResponse Represents the result of the list length operation and contains the list length.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheListLengthResponseSuccess<br>
-     * * CacheListLengthResponseError<br>
+     * * ListLengthSuccess<br>
+     * * ListLengthError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asHit()) {<br>
      * &nbsp;&nbsp;$theLength = $hit->length();<br>
@@ -441,8 +441,8 @@ class CacheClient implements LoggerAwareInterface
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
      * @return DictionarySetFieldResponse Represents the result of the dictionary set field operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheDictionarySetFieldResponseSuccess<br>
-     * * CacheDictionarySetFieldResponseError<br>
+     * * DictionarySetFieldSuccess<br>
+     * * DictionarySetFieldError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -461,9 +461,9 @@ class CacheClient implements LoggerAwareInterface
      * @param string $field The field in the dictionary to get.
      * @return DictionaryGetFieldResponse Represents the result of the get field operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheDictionaryGetFieldResponseHit<br>
-     * * CacheDictionaryGetFieldResponseMiss<br>
-     * * CacheDictionaryGetFieldResponseError<br>
+     * * DictionaryGetFieldHit<br>
+     * * DictionaryGetFieldMiss<br>
+     * * DictionaryGetFieldError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asHit()) {<br>
      * &nbsp;&nbsp;$theValue = $hit->valueString();<br>
@@ -483,9 +483,9 @@ class CacheClient implements LoggerAwareInterface
      * @param string $dictionaryName The dictionary to fetch.
      * @return DictionaryFetchResponse Represents the result of the fetch operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheDictionaryFetchResponseHit<br>
-     * * CacheDictionaryFetchResponseMiss<br>
-     * * CacheDictionaryFetchResponseError<br>
+     * * DictionaryFetchHit<br>
+     * * DictionaryFetchMiss<br>
+     * * DictionaryFetchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asHit()) {<br>
      * &nbsp;&nbsp;$theValue = $hit->valuesDictionary();<br>
@@ -507,8 +507,8 @@ class CacheClient implements LoggerAwareInterface
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
      * @return DictionarySetFieldsResponse Represents the result of the dictionary set field operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheDictionarySetFieldsResponseSuccess<br>
-     * * CacheDictionarySetFieldsResponseError<br>
+     * * DictionarySetFieldsSuccess<br>
+     * * DictionarySetFieldsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
@@ -527,16 +527,16 @@ class CacheClient implements LoggerAwareInterface
      * @param array $fields The fields in the dictionary to lookup.
      * @return DictionaryGetFieldsResponse Represents the result of the get fields operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheDictionaryGetFieldsResponseHit<br>
-     * * CacheDictionaryGetFieldsResponseMiss<br>
-     * * CacheDictionaryGetFieldsResponseError<br>
+     * * DictionaryGetFieldsHit<br>
+     * * DictionaryGetFieldsMiss<br>
+     * * DictionaryGetFieldsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asHit()) {<br>
      * &nbsp;&nbsp;// get a list of responses corresponding to the list of requested values<br>
      * &nbsp;&nbsp;// each item in the list is an instance of one of the following:<br>
-     * &nbsp;&nbsp;// - CacheDictionaryGetFieldResponseHit<br>
-     * &nbsp;&nbsp;// - CacheDictionaryGetFieldResponseMiss<br>
-     * &nbsp;&nbsp;// - CacheDictionaryGetFieldResponseError<br>
+     * &nbsp;&nbsp;// - DictionaryGetFieldHit<br>
+     * &nbsp;&nbsp;// - DictionaryGetFieldMiss<br>
+     * &nbsp;&nbsp;// - DictionaryGetFieldError<br>
      * &nbsp;&nbsp;$responseTypes = $hit->responses();
      * &nbsp;&nbsp;// get a dictionary of responses mapping requested field name keys to their values<br>
      * &nbsp;&nbsp;// fields that were not found in the cache dictionary are omitted<br>
@@ -563,8 +563,8 @@ class CacheClient implements LoggerAwareInterface
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
      * @return DictionaryIncrementResponse Represents the result of the dictionary increment operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheDictionaryIncrementResponseSuccess<br>
-     * * CacheDictionaryIncrementResponseError<br>
+     * * DictionaryIncrementSuccess<br>
+     * * DictionaryIncrementError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($success = $response->asSuccess()) {<br>
      * &nbsp;&nbsp;$newValue = $success->valueInt();
@@ -587,8 +587,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $field The field to remove.
      * @return DictionaryRemoveFieldResponse Represents the result of the dictionary remove field operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheDictionaryRemoveFieldResponseSuccess<br>
-     * * CacheDictionaryRemoveFieldResponseError<br>
+     * * DictionaryRemoveFieldSuccess<br>
+     * * DictionaryRemoveFieldError<br>
      * if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
@@ -606,8 +606,8 @@ class CacheClient implements LoggerAwareInterface
      * @param array $fields The fields to remove.
      * @return DictionaryRemoveFieldsResponse Represents the result of the dictionary remove fields operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheDictionaryRemoveFieldsResponseSuccess<br>
-     * * CacheDictionaryRemoveFieldsResponseError<br>
+     * * DictionaryRemoveFieldsSuccess<br>
+     * * DictionaryRemoveFieldsError<br>
      * if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
@@ -626,8 +626,8 @@ class CacheClient implements LoggerAwareInterface
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
      * @return SetAddElementResponse Represents the result of the set add element operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheSetAddElementResponseSuccess<br>
-     * * CacheSetAddElementResponseError<br>
+     * * SetAddElementSuccess<br>
+     * * SetAddElementError<br>
      * if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
@@ -644,9 +644,9 @@ class CacheClient implements LoggerAwareInterface
      * @param string $setName The set to fetch.
      * @return SetFetchResponse Represents the result of the set fetch operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheSetFetchResponseHit<br>
-     * * CacheSetFetchResponseMiss<br>
-     * * CacheSetFetchResponseError<br>
+     * * SetFetchHit<br>
+     * * SetFetchMiss<br>
+     * * SetFetchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($hit = $response->asHit()) {<br>
      * &nbsp;&nbsp;$theSet = $response->valueArray();<br>
@@ -667,8 +667,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $element The element to remove.
      * @return SetRemoveElementResponse Represents the result of the set remove element operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * CacheSetRemoveElementResponseSuccess<br>
-     * * CacheSetRemoveElementResponseError<br>
+     * * SetRemoveElementSuccess<br>
+     * * SetRemoveElementError<br>
      * if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>

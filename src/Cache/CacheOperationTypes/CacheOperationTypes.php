@@ -149,9 +149,9 @@ abstract class ResponseBase
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CreateCacheResponseSuccess
- * * CreateCacheResponseAlreadyExists
- * * CreateCacheResponseError
+ * * CreateCacheSuccess
+ * * CreateCacheAlreadyExists
+ * * CreateCacheError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -230,8 +230,8 @@ class CreateCacheError extends CreateCacheResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * DeleteCacheResponseSuccess
- * * DeleteCacheResponseError
+ * * DeleteCacheSuccess
+ * * DeleteCacheError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -287,8 +287,8 @@ class DeleteCacheError extends DeleteCacheResponse
  * Parent response type for a list caches request. The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
- *  * ListCachesResponseSuccess
- *  * ListCachesResponseError
+ *  * ListCachesSuccess
+ *  * ListCachesError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -371,8 +371,8 @@ class ListCachesError extends ListCachesResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheSetResponseSuccess
- * * CacheSetResponseError
+ * * SetSuccess
+ * * SetError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -429,9 +429,9 @@ class SetError extends SetResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheGetResponseHit
- * * CacheGetResponseMiss
- * * CacheGetResponseError
+ * * CacheGetHit
+ * * CacheGetMiss
+ * * CacheGetError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -529,9 +529,9 @@ class GetError extends GetResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheSetIfNotExistsResponseStored
- * * CacheSetIfNotExistsResponseNotStored
- * * CacheSetIfNotExistsResponseError
+ * * SetIfNotExistsStored
+ * * SetIfNotExistsNotStored
+ * * SetIfNotExistsError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -606,8 +606,8 @@ class SetIfNotExistsError extends SetIfNotExistsResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheDeleteResponseSuccess
- * * CacheDeleteResponseError
+ * * CacheDeleteSuccess
+ * * CacheDeleteError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -664,8 +664,8 @@ class DeleteError extends DeleteResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheKeysExistResponseSuccess
- * * CacheKeysExistResponseError
+ * * CacheKeysExistSuccess
+ * * CacheKeysExistError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -750,8 +750,8 @@ class KeysExistError extends KeysExistResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheKeyExistsResponseSuccess
- * * CacheKeyExistsResponseError
+ * * CacheKeyExistsSuccess
+ * * CacheKeyExistsError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -820,9 +820,9 @@ class KeyExistsError extends KeyExistsResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheListFetchResponseHit
- * * CacheListFetchResponseMiss
- * * CacheListFetchResponseError
+ * * ListFetchHit
+ * * ListFetchMiss
+ * * ListFetchError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -926,8 +926,8 @@ class ListFetchError extends ListFetchResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheListPushFrontResponseSuccess
- * * CacheListPushFrontResponseError
+ * * ListPushFrontSuccess
+ * * ListPushFrontError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1004,8 +1004,8 @@ class ListPushFrontError extends ListPushFrontResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheListPushBackResponseSuccess
- * * CacheListPushBackResponseError
+ * * ListPushBackSuccess
+ * * ListPushBackError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1082,9 +1082,9 @@ class ListPushBackError extends ListPushBackResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheListPopFrontResponseHit
- * * CacheListPopFrontResponseMiss
- * * CacheListPopFrontResponseError
+ * * ListPopFrontHit
+ * * ListPopFrontMiss
+ * * ListPopFrontError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1181,9 +1181,9 @@ class ListPopFrontError extends ListPopFrontResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheListPopBackResponseHit
- * * CacheListPopBackResponseMiss
- * * CacheListPopBackResponseError
+ * * ListPopBackHit
+ * * ListPopBackMiss
+ * * ListPopBackError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1280,8 +1280,8 @@ class ListPopBackError extends ListPopBackResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheListRemoveValueResponseSuccess
- * * CacheListRemoveValueResponseError
+ * * ListRemoveValueSuccess
+ * * ListRemoveValueError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1338,8 +1338,8 @@ class ListRemoveValueError extends ListRemoveValueResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheListRemoveValueResponseSuccess
- * * CacheListRemoveValueResponseError
+ * * ListRemoveValueSuccess
+ * * ListRemoveValueError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1416,8 +1416,8 @@ class ListLengthError extends ListLengthResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheDictionarySetFieldResponseSuccess
- * * CacheDictionarySetFieldResponseError
+ * * DictionarySetFieldSuccess
+ * * DictionarySetFieldError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1474,9 +1474,9 @@ class DictionarySetFieldError extends DictionarySetFieldResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheDictionaryGetFieldResponseHit
- * * CacheDictionaryGetFieldResponseMiss
- * * CacheDictionaryGetFieldResponseError
+ * * DictionaryGetFieldHit
+ * * DictionaryGetFieldMiss
+ * * DictionaryGetFieldError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1588,9 +1588,9 @@ class DictionaryGetFieldError extends DictionaryGetFieldResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheDictionaryFetchResponseHit
- * * CacheDictionaryFetchResponseMiss
- * * CacheDictionaryFetchResponseError
+ * * DictionaryFetchHit
+ * * DictionaryFetchMiss
+ * * DictionaryFetchError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1691,8 +1691,8 @@ class DictionaryFetchError extends DictionaryFetchResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheDictionarySetFieldsResponseSuccess
- * * CacheDictionarySetFieldsResponseError
+ * * DictionarySetFieldsSuccess
+ * * DictionarySetFieldsError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1749,9 +1749,9 @@ class DictionarySetFieldsError extends DictionarySetFieldsResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheDictionaryGetFieldsResponseHit
- * * CacheDictionaryGetFieldsResponseMiss
- * * CacheDictionaryGetFieldsResponseError
+ * * DictionaryGetFieldsHit
+ * * DictionaryGetFieldsMiss
+ * * DictionaryGetFieldsError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1871,8 +1871,8 @@ class DictionaryGetFieldsError extends DictionaryGetFieldsResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheDictionaryIncrementResponseSuccess
- * * CacheDictionaryIncrementResponseError
+ * * DictionaryIncrementSuccess
+ * * DictionaryIncrementError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -1950,8 +1950,8 @@ class DictionaryIncrementError extends DictionaryIncrementResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheDictionaryRemoveFieldResponseSuccess
- * * CacheDictionaryRemoveFieldResponseError
+ * * DictionaryRemoveFieldSuccess
+ * * DictionaryRemoveFieldError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -2008,8 +2008,8 @@ class DictionaryRemoveFieldError extends DictionaryRemoveFieldResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheDictionaryRemoveFieldsResponseSuccess
- * * CacheDictionaryRemoveFieldsResponseError
+ * * DictionaryRemoveFieldsSuccess
+ * * DictionaryRemoveFieldsError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -2066,8 +2066,8 @@ class DictionaryRemoveFieldsError extends DictionaryRemoveFieldsResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheSetAddElementsResponseSuccess
- * * CacheSetAddElementsResponseError
+ * * SetAddElementsSuccess
+ * * SetAddElementsError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -2124,9 +2124,9 @@ class SetAddElementError extends SetAddElementResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheSetFetchResponseHit
- * * CacheSetFetchResponseMiss
- * * CacheSetFetchResponseError
+ * * SetFetchHit
+ * * SetFetchMiss
+ * * SetFetchError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -2227,8 +2227,8 @@ class SetFetchError extends SetFetchResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheSetRemoveElementResponseSuccess
- * * CacheSetRemoveElementResponseError
+ * * SetRemoveElementSuccess
+ * * SetRemoveElementError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
