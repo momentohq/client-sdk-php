@@ -5,8 +5,8 @@ namespace Momento\Tests\Cache;
 
 use Momento\Auth\AuthUtils;
 use Momento\Auth\EnvMomentoTokenProvider;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseHit;
-use Momento\Cache\CacheOperationTypes\CacheDictionaryGetFieldResponseMiss;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldHit;
+use Momento\Cache\CacheOperationTypes\DictionaryGetFieldMiss;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\CacheClient;
 use Momento\Config\Configuration;
@@ -1614,9 +1614,9 @@ class CacheClientTest extends TestCase
         $counter = 0;
         foreach ($response->asHit()->responses() as $response) {
             if ($counter == 2) {
-                $this->assertEquals(CacheDictionaryGetFieldResponseMiss::class, get_class($response));
+                $this->assertEquals(DictionaryGetFieldMiss::class, get_class($response));
             } else {
-                $this->assertEquals(CacheDictionaryGetFieldResponseHit::class, get_class($response));
+                $this->assertEquals(DictionaryGetFieldHit::class, get_class($response));
             }
             $counter++;
         }
