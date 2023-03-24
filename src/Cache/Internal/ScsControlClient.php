@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Momento\Cache;
+namespace Momento\Cache\Internal;
 
 use Control_client\_CreateCacheRequest;
 use Control_client\_DeleteCacheRequest;
@@ -27,16 +27,16 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use function Momento\Utilities\validateCacheName;
 
-class _ScsControlClient implements LoggerAwareInterface
+class ScsControlClient implements LoggerAwareInterface
 {
 
-    private _ControlGrpcManager $grpcManager;
+    private ControlGrpcManager $grpcManager;
     private ILoggerFactory $loggerFactory;
     private LoggerInterface $logger;
 
     public function __construct(ILoggerFactory $loggerFactory, ICredentialProvider $authProvider)
     {
-        $this->grpcManager = new _ControlGrpcManager($authProvider);
+        $this->grpcManager = new ControlGrpcManager($authProvider);
         $this->loggerFactory = $loggerFactory;
         $this->setLogger($this->loggerFactory->getLogger(get_class($this)));
     }
