@@ -658,7 +658,7 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Remove an element from a set.,
+     * Remove an element from a set.
      *
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $setName The set from which to remove the element.
