@@ -32,14 +32,6 @@ class Psr16ClientTest extends \PHPUnit\Framework\TestCase
         $transportStrategy = new StaticTransportStrategy(null, $grpcConfiguration);
         $configuration = new Configuration($loggerFactory, $transportStrategy);
         $authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
-
-        // Ensure test cache exists
-        $createCacheClient = new CacheClient($configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
-        $setUpCreateResponse = $createCacheClient->createCache($this->TEST_CACHE_NAME);
-        if ($setUpError = $setUpCreateResponse->asError()) {
-            throw $setUpError->innerException();
-        }
-
         $this->client = new Psr16CacheClient($configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
