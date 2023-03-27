@@ -124,7 +124,6 @@ use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateElement;
 use function Momento\Utilities\validateFieldName;
 use function Momento\Utilities\validateFields;
-use function Momento\Utilities\validateItems;
 use function Momento\Utilities\validateKeys;
 use function Momento\Utilities\validateListName;
 use function Momento\Utilities\validateNullOrEmpty;
@@ -560,16 +559,16 @@ class ScsDataClient implements LoggerAwareInterface
         return new DictionaryFetchMiss();
     }
 
-    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, ?CollectionTtl $ttl = null): DictionarySetFieldsResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $elements, ?CollectionTtl $ttl = null): DictionarySetFieldsResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
-            validateKeys(array_keys($items));
+            validateKeys(array_keys($elements));
             $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             $protoItems = [];
-            foreach ($items as $field => $value) {
+            foreach ($elements as $field => $value) {
                 $fieldValuePair = new _DictionaryFieldValuePair();
                 $fieldValuePair->setField($field);
                 $fieldValuePair->setValue($value);
@@ -595,7 +594,7 @@ class ScsDataClient implements LoggerAwareInterface
         try {
             validateCacheName($cacheName);
             validateDictionaryName($dictionaryName);
-            validateItems($fields);
+            validateFields($fields);
             $dictionaryGetFieldsRequest = new _DictionaryGetRequest();
             $dictionaryGetFieldsRequest->setDictionaryName($dictionaryName);
             $dictionaryGetFieldsRequest->setFields($fields);

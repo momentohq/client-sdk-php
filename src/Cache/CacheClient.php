@@ -503,7 +503,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the dictionary.
      * @param string $dictionaryName The dictionary to set the field in. Will be created if it doesn't exist.
-     * @param array $items The field-value pairs o be stored.
+     * @param array $elements The field-value pairs to be stored.
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
      * @return DictionarySetFieldsResponse Represents the result of the dictionary set field operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
@@ -514,9 +514,9 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $items, ?CollectionTtl $ttl = null): DictionarySetFieldsResponse
+    public function dictionarySetFields(string $cacheName, string $dictionaryName, array $elements, ?CollectionTtl $ttl = null): DictionarySetFieldsResponse
     {
-        return $this->dataClient->dictionarySetFields($cacheName, $dictionaryName, $items, $ttl);
+        return $this->dataClient->dictionarySetFields($cacheName, $dictionaryName, $elements, $ttl);
     }
 
     /**
