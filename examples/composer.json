@@ -1,6 +1,6 @@
 {
   "require": {
-    "momentohq/client-sdk-php": "0.6.2",
+    "momentohq/client-sdk-php": "0.7.1",
     "monolog/monolog": "^2.5"
   },
   "config": {

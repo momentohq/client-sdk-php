@@ -16,7 +16,7 @@ $VALUE = "MyValue";
 
 // Setup
 $authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
-$configuration = Laptop::latest()->withLoggerFactory(new StderrLoggerFactory());
+$configuration = Laptop::latest(new StderrLoggerFactory());
 $client = new CacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 $logger = $configuration->getLoggerFactory()->getLogger("ex:");
 
@@ -44,17 +44,10 @@ if ($response->asSuccess()) {
 // List cache
 $response = $client->listCaches();
 if ($response->asSuccess()) {
-    while (true) {
-        $logger->info("SUCCESS: List caches: \n");
-        foreach ($response->asSuccess()->caches() as $cache) {
-            $cacheName = $cache->name();
-            $logger->info("$cacheName\n");
-        }
-        $nextToken = $response->asSuccess()->nextToken();
-        if (!$nextToken) {
-            break;
-        }
-        $response = $client->listCaches($nextToken);
+    $logger->info("SUCCESS: List caches: \n");
+    foreach ($response->asSuccess()->caches() as $cache) {
+        $cacheName = $cache->name();
+        $logger->info("$cacheName\n");
     }
     $logger->info("\n");
 } elseif ($response->asError()) {
