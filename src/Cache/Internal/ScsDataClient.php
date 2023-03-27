@@ -127,6 +127,7 @@ use function Momento\Utilities\validateFields;
 use function Momento\Utilities\validateItems;
 use function Momento\Utilities\validateKeys;
 use function Momento\Utilities\validateListName;
+use function Momento\Utilities\validateNullOrEmpty;
 use function Momento\Utilities\validateOperationTimeout;
 use function Momento\Utilities\validateSetName;
 use function Momento\Utilities\validateTruncateSize;
@@ -186,6 +187,7 @@ class ScsDataClient implements LoggerAwareInterface
     {
         [$response, $status] = $call->wait();
         if ($status->code !== 0) {
+            $this->logger->debug("Data client error: {$status->details}");
             throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
         }
         return $response;
@@ -195,6 +197,7 @@ class ScsDataClient implements LoggerAwareInterface
     {
         try {
             validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $setRequest = new _SetRequest();
             $setRequest->setCacheKey($key);
@@ -216,6 +219,7 @@ class ScsDataClient implements LoggerAwareInterface
     {
         try {
             validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
             $getRequest = new _GetRequest();
             $getRequest->setCacheKey($key);
             $call = $this->grpcManager->client->Get(
@@ -241,6 +245,7 @@ class ScsDataClient implements LoggerAwareInterface
     {
         try {
             validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $setIfNotExistsRequest = new _SetIfNotExistsRequest();
             $setIfNotExistsRequest->setCacheKey($key);
@@ -266,6 +271,7 @@ class ScsDataClient implements LoggerAwareInterface
     {
         try {
             validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
             $deleteRequest = new _DeleteRequest();
             $deleteRequest->setCacheKey($key);
             $call = $this->grpcManager->client->Delete(

@@ -66,8 +66,10 @@ class ScsControlClient implements LoggerAwareInterface
         } catch (AlreadyExistsError) {
             return new CreateCacheAlreadyExists();
         } catch (SdkError $e) {
+            $this->logger->debug("Failed to create cache $cacheName: {$e->getMessage()}");
             return new CreateCacheError($e);
         } catch (\Exception $e) {
+            $this->logger->debug("Failed to create cache $cacheName: {$e->getMessage()}");
             return new CreateCacheError(new UnknownError($e->getMessage()));
         }
         return new CreateCacheSuccess();
@@ -82,8 +84,10 @@ class ScsControlClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->DeleteCache($request);
             $this->processCall($call);
         } catch (SdkError $e) {
+            $this->logger->debug("Failed to delete cache $cacheName: {$e->getMessage()}");
             return new DeleteCacheError($e);
         } catch (\Exception $e) {
+            $this->logger->debug("Failed to delete cache $cacheName: {$e->getMessage()}");
             return new DeleteCacheError(new UnknownError($e->getMessage()));
         }
         return new DeleteCacheSuccess();
