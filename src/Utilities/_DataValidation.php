@@ -103,13 +103,6 @@ if (!function_exists('validateValueName')) {
     }
 }
 
-if (!function_exists('validateItems')) {
-    function validateItems(array $items): void
-    {
-        validateNullOrEmptyList($items, "Items");
-    }
-}
-
 if (!function_exists('validateOperationTimeout')) {
     function validateOperationTimeout(?int $operationTimeout = null)
     {
