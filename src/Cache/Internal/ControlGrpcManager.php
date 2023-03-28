@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Momento\Cache;
+namespace Momento\Cache\Internal;
 
 use Control_client\ScsControlClient;
 use Grpc\Channel;
@@ -12,7 +12,7 @@ use Momento\Cache\Interceptors\AgentInterceptor;
 use Momento\Cache\Interceptors\AuthorizationInterceptor;
 
 
-class _ControlGrpcManager
+class ControlGrpcManager
 {
 
     public ScsControlClient $client;

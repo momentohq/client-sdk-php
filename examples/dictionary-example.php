@@ -8,19 +8,17 @@ use Momento\Cache\CacheClient;
 use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
+use Momento\Requests\CollectionTtl;
 use Psr\Log\LoggerInterface;
 use function Momento\Utilities\isNullOrEmpty;
 
-$CACHE_NAME = getenv("CACHE_NAME");
+$CACHE_NAME = uniqid("php-dictionary-example-");
 $DICTIONARY_NAME = "example-dictionary";
 $FIELD = "MyField";
 $VALUE = "MyValue";
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 
 // Setup
-if ($CACHE_NAME === false || isNullOrEmpty($CACHE_NAME)) {
-    throw new InvalidArgumentError("Environment variable CACHE_NAME is empty or null.");
-}
 $authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
 
 $configuration = Laptop::latest()->withLoggerFactory(new StderrLoggerFactory());
@@ -48,9 +46,14 @@ if ($response->asSuccess()) {
     $logger->info("Cache " . $CACHE_NAME . " already exists.\n");
 }
 
+// The CollectionTtl object is used to control TTLs for collections as they
+// are updated. By default, it is configured to reset the TTL for the collection
+// to the client's default TTL each time the collection is updated.
+$collectionTtl = new CollectionTtl();
+
 // Dictionary Set
 $logger->info("Setting field: $FIELD and value: $VALUE in dictionary: $DICTIONARY_NAME\n");
-$response = $client->dictionarySetField($CACHE_NAME, $DICTIONARY_NAME, $FIELD, $VALUE, false, $ITEM_DEFAULT_TTL_SECONDS);
+$response = $client->dictionarySetField($CACHE_NAME, $DICTIONARY_NAME, $FIELD, $VALUE, $collectionTtl);
 if ($response->asSuccess()) {
     $logger->info("SUCCESS: Dictionary set - field: " . $FIELD . " value: " . $VALUE . " dictionary: " . $DICTIONARY_NAME . "\n");
 } elseif ($response->asError()) {
@@ -69,4 +72,12 @@ if ($response->asHit()) {
     $logger->info("Error getting a value in a dictionary: " . $response->asError()->message() . "\n");
     exit;
 }
+
+// Delete test cache
+$logger->info("Deleting cache $CACHE_NAME\n");
+$response = $client->deleteCache($CACHE_NAME);
+if ($response->asError()) {
+    $logger->info("Error deleting cache: " . $response->asError()->message() . "\n");
+}
+
 printBanner("*                       Momento Example End                      *", $logger);

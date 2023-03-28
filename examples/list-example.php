@@ -6,13 +6,10 @@ use Momento\Auth\CredentialProvider;
 use Momento\Cache\CacheClient;
 use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
+use Momento\Requests\CollectionTtl;
 use Psr\Log\LoggerInterface;
 
-$CACHE_NAME = getenv("CACHE_NAME");
-if (!$CACHE_NAME) {
-    print "Error: Environment variable CACHE_NAME was not found.\n";
-    exit;
-}
+$CACHE_NAME = uniqid("php-list-example-");
 $LIST_NAME = "example-list";
 $PUSH_FRONT_VALUE = "MyPushFrontValue";
 $PUSH_BACK_VALUE = "MyPushBackValue";
@@ -45,9 +42,14 @@ if ($response->asSuccess()) {
     $logger->info("Cache " . $CACHE_NAME . " already exists.\n");
 }
 
+// The CollectionTtl object is used to control TTLs for collections as they
+// are updated. By default, it is configured to reset the TTL for the collection
+// to the client's default TTL each time the collection is updated.
+$collectionTtl = new CollectionTtl();
+
 // Push front
 $logger->info("Pushing value: $PUSH_FRONT_VALUE to list: $LIST_NAME\n");
-$response = $client->listPushFront($CACHE_NAME, $LIST_NAME, $PUSH_FRONT_VALUE, true, 6000);
+$response = $client->listPushFront($CACHE_NAME, $LIST_NAME, $PUSH_FRONT_VALUE, null, $collectionTtl);
 if ($response->asSuccess()) {
     $logger->info("SUCCESS: Pushed front - value: " . $PUSH_FRONT_VALUE . " list: " . $LIST_NAME . "\n");
 } elseif ($response->asError()) {
@@ -57,7 +59,7 @@ if ($response->asSuccess()) {
 
 // Push back
 $logger->info("Pushing value: $PUSH_BACK_VALUE to list: $LIST_NAME\n");
-$response = $client->listPushBack($CACHE_NAME, $LIST_NAME, $PUSH_BACK_VALUE, true, 6000);
+$response = $client->listPushBack($CACHE_NAME, $LIST_NAME, $PUSH_BACK_VALUE, null, $collectionTtl);
 if ($response->asSuccess()) {
     $logger->info("SUCCESS: Pushed back - value: " . $PUSH_BACK_VALUE . " list: " . $LIST_NAME . "\n");
 } elseif ($response->asError()) {
@@ -105,4 +107,12 @@ if ($response->asHit()) {
     $logger->info("Error popping a value from back: " . $response->asError()->message() . "\n");
     exit;
 }
+
+// Delete test cache
+$logger->info("Deleting cache $CACHE_NAME\n");
+$response = $client->deleteCache($CACHE_NAME);
+if ($response->asError()) {
+    $logger->info("Error deleting cache: " . $response->asError()->message() . "\n");
+}
+
 printBanner("*                       Momento Example End                      *", $logger);

@@ -2,7 +2,7 @@
 
 # Using Momento With A Proxy
 
-Momento `SimpleCacheClient` connections can be proxied with relative ease. We'll provide an example here, using
+Momento `CacheClient` connections can be proxied with relative ease. We'll provide an example here, using
 [HA Proxy](https://www.haproxy.com/) as a layer 4 proxy on localhost.
 
 ## Configuring HA Proxy

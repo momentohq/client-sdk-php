@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Momento\Cache;
+namespace Momento\Cache\Internal;
 
 use Control_client\_CreateCacheRequest;
 use Control_client\_DeleteCacheRequest;
@@ -9,15 +9,15 @@ use Control_client\_ListCachesRequest;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
-use Momento\Cache\CacheOperationTypes\CreateCacheResponseAlreadyExists;
-use Momento\Cache\CacheOperationTypes\CreateCacheResponseError;
-use Momento\Cache\CacheOperationTypes\CreateCacheResponseSuccess;
+use Momento\Cache\CacheOperationTypes\CreateCacheAlreadyExists;
+use Momento\Cache\CacheOperationTypes\CreateCacheError;
+use Momento\Cache\CacheOperationTypes\CreateCacheSuccess;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
-use Momento\Cache\CacheOperationTypes\DeleteCacheResponseError;
-use Momento\Cache\CacheOperationTypes\DeleteCacheResponseSuccess;
+use Momento\Cache\CacheOperationTypes\DeleteCacheError;
+use Momento\Cache\CacheOperationTypes\DeleteCacheSuccess;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
-use Momento\Cache\CacheOperationTypes\ListCachesResponseError;
-use Momento\Cache\CacheOperationTypes\ListCachesResponseSuccess;
+use Momento\Cache\CacheOperationTypes\ListCachesError;
+use Momento\Cache\CacheOperationTypes\ListCachesSuccess;
 use Momento\Cache\Errors\AlreadyExistsError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
@@ -27,16 +27,16 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use function Momento\Utilities\validateCacheName;
 
-class _ScsControlClient implements LoggerAwareInterface
+class ScsControlClient implements LoggerAwareInterface
 {
 
-    private _ControlGrpcManager $grpcManager;
+    private ControlGrpcManager $grpcManager;
     private ILoggerFactory $loggerFactory;
     private LoggerInterface $logger;
 
     public function __construct(ILoggerFactory $loggerFactory, ICredentialProvider $authProvider)
     {
-        $this->grpcManager = new _ControlGrpcManager($authProvider);
+        $this->grpcManager = new ControlGrpcManager($authProvider);
         $this->loggerFactory = $loggerFactory;
         $this->setLogger($this->loggerFactory->getLogger(get_class($this)));
     }
@@ -64,13 +64,15 @@ class _ScsControlClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->CreateCache($request);
             $this->processCall($call);
         } catch (AlreadyExistsError) {
-            return new CreateCacheResponseAlreadyExists();
+            return new CreateCacheAlreadyExists();
         } catch (SdkError $e) {
-            return new CreateCacheResponseError($e);
+            $this->logger->debug("Failed to create cache $cacheName: {$e->getMessage()}");
+            return new CreateCacheError($e);
         } catch (\Exception $e) {
-            return new CreateCacheResponseError(new UnknownError($e->getMessage()));
+            $this->logger->debug("Failed to create cache $cacheName: {$e->getMessage()}");
+            return new CreateCacheError(new UnknownError($e->getMessage()));
         }
-        return new CreateCacheResponseSuccess();
+        return new CreateCacheSuccess();
     }
 
     public function deleteCache(string $cacheName): DeleteCacheResponse
@@ -82,11 +84,13 @@ class _ScsControlClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->DeleteCache($request);
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new DeleteCacheResponseError($e);
+            $this->logger->debug("Failed to delete cache $cacheName: {$e->getMessage()}");
+            return new DeleteCacheError($e);
         } catch (\Exception $e) {
-            return new DeleteCacheResponseError(new UnknownError($e->getMessage()));
+            $this->logger->debug("Failed to delete cache $cacheName: {$e->getMessage()}");
+            return new DeleteCacheError(new UnknownError($e->getMessage()));
         }
-        return new DeleteCacheResponseSuccess();
+        return new DeleteCacheSuccess();
     }
 
     public function listCaches(?string $nextToken = null): ListCachesResponse
@@ -97,11 +101,11 @@ class _ScsControlClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->ListCaches($request);
             $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new ListCachesResponseError($e);
+            return new ListCachesError($e);
         } catch (\Exception $e) {
-            return new ListCachesResponseError(new UnknownError($e->getMessage()));
+            return new ListCachesError(new UnknownError($e->getMessage()));
         }
-        return new ListCachesResponseSuccess($response);
+        return new ListCachesSuccess($response);
     }
 
 }

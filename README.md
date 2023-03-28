@@ -33,7 +33,7 @@ as [PhpStorm](https://www.jetbrains.com/phpstorm/) or [Microsoft Visual Studio C
 
 Check out full working code in [the examples directory](examples/) of this repository!
 
-In addition to the primary Momento `SimpleCacheClient` library used in most of the examples, a PHP PSR-16
+In addition to the primary Momento `CacheClient` library used in most of the examples, a PHP PSR-16
 implementation and corresponding example are also included in the SDK. See the PSR-16 client [README](README-PSR16.md)
 and [example](https://github.com/momentohq/client-sdk-php/blob/psr16-library/examples/psr16-example.php) for more
 details.
@@ -42,18 +42,12 @@ details.
 
 Install composer [as described on the composer website](https://getcomposer.org/doc/00-intro.md).
 
-Add our repository to your `composer.json` file and our SDK as a dependency:
+Add our SDK as a dependency to your `composer.json` file:
 
 ```json
 {
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/momentohq/client-sdk-php"
-    }
-  ],
   "require": {
-    "momentohq/client-sdk-php": "0.2.0"
+    "momentohq/client-sdk-php": "0.6.2"
   }
 }
 ```
@@ -78,11 +72,7 @@ use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
 use Psr\Log\LoggerInterface;
 
-$CACHE_NAME = getenv("CACHE_NAME");
-if (!$CACHE_NAME) {
-    print "Error: Environment variable CACHE_NAME was not found.\n";
-    exit;
-}
+$CACHE_NAME = uniqid("php-example-");
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 $KEY = "MyKey";
 $VALUE = "MyValue";
@@ -157,21 +147,28 @@ if ($response->asHit()) {
     exit;
 }
 
+// Delete test cache
+$logger->info("Deleting cache $CACHE_NAME\n");
+$response = $client->deleteCache($CACHE_NAME);
+if ($response->asError()) {
+    $logger->info("Error deleting cache: " . $response->asError()->message() . "\n");
+}
+
 printBanner("*                       Momento Example End                      *", $logger);
 
 ```
 
-For more details about `SimpleCacheClient` logging, please take a look at [README-logging.md](README-logging.md).
+For more details about `CacheClient` logging, please take a look at [README-logging.md](README-logging.md).
 
 ### Error Handling
 
-Errors that occur in calls to `SimpleCacheClient` methods are surfaced to developers as part of the return values of
+Errors that occur in calls to `CacheClient` methods are surfaced to developers as part of the return values of
 the calls, as opposed to by throwing exceptions. This makes them more visible, and allows your IDE to be more
 helpful in ensuring that you've handled the ones you care about. (For more on our philosophy about this, see our
 blog post on why [Exceptions are bugs](https://www.gomomento.com/blog/exceptions-are-bugs). And send us any
 feedback you have!)
 
-The preferred way of interpreting the return values from `SimpleCacheClient` methods is
+The preferred way of interpreting the return values from `CacheClient` methods is
 using `as` methods to match and handle the specific response type. Here's a quick example:
 
 ```php
@@ -203,8 +200,8 @@ if ($errorResponse = $getResponse->asError())
 }
 ```
 
-Note that, outside of `SimpleCacheClient` responses, exceptions can occur and should be handled as usual. For example,
-trying to instantiate a `SimpleCacheClient` with an invalid authentication token will result in an
+Note that, outside of `CacheClient` responses, exceptions can occur and should be handled as usual. For example,
+trying to instantiate a `CacheClient` with an invalid authentication token will result in an
 `IllegalArgumentException` being thrown.
 
 ### Tuning

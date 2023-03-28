@@ -42,26 +42,41 @@ class StringMomentoTokenProvider extends CredentialProvider
         $this->trustedCacheEndpointCertificateName = $trustedCacheEndpointCertificateName;
     }
 
+    /**
+     * @return string Auth token provided by user, required to authenticate with the service.
+     */
     public function getAuthToken(): string
     {
         return $this->authToken;
     }
 
+    /**
+     * @return string The host which the Momento client will connect to for Momento data plane operations.
+     */
     public function getCacheEndpoint(): string
     {
         return $this->cacheEndpoint;
     }
 
+    /**
+     * @return string The host which the Momento client will connect to for Momento control plane operations.
+     */
     public function getControlEndpoint(): string
     {
         return $this->controlEndpoint;
     }
 
+    /**
+     * @return string|null Used for routing gRPC calls through a proxy server
+     */
     public function getTrustedControlEndpointCertificateName(): string|null
     {
         return $this->trustedControlEndpointCertificateName;
     }
 
+    /**
+     * @return string|null Used for routing gRPC calls through a proxy server
+     */
     public function getTrustedCacheEndpointCertificateName(): string|null
     {
         return $this->trustedCacheEndpointCertificateName;

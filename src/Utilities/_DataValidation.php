@@ -9,7 +9,7 @@ use Momento\Cache\Errors\InvalidArgumentException;
 if (!function_exists('validateTtl')) {
     function validateTtl(int $ttlSeconds): void
     {
-        if (!is_int($ttlSeconds) || $ttlSeconds < 0) {
+        if ($ttlSeconds < 0) {
             throw new InvalidArgumentError("TTL Seconds must be a non-negative integer");
         }
     }
@@ -151,7 +151,7 @@ if (!function_exists('validateElement')) {
 if (!function_exists('validatePsr16Key')) {
     function validatePsr16Key(string $key): void
     {
-        $reserved = '/\{|\}|\(|\)|\/|\\\\|\@|\:/u';
+        $reserved = '/[{}()\/@:\\\]/u';
 
         if (isNullOrEmpty($key)) {
             throw new InvalidArgumentException("Key must be a non-empty string");

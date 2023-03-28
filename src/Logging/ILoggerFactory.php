@@ -7,5 +7,5 @@ use Psr\Log\LoggerInterface;
 
 interface ILoggerFactory
 {
-    public function getLogger(?string $name): LoggerInterface;
+    public function getLogger(?string $name=null): LoggerInterface;
 }

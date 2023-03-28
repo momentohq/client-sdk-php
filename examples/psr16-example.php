@@ -9,11 +9,6 @@ use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
 use Psr\Log\LoggerInterface;
 
-$CACHE_NAME = getenv("CACHE_NAME");
-if (!$CACHE_NAME) {
-    print "Error: Environment variable CACHE_NAME was not found.\n";
-    exit;
-}
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 $KEY = "MyKey";
 $VALUE = "MyValue";

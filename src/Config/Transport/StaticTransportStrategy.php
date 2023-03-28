@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Momento\Config\Transport;
 
 use Momento\Logging\ILoggerFactory;
-use Psr\Log\LoggerInterface;
 
 class StaticTransportStrategy implements ITransportStrategy
 {
@@ -46,7 +45,7 @@ class StaticTransportStrategy implements ITransportStrategy
     public function withClientTimeout(int $clientTimeout): StaticTransportStrategy
     {
         return new StaticTransportStrategy(
-            $this->maxConcurrentRequests, $this->grpcConfig->withDeadline($clientTimeout), $this->loggerFactory
+            $this->maxConcurrentRequests, $this->grpcConfig->withDeadlineMilliseconds($clientTimeout), $this->loggerFactory
         );
     }
 }
