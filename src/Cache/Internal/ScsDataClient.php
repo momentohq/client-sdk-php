@@ -206,13 +206,13 @@ class ScsDataClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->Set(
                 $setRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
+            $this->processCall($call);
         } catch (SdkError $e) {
             return new SetError($e);
         } catch (Exception $e) {
             return new SetError(new UnknownError($e->getMessage()));
         }
-        return new SetSuccess($response, $key, $value);
+        return new SetSuccess();
     }
 
     public function get(string $cacheName, string $key): GetResponse
@@ -261,7 +261,7 @@ class ScsDataClient implements LoggerAwareInterface
             return new SetIfNotExistsError(new UnknownError($e->getMessage()));
         }
         if ($setIfNotExistsResponse->hasStored()) {
-            return new SetIfNotExistsStored($setIfNotExistsResponse, $key, $value);
+            return new SetIfNotExistsStored();
         }
         return new SetIfNotExistsNotStored();
     }
@@ -529,13 +529,13 @@ class ScsDataClient implements LoggerAwareInterface
             return new DictionaryGetFieldError(new UnknownError($e->getMessage()));
         }
         if ($dictionaryGetFieldResponse->hasMissing()) {
-            return new DictionaryGetFieldMiss($field);
+            return new DictionaryGetFieldMiss();
         }
         if ($dictionaryGetFieldResponse->getFound()->getItems()->count() == 0) {
             return new DictionaryGetFieldError(new UnknownError("_DictionaryGetResponseResponse contained no data but was found"));
         }
         if ($dictionaryGetFieldResponse->getFound()->getItems()[0]->getResult() == ECacheResult::Miss) {
-            return new DictionaryGetFieldMiss($field);
+            return new DictionaryGetFieldMiss();
         }
         return new DictionaryGetFieldHit($field, $dictionaryGetFieldResponse);
     }

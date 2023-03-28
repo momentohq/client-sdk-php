@@ -23,7 +23,7 @@ class AuthUtils
         }
 
         try {
-            list($header, $payload, $signature) = $exploded;
+            $payload = $exploded[1];
             $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($payload));
         } catch (\Exception) {
             self::throwBadAuthToken();
