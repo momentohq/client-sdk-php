@@ -63,7 +63,7 @@ Add the repository and dependency to your project's `composer.json`:
 ```json
 {
   "require": {
-    "momentohq/client-sdk-php": "0.6.2"
+    "momentohq/client-sdk-php": "1.0.0"
   }
 }
 ```
