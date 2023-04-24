@@ -11,6 +11,7 @@ use Cache_client\_DictionaryGetRequest;
 use Cache_client\_DictionaryIncrementRequest;
 use Cache_client\_DictionarySetRequest;
 use Cache_client\_GetRequest;
+use Cache_client\_IncrementRequest;
 use Cache_client\_KeysExistRequest;
 use Cache_client\_ListFetchRequest;
 use Cache_client\_ListLengthRequest;
@@ -64,6 +65,9 @@ use Momento\Cache\CacheOperationTypes\GetResponse;
 use Momento\Cache\CacheOperationTypes\GetError;
 use Momento\Cache\CacheOperationTypes\GetHit;
 use Momento\Cache\CacheOperationTypes\GetMiss;
+use Momento\Cache\CacheOperationTypes\IncrementError;
+use Momento\Cache\CacheOperationTypes\IncrementResponse;
+use Momento\Cache\CacheOperationTypes\IncrementSuccess;
 use Momento\Cache\CacheOperationTypes\KeyExistsResponse;
 use Momento\Cache\CacheOperationTypes\KeyExistsError;
 use Momento\Cache\CacheOperationTypes\KeyExistsSuccess;
@@ -311,6 +315,27 @@ class ScsDataClient implements LoggerAwareInterface
             return new KeyExistsError($response->innerException());
         }
         return new KeyExistsSuccess($response->asSuccess()->exists()[0]);
+    }
+
+    public function increment(string $cacheName, string $key, ?int $amount=1, $ttlSeconds=null) : IncrementResponse {
+        try {
+            validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $incrementRequest = new _IncrementRequest();
+            $incrementRequest->setCacheKey($key);
+            $incrementRequest->setAmount($amount);
+            $incrementRequest->setTtlMilliseconds($ttlMillis);
+            $call = $this->grpcManager->client->Increment(
+                $incrementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+            );
+            $response = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new IncrementError($e);
+        } catch (Exception $e) {
+            return new IncrementError(new UnknownError($e->getMessage()));
+        }
+        return new IncrementSuccess($response);
     }
 
     public function listFetch(string $cacheName, string $listName): ListFetchResponse

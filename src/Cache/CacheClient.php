@@ -14,6 +14,7 @@ use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldsResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\GetResponse;
+use Momento\Cache\CacheOperationTypes\IncrementResponse;
 use Momento\Cache\CacheOperationTypes\KeyExistsResponse;
 use Momento\Cache\CacheOperationTypes\KeysExistResponse;
 use Momento\Cache\CacheOperationTypes\ListFetchResponse;
@@ -270,6 +271,31 @@ class CacheClient implements LoggerAwareInterface
     public function keyExists(string $cacheName, string $key): KeyExistsResponse
     {
         return $this->dataClient->keyExists($cacheName, $key);
+    }
+
+    /**
+     * Increment a key's value in the cache by a specified amount.
+     *
+     * @param string $cacheName Name of the cache in which to increment the key's value
+     * @param string $key The key top increment
+     * @param int|null $amount The amount to increment by. Will default to 1 if not passed in.
+     * @param int|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return IncrementResponse Represents the result of the keys exist operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * IncrementSuccess<br>
+     * * IncrementError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * } elseif ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$keyIsInCache = $success->exists();<br>
+     * }</code>
+     */
+    public function increment(
+        string $cacheName, string $key, ?int $amount=null, ?int $ttlSeconds=null
+    ) : IncrementResponse{
+        return $this->dataClient->increment($cacheName, $key, $amount, $ttlSeconds);
     }
 
     /**

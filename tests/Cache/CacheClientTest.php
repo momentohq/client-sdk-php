@@ -623,6 +623,20 @@ class CacheClientTest extends TestCase
         $this->assertEquals(false, $response->asSuccess()->exists());
     }
 
+    // Increment tests
+    public function testIncrement()
+    {
+        $key = "incrField";
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, "5");
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $response = $this->client->increment($this->TEST_CACHE_NAME, $key);
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals("6", $response->asSuccess()->value());
+        $response = $this->client->increment($this->TEST_CACHE_NAME, $key, 4);
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals("10", $response->asSuccess()->value());
+    }
+
     // List API tests
 
     public function testListPushFrontFetchHappyPath()
