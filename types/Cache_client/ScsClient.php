@@ -115,6 +115,34 @@ class ScsClient extends \Grpc\BaseStub {
     }
 
     /**
+     * @param \Cache_client\_ItemGetTtlRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function ItemGetTtl(\Cache_client\_ItemGetTtlRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/ItemGetTtl',
+        $argument,
+        ['\Cache_client\_ItemGetTtlResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * @param \Cache_client\_ItemGetTypeRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function ItemGetType(\Cache_client\_ItemGetTypeRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/ItemGetType',
+        $argument,
+        ['\Cache_client\_ItemGetTypeResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
      * @param \Cache_client\_DictionaryGetRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options

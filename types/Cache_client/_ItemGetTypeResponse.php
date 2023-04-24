@@ -9,11 +9,11 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Generated from protobuf message <code>cache_client._ListEraseResponse</code>
+ * Generated from protobuf message <code>cache_client._ItemGetTypeResponse</code>
  */
-class _ListEraseResponse extends \Google\Protobuf\Internal\Message
+class _ItemGetTypeResponse extends \Google\Protobuf\Internal\Message
 {
-    protected $list;
+    protected $result;
 
     /**
      * Constructor.
@@ -21,8 +21,8 @@ class _ListEraseResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Cache_client\_ListEraseResponse\_Found $found
-     *     @type \Cache_client\_ListEraseResponse\_Missing $missing
+     *     @type \Cache_client\_ItemGetTypeResponse\_Found $found
+     *     @type \Cache_client\_ItemGetTypeResponse\_Missing $missing
      * }
      */
     public function __construct($data = NULL) {
@@ -31,8 +31,8 @@ class _ListEraseResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._ListEraseResponse._Found found = 1;</code>
-     * @return \Cache_client\_ListEraseResponse\_Found|null
+     * Generated from protobuf field <code>.cache_client._ItemGetTypeResponse._Found found = 1;</code>
+     * @return \Cache_client\_ItemGetTypeResponse\_Found|null
      */
     public function getFound()
     {
@@ -45,21 +45,21 @@ class _ListEraseResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._ListEraseResponse._Found found = 1;</code>
-     * @param \Cache_client\_ListEraseResponse\_Found $var
+     * Generated from protobuf field <code>.cache_client._ItemGetTypeResponse._Found found = 1;</code>
+     * @param \Cache_client\_ItemGetTypeResponse\_Found $var
      * @return $this
      */
     public function setFound($var)
     {
-        GPBUtil::checkMessage($var, \Cache_client\_ListEraseResponse\_Found::class);
+        GPBUtil::checkMessage($var, \Cache_client\_ItemGetTypeResponse\_Found::class);
         $this->writeOneof(1, $var);
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._ListEraseResponse._Missing missing = 2;</code>
-     * @return \Cache_client\_ListEraseResponse\_Missing|null
+     * Generated from protobuf field <code>.cache_client._ItemGetTypeResponse._Missing missing = 2;</code>
+     * @return \Cache_client\_ItemGetTypeResponse\_Missing|null
      */
     public function getMissing()
     {
@@ -72,13 +72,13 @@ class _ListEraseResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._ListEraseResponse._Missing missing = 2;</code>
-     * @param \Cache_client\_ListEraseResponse\_Missing $var
+     * Generated from protobuf field <code>.cache_client._ItemGetTypeResponse._Missing missing = 2;</code>
+     * @param \Cache_client\_ItemGetTypeResponse\_Missing $var
      * @return $this
      */
     public function setMissing($var)
     {
-        GPBUtil::checkMessage($var, \Cache_client\_ListEraseResponse\_Missing::class);
+        GPBUtil::checkMessage($var, \Cache_client\_ItemGetTypeResponse\_Missing::class);
         $this->writeOneof(2, $var);
 
         return $this;
@@ -87,9 +87,9 @@ class _ListEraseResponse extends \Google\Protobuf\Internal\Message
     /**
      * @return string
      */
-    public function getList()
+    public function getResult()
     {
-        return $this->whichOneof("list");
+        return $this->whichOneof("result");
     }
 
 }
