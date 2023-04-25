@@ -317,7 +317,7 @@ class ScsDataClient implements LoggerAwareInterface
         return new KeyExistsSuccess($response->asSuccess()->exists()[0]);
     }
 
-    public function increment(string $cacheName, string $key, ?int $amount=1, $ttlSeconds=null) : IncrementResponse {
+    public function increment(string $cacheName, string $key, int $amount, int $ttlSeconds=null) : IncrementResponse {
         try {
             validateCacheName($cacheName);
             validateNullOrEmpty($key, "Key");

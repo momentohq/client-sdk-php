@@ -278,7 +278,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache in which to increment the key's value
      * @param string $key The key top increment
-     * @param int|null $amount The amount to increment by. Will default to 1 if not passed in.
+     * @param int $amount The amount to increment by. May be positive, negative, or zero. Defaults to 1.
      * @param int|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return IncrementResponse Represents the result of the keys exist operation. This result is
@@ -293,8 +293,9 @@ class CacheClient implements LoggerAwareInterface
      * }</code>
      */
     public function increment(
-        string $cacheName, string $key, ?int $amount=null, ?int $ttlSeconds=null
-    ) : IncrementResponse{
+        string $cacheName, string $key, int $amount=1, ?int $ttlSeconds=null
+    ) : IncrementResponse
+    {
         return $this->dataClient->increment($cacheName, $key, $amount, $ttlSeconds);
     }
 

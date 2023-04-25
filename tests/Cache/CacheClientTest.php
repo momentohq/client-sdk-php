@@ -624,17 +624,56 @@ class CacheClientTest extends TestCase
     }
 
     // Increment tests
-    public function testIncrement()
+    public function testIncrementHappyPath()
     {
-        $key = "incrField";
+        $key = uniqid();
         $response = $this->client->set($this->TEST_CACHE_NAME, $key, "5");
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $response = $this->client->increment($this->TEST_CACHE_NAME, $key);
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertEquals("6", $response->asSuccess()->value());
+        $this->assertEquals(6, $response->asSuccess()->value());
         $response = $this->client->increment($this->TEST_CACHE_NAME, $key, 4);
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertEquals("10", $response->asSuccess()->value());
+        $this->assertEquals(10, $response->asSuccess()->value());
+    }
+
+    public function testIncrementCreatesKey() {
+        $key = uniqid();
+        $response = $this->client->increment($this->TEST_CACHE_NAME, $key);
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(1, $response->asSuccess()->value());
+    }
+
+    public function testIncrementByZeroIsNoop()
+    {
+        $key = uniqid();
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, "5");
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $response = $this->client->increment($this->TEST_CACHE_NAME, $key, 0);
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(5, $response->asSuccess()->value());
+    }
+
+    public function testNegativeIncrementHappyPath()
+    {
+        $key = uniqid();
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, "5");
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $response = $this->client->increment($this->TEST_CACHE_NAME, $key, -4);
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(1, $response->asSuccess()->value());
+    }
+
+    public function testIncrementChangeTtl() {
+        $key = uniqid();
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, "5");
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $response = $this->client->increment($this->TEST_CACHE_NAME, $key, 4, 1);
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(9, $response->asSuccess()->value());
+        sleep(1);
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNotNull($response->asMiss());
     }
 
     // List API tests
