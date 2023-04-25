@@ -30,4 +30,34 @@ class AuthClient extends \Grpc\BaseStub {
         $metadata, $options);
     }
 
+    /**
+     * api for initially generating api and refresh tokens
+     * @param \Auth\_GenerateApiTokenRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function GenerateApiToken(\Auth\_GenerateApiTokenRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/auth.Auth/GenerateApiToken',
+        $argument,
+        ['\Auth\_GenerateApiTokenResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * api for programmatically refreshing api and refresh tokens
+     * @param \Auth\_RefreshApiTokenRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function RefreshApiToken(\Auth\_RefreshApiTokenRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/auth.Auth/RefreshApiToken',
+        $argument,
+        ['\Auth\_RefreshApiTokenResponse', 'decode'],
+        $metadata, $options);
+    }
+
 }
