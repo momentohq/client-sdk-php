@@ -4,14 +4,9 @@
 <img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-alpha.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
+[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
 
 # Momento PHP Client Library
-
-:warning: Alpha SDK :warning:
-
-こちらの SDK は Momento の公式 SDK ですが、API は Alpha ステージです。
-そのため、後方互換不可能な変更の対象になる可能性があります。詳細は上記の Alpha ボタンをクリックしてください。
 
 Momento Serverless Cache の PHP クライアント SDK：従来のキャッシュが必要とするオペレーションオーバーヘッドが全く無く、速くて、シンプルで、従量課金のキャッシュです！
 
@@ -19,12 +14,17 @@ Momento Serverless Cache の PHP クライアント SDK：従来のキャッシ�
 
 ### 必要条件
 
-- Momento Auth Token が必要です。[Momento CLI](https://github.com/momentohq/momento-cli)を使って生成できます。
-- 少なくとも PHP 8.0
-- grpc PHP エクステンション。 インストール方法はこちらの[gRPC docs](https://github.com/grpc/grpc/blob/v1.46.3/src/php/README.md)を参考にしてください。
+-   Momento Auth Token が必要です。[Momento CLI](https://github.com/momentohq/momento-cli)を使って生成できます。
+-   少なくとも PHP 8.0
+-   grpc PHP エクステンション。 インストール方法はこちらの[gRPC docs](https://github.com/grpc/grpc/blob/v1.46.3/src/php/README.md)を参考にしてください。
 
 **IDE に関する注意事項**: [PhpStorm](https://www.jetbrains.com/phpstorm/)
 や[Microsoft Visual Studio Code](https://code.visualstudio.com/)の様な PHP 開発をサポートできる IDE が必要となります。
+
+### 例
+
+[こちらの例ディレクトリ](https://github.com/momentohq/client-sdk-php/tree/main/examples)をご参照ください！
+大半の例に使用されているメインの Momento `CacheClient`に加えて、PHP PSR-16 の実装例も SDK に含まれています。PSR-16 に関してはこちらの[README](https://github.com/momentohq/client-sdk-php/blob/main/README-PSR16.md)と[例](https://github.com/momentohq/client-sdk-php/blob/psr16-library/examples/psr16-example.php)をご参照ください。
 
 ### インストール
 
@@ -34,15 +34,9 @@ Momento Serverless Cache の PHP クライアント SDK：従来のキャッシ�
 
 ```json
 {
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/momentohq/client-sdk-php"
+    "require": {
+        "momentohq/client-sdk-php": "1.0.0"
     }
-  ],
-  "require": {
-    "momentohq/client-sdk-php": "0.2.0"
-  }
 }
 ```
 
@@ -56,58 +50,131 @@ Momento Serverless Cache の PHP クライアント SDK：従来のキャッシ�
 
 ```php
 <?php
+declare(strict_types=1);
 
 require "vendor/autoload.php";
 
-use Momento\Cache\SimpleCacheClient;
+use Momento\Auth\CredentialProvider;
+use Momento\Cache\CacheClient;
+use Momento\Config\Configurations\Laptop;
+use Momento\Logging\StderrLoggerFactory;
+use Psr\Log\LoggerInterface;
 
-$MOMENTO_AUTH_TOKEN = getenv("MOMENTO_AUTH_TOKEN");
-$CACHE_NAME = "cache";
+$CACHE_NAME = uniqid("php-example-");
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 $KEY = "MyKey";
 $VALUE = "MyValue";
 
-function printBanner(string $message) : void {
+// Setup
+$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
+$configuration = Laptop::latest(new StderrLoggerFactory());
+$client = new CacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
+$logger = $configuration->getLoggerFactory()->getLogger("ex:");
+
+function printBanner(string $message, LoggerInterface $logger): void
+{
     $line = "******************************************************************";
-    print "$line\n$message\n$line\n";
+    $logger->info($line);
+    $logger->info($message);
+    $logger->info($line);
 }
 
-function createCache(SimpleCacheClient $client, string $cacheName) : void {
-    try {
-        $client->createCache($cacheName);
-    } catch (\Momento\Cache\Errors\AlreadyExistsError $e) {}
+printBanner("*                      Momento Example Start                     *", $logger);
+
+// Ensure test cache exists
+$response = $client->createCache($CACHE_NAME);
+if ($response->asSuccess()) {
+    $logger->info("Created cache " . $CACHE_NAME . "\n");
+} elseif ($response->asError()) {
+    $logger->info("Error creating cache: " . $response->asError()->message() . "\n");
+    exit;
+} elseif ($response->asAlreadyExists()) {
+    $logger->info("Cache " . $CACHE_NAME . " already exists.\n");
 }
 
-function listCaches(SimpleCacheClient $client) : void {
-    $result = $client->listCaches();
-    while (true) {
-        foreach ($result->caches() as $cache) {
-            print "- {$cache->name()}\n";
-        }
-        $nextToken = $result->nextToken();
-        if (!$nextToken) {
-            break;
-        }
-        $result = $client->listCaches($nextToken);
+// List cache
+$response = $client->listCaches();
+if ($response->asSuccess()) {
+    $logger->info("SUCCESS: List caches: \n");
+    foreach ($response->asSuccess()->caches() as $cache) {
+        $cacheName = $cache->name();
+        $logger->info("$cacheName\n");
     }
+    $logger->info("\n");
+} elseif ($response->asError()) {
+    $logger->info("Error listing cache: " . $response->asError()->message() . "\n");
+    exit;
 }
 
-printBanner("*                      Momento Example Start                     *");
-$client = new SimpleCacheClient($MOMENTO_AUTH_TOKEN, $ITEM_DEFAULT_TTL_SECONDS);
-createCache($client, $CACHE_NAME);
-listCaches($client);
-print "Setting key $KEY to value $VALUE\n";
-$client->set($CACHE_NAME, $KEY, $VALUE);
-$response = $client->get($CACHE_NAME, $KEY);
-print "Look up status is: {$response->status()}\n";
-print "Look up value is: {$response->value()}\n";
-printBanner("*                       Momento Example End                      *");
+// Set
+$logger->info("Setting key: $KEY to value: $VALUE\n");
+$response = $client->set($CACHE_NAME, $KEY, $VALUE);
+if ($response->asSuccess()) {
+    $logger->info("SUCCESS: - Set key: " . $KEY . " value: " . $VALUE . " cache: " . $CACHE_NAME . "\n");
+} elseif ($response->asError()) {
+    $logger->info("Error setting key: " . $response->asError()->message() . "\n");
+    exit;
+}
 
+// Get
+$logger->info("Getting value for key: $KEY\n");
+$response = $client->get($CACHE_NAME, $KEY);
+if ($response->asHit()) {
+    $logger->info("SUCCESS: - Get key: " . $KEY . " value: " . $response->asHit()->valueString() . " cache: " . $CACHE_NAME . "\n");
+} elseif ($response->asMiss()) {
+    $logger->info("Get operation was a MISS\n");
+} elseif ($response->asError()) {
+    $logger->info("Error getting cache: " . $response->asError()->message() . "\n");
+    exit;
+}
+
+// Delete test cache
+$logger->info("Deleting cache $CACHE_NAME\n");
+$response = $client->deleteCache($CACHE_NAME);
+if ($response->asError()) {
+    $logger->info("Error deleting cache: " . $response->asError()->message() . "\n");
+}
+
+printBanner("*                       Momento Example End                      *", $logger);
 ```
+
+`ClientCache`でのログに関する詳細はこちらの(README-logging.md)[https://github.com/momentohq/client-sdk-php/blob/main/README-logging.md]をご覧ください。
 
 ### エラーの対処法
 
-準備中です！
+`CacheClient` 関数の呼び出しの際に起こるエラーは、エクセプションとしてではなく返却値の一部として現れます。こうする事で、可視性が高まり IDE がより一層ユーザーが必要だと思う値に対して役立ちます。
+（こちらの哲学に関する詳細は、[なぜエクセプションはバグなのか](https://www.gomomento.com/blog/exceptions-are-bugs)、という私達のブログを参照してください。そしてこれに関するフィードバックもお待ちしております！）
+私たちが推薦している`CacheClient` 関数の返却値の対処の方法は`as`　関数を使用して返却タイプを特定し処理する方法です。こちらが簡単な例になります：
+
+```php
+$getResponse = $client->get($CACHE_NAME, $KEY);
+if ($hitResponse = $getResponse->asHit())
+{
+    print "Looked up value: {$hitResponse->value()}\n");
+} else {
+    // you can handle other cases via pattern matching in `else if` blocks, or a default case
+    // via the `else` block.  For each return value your IDE should be able to give you code
+    // completion indicating the other possible "as" methods; in this case, `$getResponse->asMiss()`
+    // and `$getResponse->asError()`.
+}
+```
+
+このアプローチを使用することにより、キャッシュヒットの場合タイプが保証された`hitResponse` オブジェクトを取得することができます。
+しかし、キャッシュの読み込みの結果がミスやエラーの場合、各タイプが保証されたオブジェクトを取得し、何が起こったかの詳細を確認することができます。
+
+エラーのレスポンスを取得した場合、エラーのタイプを確認することのできる`ErrorCode`　がオブジェクトに必ず含まれます：
+
+```php
+$getResponse = $client->get($CACHE_NAME, $KEY);
+if ($errorResponse = $getResponse->asError())
+{
+    if ($errorResponse->errorCode() == MomentoErrorCode::TIMEOUT_ERROR) {
+       // this would represent a client-side timeout, and you could fall back to your original data source
+    }
+}
+```
+
+`CacheClient`のレスポンス外でエクセプションが起こり得るので、こちらは随時対処する必要があります。例えば、`CacheClient`オブジェクトを無効な認証トークンを使用して生成しようとした場合、`IllegalArgumentException`が投げられます。
 
 ### チューニング
 

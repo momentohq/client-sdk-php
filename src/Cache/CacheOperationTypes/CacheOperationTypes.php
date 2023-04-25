@@ -7,6 +7,7 @@ use Cache_client\_DictionaryFetchResponse;
 use Cache_client\_DictionaryGetResponse;
 use Cache_client\_DictionaryIncrementResponse;
 use Cache_client\_GetResponse;
+use Cache_client\_IncrementResponse;
 use Cache_client\_KeysExistResponse;
 use Cache_client\_ListFetchResponse;
 use Cache_client\_ListLengthResponse;
@@ -429,9 +430,9 @@ class SetError extends SetResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheGetHit
- * * CacheGetMiss
- * * CacheGetError
+ * * GetHit
+ * * GetMiss
+ * * GetError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -606,8 +607,8 @@ class SetIfNotExistsError extends SetIfNotExistsResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheDeleteSuccess
- * * CacheDeleteError
+ * * DeleteSuccess
+ * * DeleteError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -664,8 +665,8 @@ class DeleteError extends DeleteResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheKeysExistSuccess
- * * CacheKeysExistError
+ * * KeysExistSuccess
+ * * KeysExistError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -750,8 +751,8 @@ class KeysExistError extends KeysExistResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * CacheKeyExistsSuccess
- * * CacheKeyExistsError
+ * * KeyExistsSuccess
+ * * KeyExistsError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -811,6 +812,75 @@ class KeyExistsSuccess extends KeyExistsResponse
  * Contains information about an error returned from the request.
  */
 class KeyExistsError extends KeyExistsResponse
+{
+    use ErrorBody;
+}
+
+/**
+ * Parent response type for an increment request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * IncrementSuccess
+ * * IncrementError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($success = $response->asSuccess()) {
+ *     return $success->exists();
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class IncrementResponse extends ResponseBase
+{
+    /**
+     * @return IncrementSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess() : IncrementSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return IncrementError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError() : IncrementError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class IncrementSuccess extends IncrementResponse
+{
+    private int $value;
+
+    public function __construct(_IncrementResponse $response) {
+        parent::__construct();
+        $this->value = $response->getValue();
+    }
+
+    public function value() : int {
+        return $this->value;
+    }
+}
+
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class IncrementError extends IncrementResponse
 {
     use ErrorBody;
 }

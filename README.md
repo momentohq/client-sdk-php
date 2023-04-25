@@ -4,7 +4,7 @@
 <img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
 
 [![project status](https://momentohq.github.io/standards-and-practices/badges/project-status-official.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md)
-[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-alpha.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md) 
+[![project stability](https://momentohq.github.io/standards-and-practices/badges/project-stability-stable.svg)](https://github.com/momentohq/standards-and-practices/blob/main/docs/momento-on-github.md) 
 
 # Momento PHP Client Library
 
@@ -47,7 +47,7 @@ Add our SDK as a dependency to your `composer.json` file:
 ```json
 {
   "require": {
-    "momentohq/client-sdk-php": "0.6.2"
+    "momentohq/client-sdk-php": "1.0.0"
   }
 }
 ```
@@ -79,7 +79,7 @@ $VALUE = "MyValue";
 
 // Setup
 $authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
-$configuration = Laptop::latest()->withLoggerFactory(new StderrLoggerFactory());
+$configuration = Laptop::latest(new StderrLoggerFactory());
 $client = new CacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 $logger = $configuration->getLoggerFactory()->getLogger("ex:");
 
@@ -107,17 +107,10 @@ if ($response->asSuccess()) {
 // List cache
 $response = $client->listCaches();
 if ($response->asSuccess()) {
-    while (true) {
-        $logger->info("SUCCESS: List caches: \n");
-        foreach ($response->asSuccess()->caches() as $cache) {
-            $cacheName = $cache->name();
-            $logger->info("$cacheName\n");
-        }
-        $nextToken = $response->asSuccess()->nextToken();
-        if (!$nextToken) {
-            break;
-        }
-        $response = $client->listCaches($nextToken);
+    $logger->info("SUCCESS: List caches: \n");
+    foreach ($response->asSuccess()->caches() as $cache) {
+        $cacheName = $cache->name();
+        $logger->info("$cacheName\n");
     }
     $logger->info("\n");
 } elseif ($response->asError()) {

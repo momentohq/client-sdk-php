@@ -17,6 +17,12 @@ class _Found extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>bytes front = 1;</code>
      */
     protected $front = '';
+    /**
+     * length of the list after the pop
+     *
+     * Generated from protobuf field <code>uint32 list_length = 2;</code>
+     */
+    protected $list_length = 0;
 
     /**
      * Constructor.
@@ -25,6 +31,8 @@ class _Found extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $front
+     *     @type int $list_length
+     *           length of the list after the pop
      * }
      */
     public function __construct($data = NULL) {
@@ -50,6 +58,32 @@ class _Found extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, False);
         $this->front = $var;
+
+        return $this;
+    }
+
+    /**
+     * length of the list after the pop
+     *
+     * Generated from protobuf field <code>uint32 list_length = 2;</code>
+     * @return int
+     */
+    public function getListLength()
+    {
+        return $this->list_length;
+    }
+
+    /**
+     * length of the list after the pop
+     *
+     * Generated from protobuf field <code>uint32 list_length = 2;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setListLength($var)
+    {
+        GPBUtil::checkUint32($var);
+        $this->list_length = $var;
 
         return $this;
     }

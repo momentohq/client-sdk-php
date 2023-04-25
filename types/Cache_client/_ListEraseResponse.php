@@ -13,6 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
  */
 class _ListEraseResponse extends \Google\Protobuf\Internal\Message
 {
+    protected $list;
 
     /**
      * Constructor.
@@ -20,11 +21,75 @@ class _ListEraseResponse extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
+     *     @type \Cache_client\_ListEraseResponse\_Found $found
+     *     @type \Cache_client\_ListEraseResponse\_Missing $missing
      * }
      */
     public function __construct($data = NULL) {
         \GPBMetadata\Cacheclient::initOnce();
         parent::__construct($data);
+    }
+
+    /**
+     * Generated from protobuf field <code>.cache_client._ListEraseResponse._Found found = 1;</code>
+     * @return \Cache_client\_ListEraseResponse\_Found|null
+     */
+    public function getFound()
+    {
+        return $this->readOneof(1);
+    }
+
+    public function hasFound()
+    {
+        return $this->hasOneof(1);
+    }
+
+    /**
+     * Generated from protobuf field <code>.cache_client._ListEraseResponse._Found found = 1;</code>
+     * @param \Cache_client\_ListEraseResponse\_Found $var
+     * @return $this
+     */
+    public function setFound($var)
+    {
+        GPBUtil::checkMessage($var, \Cache_client\_ListEraseResponse\_Found::class);
+        $this->writeOneof(1, $var);
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.cache_client._ListEraseResponse._Missing missing = 2;</code>
+     * @return \Cache_client\_ListEraseResponse\_Missing|null
+     */
+    public function getMissing()
+    {
+        return $this->readOneof(2);
+    }
+
+    public function hasMissing()
+    {
+        return $this->hasOneof(2);
+    }
+
+    /**
+     * Generated from protobuf field <code>.cache_client._ListEraseResponse._Missing missing = 2;</code>
+     * @param \Cache_client\_ListEraseResponse\_Missing $var
+     * @return $this
+     */
+    public function setMissing($var)
+    {
+        GPBUtil::checkMessage($var, \Cache_client\_ListEraseResponse\_Missing::class);
+        $this->writeOneof(2, $var);
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getList()
+    {
+        return $this->whichOneof("list");
     }
 
 }
