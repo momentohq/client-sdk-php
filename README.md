@@ -23,7 +23,7 @@ Japanese: [日本語](README.ja.md)
 - A Momento Auth Token is required, you can generate one using
   the [Momento CLI](https://github.com/momentohq/momento-cli)
 - At least PHP 8.0
-- The grpc PHP extension. See the [gRPC docs](https://github.com/grpc/grpc/blob/v1.46.3/src/php/README.md) section on
+- The grpc PHP extension. See the [gRPC docs](https://github.com/grpc/grpc/blob/v1.54.0/src/php/README.md) section on
   installing the extension.
 
 **IDE Notes**: You'll most likely want to use an IDE that supports PHP development, such
@@ -47,7 +47,7 @@ Add our SDK as a dependency to your `composer.json` file:
 ```json
 {
   "require": {
-    "momentohq/client-sdk-php": "1.0.0"
+    "momentohq/client-sdk-php": "^1.1"
   }
 }
 ```

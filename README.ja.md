@@ -16,7 +16,7 @@ Momento Serverless Cache の PHP クライアント SDK：従来のキャッシ�
 
 -   Momento Auth Token が必要です。[Momento CLI](https://github.com/momentohq/momento-cli)を使って生成できます。
 -   少なくとも PHP 8.0
--   grpc PHP エクステンション。 インストール方法はこちらの[gRPC docs](https://github.com/grpc/grpc/blob/v1.46.3/src/php/README.md)を参考にしてください。
+-   grpc PHP エクステンション。 インストール方法はこちらの[gRPC docs](https://github.com/grpc/grpc/blob/v1.54.0/src/php/README.md)を参考にしてください。
 
 **IDE に関する注意事項**: [PhpStorm](https://www.jetbrains.com/phpstorm/)
 や[Microsoft Visual Studio Code](https://code.visualstudio.com/)の様な PHP 開発をサポートできる IDE が必要となります。
@@ -35,7 +35,7 @@ Momento Serverless Cache の PHP クライアント SDK：従来のキャッシ�
 ```json
 {
     "require": {
-        "momentohq/client-sdk-php": "1.0.0"
+        "momentohq/client-sdk-php": "^1.1"
     }
 }
 ```
