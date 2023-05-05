@@ -426,6 +426,28 @@ class SetError extends SetResponse
 }
 
 /**
+ * Represents an asynchronous get call. Invoking it will wait for the call to complete and return the result.
+ */
+class GetResponseFuture
+{
+    private $callable;
+    private ?GetResponse $response = null;
+
+
+    public function __construct(callable $getResponseCallable)
+    {
+        $this->callable = $getResponseCallable;
+    }
+
+    public function __invoke(): GetResponse {
+        if ($this->response === null) {
+            $this->response = ($this->callable)();
+        }
+        return $this->response;
+    }
+}
+
+/**
  * Parent response type for a get request. The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
