@@ -14,6 +14,7 @@ use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldsResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\GetResponse;
+use Momento\Cache\CacheOperationTypes\GetResponseFuture;
 use Momento\Cache\CacheOperationTypes\IncrementResponse;
 use Momento\Cache\CacheOperationTypes\KeyExistsResponse;
 use Momento\Cache\CacheOperationTypes\KeysExistResponse;
@@ -177,6 +178,28 @@ class CacheClient implements LoggerAwareInterface
      * }</code>
      */
     public function get(string $cacheName, string $key): GetResponse
+    {
+        return $this->dataClient->get($cacheName, $key)();
+    }
+
+    /**
+     * Gets the cache value stored for a given key.
+     *
+     * @param string $cacheName Name of the cache to perform the lookup in.
+     * @param string $key The key to look up.
+     * @return GetResponseFuture An object that can be invoked to get the result of the get operation. This
+     * result is resolved to a type-safe object of one of the following types:<br>
+     * * GetHit<br>
+     * * GetMiss<br>
+     * * GetError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($hit = $response->asHit()) {<br>
+     * &nbsp;&nbsp;$value = $hit->valueString();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     */
+    public function getAsync(string $cacheName, string $key): GetResponseFuture
     {
         return $this->dataClient->get($cacheName, $key);
     }

@@ -65,6 +65,7 @@ use Momento\Cache\CacheOperationTypes\GetResponse;
 use Momento\Cache\CacheOperationTypes\GetError;
 use Momento\Cache\CacheOperationTypes\GetHit;
 use Momento\Cache\CacheOperationTypes\GetMiss;
+use Momento\Cache\CacheOperationTypes\GetResponseFuture;
 use Momento\Cache\CacheOperationTypes\IncrementError;
 use Momento\Cache\CacheOperationTypes\IncrementResponse;
 use Momento\Cache\CacheOperationTypes\IncrementSuccess;
@@ -218,7 +219,7 @@ class ScsDataClient implements LoggerAwareInterface
         return new SetSuccess();
     }
 
-    public function get(string $cacheName, string $key): GetResponse
+    public function get(string $cacheName, string $key): GetResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -228,7 +229,18 @@ class ScsDataClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->Get(
                 $getRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
             );
-            $response = $this->processCall($call);
+            return new GetResponseFuture(fn() => $this->processGetResponse($call));
+        } catch (SdkError $e) {
+            return new GetResponseFuture(fn() => new GetError($e));
+        } catch (Exception $e) {
+            return new GetResponseFuture(fn() => new GetError(new UnknownError($e->getMessage())));
+        }
+    }
+
+    private function processGetResponse(UnaryCall $getResponseCall): GetResponse
+    {
+        try {
+            $response = $this->processCall($getResponseCall);
             $ecacheResult = $response->getResult();
             if ($ecacheResult == ECacheResult::Hit) {
                 return new GetHit($response);
