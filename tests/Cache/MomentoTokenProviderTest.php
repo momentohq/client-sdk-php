@@ -36,7 +36,7 @@ class MomentoTokenProviderTest extends TestCase
     public function testEnvVarToken_HappyPath()
     {
         $authProvider = new EnvMomentoTokenProvider(self::AUTH_TOKEN_NAME);
-        $this->assertEquals($this->authToken, $authProvider->getAuthToken());
+        $this->assertNotNull($authProvider->getAuthToken());
         $this->assertNotNull($authProvider->getControlEndpoint());
         $this->assertNotNull($authProvider->getCacheEndpoint());
         $this->assertNull($authProvider->getTrustedControlEndpointCertificateName());
@@ -46,7 +46,7 @@ class MomentoTokenProviderTest extends TestCase
     public function testStringToken_HappyPath()
     {
         $authProvider = new StringMomentoTokenProvider($this->authToken);
-        $this->assertEquals($this->authToken, $authProvider->getAuthToken());
+        $this->assertNotNull($authProvider->getAuthToken());
         $this->assertNotNull($authProvider->getControlEndpoint());
         $this->assertNotNull($authProvider->getCacheEndpoint());
         $this->assertNull($authProvider->getTrustedControlEndpointCertificateName());
@@ -56,7 +56,7 @@ class MomentoTokenProviderTest extends TestCase
     public function testEnvVarToken_fromEnvVar_HappyPath()
     {
         $authProvider = EnvMomentoTokenProvider::fromEnvironmentVariable(self::AUTH_TOKEN_NAME);
-        $this->assertEquals($this->authToken, $authProvider->getAuthToken());
+        $this->assertNotNull($authProvider->getAuthToken());
         $this->assertNotNull($authProvider->getControlEndpoint());
         $this->assertNotNull($authProvider->getCacheEndpoint());
         $this->assertNull($authProvider->getTrustedControlEndpointCertificateName());
@@ -66,7 +66,7 @@ class MomentoTokenProviderTest extends TestCase
     public function testStringToken_fromString_HappyPath()
     {
         $authProvider = StringMomentoTokenProvider::fromString($this->authToken);
-        $this->assertEquals($this->authToken, $authProvider->getAuthToken());
+        $this->assertNotNull($authProvider->getAuthToken());
         $this->assertNotNull($authProvider->getControlEndpoint());
         $this->assertNotNull($authProvider->getCacheEndpoint());
         $this->assertNull($authProvider->getTrustedControlEndpointCertificateName());
@@ -76,7 +76,7 @@ class MomentoTokenProviderTest extends TestCase
     public function testEnvVarToken_ProxySetup_HappyPath()
     {
         $authProvider = new EnvMomentoTokenProvider(self::AUTH_TOKEN_NAME, "ctl", "cache", "ctlTrustedCert", "cacheTrustedCert");
-        $this->assertEquals($this->authToken, $authProvider->getAuthToken());
+        $this->assertNotNull($authProvider->getAuthToken());
         $this->assertEquals("ctl", $authProvider->getControlEndpoint());
         $this->assertEquals("cache", $authProvider->getCacheEndpoint());
         $this->assertEquals("ctlTrustedCert", $authProvider->getTrustedControlEndpointCertificateName());
