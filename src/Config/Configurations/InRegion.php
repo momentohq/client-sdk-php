@@ -9,6 +9,8 @@ use Momento\Config\Transport\StaticTransportStrategy;
 use Momento\Logging\ILoggerFactory;
 use Momento\Logging\NullLoggerFactory;
 
+const MAX_IDLE_MILLIS = 4 * 60 * 1000;
+
 /**
  * InRegion provides defaults suitable for an environment where your client is running in the same region as the Momento
  * service.  It has more aggressive timeouts and retry behavior than the Laptop config.
@@ -40,7 +42,7 @@ class InRegion extends Configuration
     {
         $loggerFactory = $loggerFactory ?? new NullLoggerFactory();
         $grpcConfig = new StaticGrpcConfiguration(1100);
-        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory);
+        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory, MAX_IDLE_MILLIS);
         return new Laptop($loggerFactory, $transportStrategy);
     }
 
