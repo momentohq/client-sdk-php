@@ -7,7 +7,7 @@ use Momento\Cache\Errors\InvalidArgumentError;
 use function Momento\Utilities\isNullOrEmpty;
 
 /**
- * Reads and parses a JWT token stored as a string.
+ * Reads and parses a Momento auth token stored as a string.
  */
 class StringMomentoTokenProvider extends CredentialProvider
 {
@@ -34,8 +34,8 @@ class StringMomentoTokenProvider extends CredentialProvider
                 "are provided, they must both be."
             );
         }
-        $this->authToken = $authToken;
         $payload = AuthUtils::parseAuthToken($authToken);
+        $this->authToken = $payload->authToken;
         $this->controlEndpoint = $controlEndpoint ?? $payload->cp;
         $this->cacheEndpoint = $cacheEndpoint ?? $payload->c;
         $this->trustedControlEndpointCertificateName = $trustedControlEndpointCertificateName;
