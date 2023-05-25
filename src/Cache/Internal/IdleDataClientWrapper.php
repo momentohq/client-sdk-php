@@ -12,7 +12,7 @@ class IdleDataClientWrapper implements LoggerAwareInterface {
     private ScsDataClient $client;
     private LoggerInterface $logger;
     private object $clientFactory;
-    private int $maxIdleMillis;
+    private ?int $maxIdleMillis;
     private int $lastAccessTime;
 
     public function __construct(object $clientFactory, IConfiguration $configuration) {
@@ -29,6 +29,9 @@ class IdleDataClientWrapper implements LoggerAwareInterface {
     }
 
     public function getClient(): ScsDataClient {
+        if ($this->maxIdleMillis === null) {
+            return $this->client;
+        }
         $this->logger->debug("Checking to see if client has been idle for more than {$this->maxIdleMillis}");
         if ($this->getMilliseconds() - $this->lastAccessTime > $this->maxIdleMillis) {
             $this->logger->debug("Client has been idle for more than {$this->maxIdleMillis}; reconnecting");

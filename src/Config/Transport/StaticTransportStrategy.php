@@ -35,7 +35,7 @@ class StaticTransportStrategy implements ITransportStrategy
         return $this->grpcConfig;
     }
 
-    public function getMaxIdleMillis(): int
+    public function getMaxIdleMillis(): ?int
     {
         return $this->maxIdleMillis;
     }

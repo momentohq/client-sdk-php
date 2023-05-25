@@ -11,7 +11,7 @@ interface ITransportStrategy
 
     public function getGrpcConfig(): ?IGrpcConfiguration;
 
-    public function getMaxIdleMillis(): int;
+    public function getMaxIdleMillis(): ?int;
 
     public function withLoggerFactory(ILoggerFactory $loggerFactory);
 
