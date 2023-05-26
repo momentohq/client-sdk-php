@@ -2,7 +2,6 @@
 
 namespace Momento\Logging;
 
-use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
 /**

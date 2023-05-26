@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
- * Factory class for returning the PSR-3 NullLoger, which will swallow all
+ * Factory class for returning the PSR-3 NullLogger, which will swallow all
  * log messages passed to it.
  */
 class NullLoggerFactory extends LoggerFactoryBase
