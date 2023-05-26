@@ -15,6 +15,7 @@ class Configuration implements IConfiguration
 
     private ?ILoggerFactory $loggerFactory;
     private ?ITransportStrategy $transportStrategy;
+    protected static int $maxIdleMillis = 4 * 60 * 1000;
 
     public function __construct(?ILoggerFactory $loggerFactory, ?ITransportStrategy $transportStrategy)
     {

@@ -15,7 +15,6 @@ use Momento\Logging\NullLoggerFactory;
  */
 class InRegion extends Configuration
 {
-
     /**
      * Provides the latest recommended configuration for an InRegion environment.
      * This configuration may change in future releases to take advantage of
@@ -40,8 +39,7 @@ class InRegion extends Configuration
     {
         $loggerFactory = $loggerFactory ?? new NullLoggerFactory();
         $grpcConfig = new StaticGrpcConfiguration(1100);
-        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory);
+        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory, self::$maxIdleMillis);
         return new Laptop($loggerFactory, $transportStrategy);
     }
-
 }

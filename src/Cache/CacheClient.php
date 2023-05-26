@@ -32,6 +32,7 @@ use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
+use Momento\Cache\Internal\IdleDataClientWrapper;
 use Momento\Cache\Internal\ScsControlClient;
 use Momento\Cache\Internal\ScsDataClient;
 use Momento\Config\IConfiguration;
@@ -50,7 +51,7 @@ class CacheClient implements LoggerAwareInterface
     protected ILoggerFactory $loggerFactory;
     protected LoggerInterface $logger;
     private ScsControlClient $controlClient;
-    private ScsDataClient $dataClient;
+    private IdleDataClientWrapper $dataClientWrapper;
 
     /**
      * @param IConfiguration $configuration Configuration to use for transport.
@@ -65,11 +66,15 @@ class CacheClient implements LoggerAwareInterface
         $this->loggerFactory = $configuration->getLoggerFactory();
         $this->setLogger($this->loggerFactory->getLogger(get_class($this)));
         $this->controlClient = new ScsControlClient($this->loggerFactory, $authProvider);
-        $this->dataClient = new ScsDataClient(
-            $this->configuration,
-            $authProvider,
-            $defaultTtlSeconds
-        );
+        $dataClientFactory = new \stdClass();
+        $dataClientFactory->callback = function() use ($authProvider, $defaultTtlSeconds) {
+            return new ScsDataClient(
+                $this->configuration,
+                $authProvider,
+                $defaultTtlSeconds
+            );
+        };
+        $this->dataClientWrapper = new IdleDataClientWrapper($dataClientFactory, $this->configuration);
     }
 
     /**
@@ -156,7 +161,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function set(string $cacheName, string $key, string $value, int $ttlSeconds = 0): SetResponse
     {
-        return $this->dataClient->set($cacheName, $key, $value, $ttlSeconds);
+        return $this->dataClientWrapper->getClient()->set($cacheName, $key, $value, $ttlSeconds);
     }
 
     /**
@@ -178,7 +183,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function get(string $cacheName, string $key): GetResponse
     {
-        return $this->dataClient->get($cacheName, $key);
+        return $this->dataClientWrapper->getClient()->get($cacheName, $key);
     }
 
     /**
@@ -206,7 +211,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = 0): SetIfNotExistsResponse
     {
-        return $this->dataClient->setIfNotExists($cacheName, $key, $value, $ttlSeconds);
+        return $this->dataClientWrapper->getClient()->setIfNotExists($cacheName, $key, $value, $ttlSeconds);
     }
 
     /**
@@ -225,7 +230,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function delete(string $cacheName, string $key): DeleteResponse
     {
-        return $this->dataClient->delete($cacheName, $key);
+        return $this->dataClientWrapper->getClient()->delete($cacheName, $key);
     }
 
     /**
@@ -249,7 +254,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function keysExist(string $cacheName, array $keys): KeysExistResponse
     {
-        return $this->dataClient->keysExist($cacheName, $keys);
+        return $this->dataClientWrapper->getClient()->keysExist($cacheName, $keys);
     }
 
     /**
@@ -270,7 +275,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function keyExists(string $cacheName, string $key): KeyExistsResponse
     {
-        return $this->dataClient->keyExists($cacheName, $key);
+        return $this->dataClientWrapper->getClient()->keyExists($cacheName, $key);
     }
 
     /**
@@ -296,7 +301,7 @@ class CacheClient implements LoggerAwareInterface
         string $cacheName, string $key, int $amount=1, ?int $ttlSeconds=null
     ) : IncrementResponse
     {
-        return $this->dataClient->increment($cacheName, $key, $amount, $ttlSeconds);
+        return $this->dataClientWrapper->getClient()->increment($cacheName, $key, $amount, $ttlSeconds);
     }
 
     /**
@@ -318,7 +323,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function listFetch(string $cacheName, string $listName): ListFetchResponse
     {
-        return $this->dataClient->listFetch($cacheName, $listName);
+        return $this->dataClientWrapper->getClient()->listFetch($cacheName, $listName);
     }
 
     /**
@@ -344,7 +349,7 @@ class CacheClient implements LoggerAwareInterface
         string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, ?CollectionTtl $ttl = null
     ): ListPushFrontResponse
     {
-        return $this->dataClient->listPushFront($cacheName, $listName, $value, $truncateBackToSize, $ttl);
+        return $this->dataClientWrapper->getClient()->listPushFront($cacheName, $listName, $value, $truncateBackToSize, $ttl);
     }
 
     /**
@@ -370,7 +375,7 @@ class CacheClient implements LoggerAwareInterface
         string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, ?CollectionTtl $ttl = null
     ): ListPushBackResponse
     {
-        return $this->dataClient->listPushBack($cacheName, $listName, $value, $truncateFrontToSize, $ttl);
+        return $this->dataClientWrapper->getClient()->listPushBack($cacheName, $listName, $value, $truncateFrontToSize, $ttl);
     }
 
     /**
@@ -392,7 +397,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function listPopFront(string $cacheName, string $listName): ListPopFrontResponse
     {
-        return $this->dataClient->listPopFront($cacheName, $listName);
+        return $this->dataClientWrapper->getClient()->listPopFront($cacheName, $listName);
     }
 
     /**
@@ -414,7 +419,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function listPopBack(string $cacheName, string $listName): ListPopBackResponse
     {
-        return $this->dataClient->listPopBack($cacheName, $listName);
+        return $this->dataClientWrapper->getClient()->listPopBack($cacheName, $listName);
     }
 
     /**
@@ -434,7 +439,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function listRemoveValue(string $cacheName, string $listName, string $value): ListRemoveValueResponse
     {
-        return $this->dataClient->listRemoveValue($cacheName, $listName, $value);
+        return $this->dataClientWrapper->getClient()->listRemoveValue($cacheName, $listName, $value);
     }
 
     /**
@@ -455,7 +460,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function listLength(string $cacheName, string $listName): ListLengthResponse
     {
-        return $this->dataClient->listLength($cacheName, $listName);
+        return $this->dataClientWrapper->getClient()->listLength($cacheName, $listName);
     }
 
     /**
@@ -477,7 +482,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): DictionarySetFieldResponse
     {
-        return $this->dataClient->dictionarySetField($cacheName, $dictionaryName, $field, $value, $ttl);
+        return $this->dataClientWrapper->getClient()->dictionarySetField($cacheName, $dictionaryName, $field, $value, $ttl);
     }
 
     /**
@@ -500,7 +505,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function dictionaryGetField(string $cacheName, string $dictionaryName, string $field): DictionaryGetFieldResponse
     {
-        return $this->dataClient->dictionaryGetField($cacheName, $dictionaryName, $field);
+        return $this->dataClientWrapper->getClient()->dictionaryGetField($cacheName, $dictionaryName, $field);
     }
 
     /**
@@ -522,7 +527,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function dictionaryFetch(string $cacheName, string $dictionaryName): DictionaryFetchResponse
     {
-        return $this->dataClient->dictionaryFetch($cacheName, $dictionaryName);
+        return $this->dataClientWrapper->getClient()->dictionaryFetch($cacheName, $dictionaryName);
     }
 
     /**
@@ -543,7 +548,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function dictionarySetFields(string $cacheName, string $dictionaryName, array $elements, ?CollectionTtl $ttl = null): DictionarySetFieldsResponse
     {
-        return $this->dataClient->dictionarySetFields($cacheName, $dictionaryName, $elements, $ttl);
+        return $this->dataClientWrapper->getClient()->dictionarySetFields($cacheName, $dictionaryName, $elements, $ttl);
     }
 
     /**
@@ -574,7 +579,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function dictionaryGetFields(string $cacheName, string $dictionaryName, array $fields): DictionaryGetFieldsResponse
     {
-        return $this->dataClient->dictionaryGetFields($cacheName, $dictionaryName, $fields);
+        return $this->dataClientWrapper->getClient()->dictionaryGetFields($cacheName, $dictionaryName, $fields);
     }
 
     /**
@@ -603,7 +608,7 @@ class CacheClient implements LoggerAwareInterface
         string $cacheName, string $dictionaryName, string $field, int $amount = 1, ?CollectionTtl $ttl = null
     ): DictionaryIncrementResponse
     {
-        return $this->dataClient->dictionaryIncrement($cacheName, $dictionaryName, $field, $amount, $ttl);
+        return $this->dataClientWrapper->getClient()->dictionaryIncrement($cacheName, $dictionaryName, $field, $amount, $ttl);
     }
 
     /**
@@ -622,7 +627,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function dictionaryRemoveField(string $cacheName, string $dictionaryName, string $field): DictionaryRemoveFieldResponse
     {
-        return $this->dataClient->dictionaryRemoveField($cacheName, $dictionaryName, $field);
+        return $this->dataClientWrapper->getClient()->dictionaryRemoveField($cacheName, $dictionaryName, $field);
     }
 
     /**
@@ -641,7 +646,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function dictionaryRemoveFields(string $cacheName, string $dictionaryName, array $fields): DictionaryRemoveFieldsResponse
     {
-        return $this->dataClient->dictionaryRemoveFields($cacheName, $dictionaryName, $fields);
+        return $this->dataClientWrapper->getClient()->dictionaryRemoveFields($cacheName, $dictionaryName, $fields);
     }
 
     /**
@@ -661,7 +666,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): SetAddElementResponse
     {
-        return $this->dataClient->setAddElement($cacheName, $setName, $element, $ttl);
+        return $this->dataClientWrapper->getClient()->setAddElement($cacheName, $setName, $element, $ttl);
     }
 
     /**
@@ -683,7 +688,7 @@ class CacheClient implements LoggerAwareInterface
      */
     public function setFetch(string $cacheName, string $setName): SetFetchResponse
     {
-        return $this->dataClient->setFetch($cacheName, $setName);
+        return $this->dataClientWrapper->getClient()->setFetch($cacheName, $setName);
     }
 
     /**
@@ -702,6 +707,6 @@ class CacheClient implements LoggerAwareInterface
      */
     public function setRemoveElement(string $cacheName, string $setName, string $element): SetRemoveElementResponse
     {
-        return $this->dataClient->setRemoveElement($cacheName, $setName, $element);
+        return $this->dataClientWrapper->getClient()->setRemoveElement($cacheName, $setName, $element);
     }
 }

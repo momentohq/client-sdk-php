@@ -7,7 +7,7 @@ use Momento\Cache\Errors\InvalidArgumentError;
 use function Momento\Utilities\isNullOrEmpty;
 
 /**
- * Reads and parses a JWT token stored as an environment variable.
+ * Reads and parses a Momento auth token stored as an environment variable.
  */
 class EnvMomentoTokenProvider extends StringMomentoTokenProvider
 {

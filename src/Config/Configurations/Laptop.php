@@ -15,7 +15,6 @@ use Momento\Logging\NullLoggerFactory;
  */
 class Laptop extends Configuration
 {
-
     /**
      * Provides the latest recommended configuration for a Laptop environment.
      *
@@ -38,8 +37,7 @@ class Laptop extends Configuration
     {
         $loggerFactory = $loggerFactory ?? new NullLoggerFactory();
         $grpcConfig = new StaticGrpcConfiguration(5000);
-        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory);
+        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory, self::$maxIdleMillis);
         return new Laptop($loggerFactory, $transportStrategy);
     }
-
 }
