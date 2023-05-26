@@ -9,15 +9,12 @@ use Momento\Config\Transport\StaticTransportStrategy;
 use Momento\Logging\ILoggerFactory;
 use Momento\Logging\NullLoggerFactory;
 
-const MAX_IDLE_MILLIS = 4 * 60 * 1000;
-
 /**
  * Laptop config provides defaults suitable for a medium-to-high-latency dev environment.  Permissive timeouts, retries, and
  * relaxed latency and throughput targets.
  */
 class Laptop extends Configuration
 {
-
     /**
      * Provides the latest recommended configuration for a Laptop environment.
      *
@@ -40,8 +37,7 @@ class Laptop extends Configuration
     {
         $loggerFactory = $loggerFactory ?? new NullLoggerFactory();
         $grpcConfig = new StaticGrpcConfiguration(5000);
-        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory, MAX_IDLE_MILLIS);
+        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory, self::$maxIdleMillis);
         return new Laptop($loggerFactory, $transportStrategy);
     }
-
 }
