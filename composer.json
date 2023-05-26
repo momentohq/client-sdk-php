@@ -39,7 +39,7 @@
         }
     },
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.0",
         "ext-grpc": "*",
         "firebase/php-jwt": "^6.3",
         "google/protobuf": "3.22.3",
@@ -53,7 +53,7 @@
     },
     "config": {
         "platform": {
-            "php": "8.1"
+            "php": "8.0"
         },
         "optimize-autoloader": true,
         "preferred-install": "dist",
