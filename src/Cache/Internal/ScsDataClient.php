@@ -779,4 +779,8 @@ class ScsDataClient implements LoggerAwareInterface
         }
         return new SetRemoveElementSuccess();
     }
+
+    public function close(): void {
+        $this->grpcManager->close();
+    }
 }

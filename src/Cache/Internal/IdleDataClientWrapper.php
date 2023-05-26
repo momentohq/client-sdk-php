@@ -35,6 +35,7 @@ class IdleDataClientWrapper implements LoggerAwareInterface {
         $this->logger->debug("Checking to see if client has been idle for more than {$this->maxIdleMillis}");
         if ($this->getMilliseconds() - $this->lastAccessTime > $this->maxIdleMillis) {
             $this->logger->debug("Client has been idle for more than {$this->maxIdleMillis}; reconnecting");
+            $this->client->close();
             $this->client = ($this->clientFactory->callback)();
         }
         $this->lastAccessTime = $this->getMilliseconds();
