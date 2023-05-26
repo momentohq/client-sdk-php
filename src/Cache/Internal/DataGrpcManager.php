@@ -13,8 +13,8 @@ use Momento\Cache\Interceptors\AuthorizationInterceptor;
 
 class DataGrpcManager
 {
-
     public ScsClient $client;
+    private Channel $channel;
 
     public function __construct(ICredentialProvider $authProvider)
     {
@@ -23,13 +23,18 @@ class DataGrpcManager
         if ($authProvider->getTrustedCacheEndpointCertificateName()) {
             $channelArgs["grpc.ssl_target_name_override"] = $authProvider->getTrustedCacheEndpointCertificateName();
         }
-        $channel = new Channel($endpoint, $channelArgs);
+        $this->channel = new Channel($endpoint, $channelArgs);
         $interceptors = [
             new AuthorizationInterceptor($authProvider->getAuthToken()),
             new AgentInterceptor(),
         ];
-        $channel = Interceptor::intercept($channel, $interceptors);
+        $interceptedChannel = Interceptor::intercept($this->channel, $interceptors);
+
         $options = [];
-        $this->client = new ScsClient($endpoint, $options, $channel);
+        $this->client = new ScsClient($endpoint, $options, $interceptedChannel);
+    }
+
+    public function close(): void {
+        $this->channel->close();
     }
 }
