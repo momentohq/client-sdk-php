@@ -35,7 +35,7 @@ Momento Serverless Cache の PHP クライアント SDK：従来のキャッシ�
 ```json
 {
     "require": {
-        "momentohq/client-sdk-php": "^1.1"
+        "momentohq/client-sdk-php": "^1.2"
     }
 }
 ```
