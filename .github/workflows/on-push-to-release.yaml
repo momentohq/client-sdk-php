@@ -38,6 +38,17 @@ jobs:
       - name: Run tests
         run: php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml
 
+      - name: Run examples
+        env:
+          MOMENTO_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+        working-directory: ./examples
+        run: |
+          composer install
+          php ./example.php
+          php ./dictionary-example.php
+          php ./list-example.php
+          php ./set-example.php
+
   release:
     runs-on: ubuntu-latest
     needs: [ test ]
