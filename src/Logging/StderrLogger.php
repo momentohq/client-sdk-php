@@ -48,7 +48,7 @@ class StderrLogger extends AbstractLogger
         return strtr($message, $replace);
     }
 
-    public function log($level, \Stringable|string $message, array $context = [])
+    public function log($level, \Stringable|string $message, array $context = []): void
     {
         if (!$this->shouldLog($level, $this->logLevel)) {
             return;
