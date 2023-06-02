@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 require "vendor/autoload.php";
 
@@ -7,12 +6,13 @@ use Momento\Auth\CredentialProvider;
 use Momento\Cache\CacheClient;
 use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
+use Momento\Requests\CollectionTtl;
 use Psr\Log\LoggerInterface;
 
-$CACHE_NAME = uniqid("php-example-");
+$CACHE_NAME = uniqid("php-list-example-");
+$SET_NAME = "example-set";
 $ITEM_DEFAULT_TTL_SECONDS = 60;
-$KEY = "MyKey";
-$VALUE = "MyValue";
+$SET_ELEMENT = "set-element";
 
 // Setup
 $authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
@@ -41,40 +41,42 @@ if ($response->asSuccess()) {
     $logger->info("Cache " . $CACHE_NAME . " already exists.\n");
 }
 
-// List cache
-$response = $client->listCaches();
+// The CollectionTtl object is used to control TTLs for collections as they
+// are updated. By default, it is configured to reset the TTL for the collection
+// to the client's default TTL each time the collection is updated.
+$collectionTtl = new CollectionTtl();
+
+// add element to set
+$logger->info("Adding element '$SET_ELEMENT' to set $SET_NAME");
+$response = $client->setAddElement($CACHE_NAME, $SET_NAME, $SET_ELEMENT, $collectionTtl);
 if ($response->asSuccess()) {
-    $logger->info("SUCCESS: List caches: \n");
-    foreach ($response->asSuccess()->caches() as $cache) {
-        $cacheName = $cache->name();
-        $logger->info("$cacheName\n");
-    }
-    $logger->info("\n");
-} elseif ($response->asError()) {
-    $logger->info("Error listing cache: " . $response->asError()->message() . "\n");
+    $logger->info("SUCCESS");
+} elseif ($err = $response->asError()) {
+    $logger->info("Error adding element to set: {$err->message()}");
     exit(1);
 }
 
-// Set
-$logger->info("Setting key: $KEY to value: $VALUE\n");
-$response = $client->set($CACHE_NAME, $KEY, $VALUE);
-if ($response->asSuccess()) {
-    $logger->info("SUCCESS: - Set key: " . $KEY . " value: " . $VALUE . " cache: " . $CACHE_NAME . "\n");
-} elseif ($response->asError()) {
-    $logger->info("Error setting key: " . $response->asError()->message() . "\n");
-    exit(1);
-}
-
-// Get
-$logger->info("Getting value for key: $KEY\n");
-$response = $client->get($CACHE_NAME, $KEY);
-if ($response->asHit()) {
-    $logger->info("SUCCESS: - Get key: " . $KEY . " value: " . $response->asHit()->valueString() . " cache: " . $CACHE_NAME . "\n");
+// fetch set
+$logger->info("Fetching set $SET_NAME");
+$response = $client->setFetch($CACHE_NAME, $SET_NAME);
+if ($setHit = $response->asHit()) {
+    $logger->info("Successfully fetched the set $SET_NAME:");
+    $logger->info(implode(", ", $setHit->valuesArray()));
 } elseif ($response->asMiss()) {
-    $logger->info("Get operation was an unexpected MISS\n");
+    $logger->info("Set fetch operation returned an unexpected MISS");
     exit(1);
-} elseif ($response->asError()) {
-    $logger->info("Error getting cache: " . $response->asError()->message() . "\n");
+} elseif ($err = $response->asError()) {
+    $logger->info("Error adding element to set: {$err->message()}");
+    exit(1);
+}
+
+// remove element from set
+$logger->info("Removing element '$SET_ELEMENT' from $SET_NAME");
+$response = $client->setRemoveElement($CACHE_NAME, $SET_NAME, $SET_ELEMENT);
+if ($response->asSuccess()) {
+    $logger->info("SUCCESS");
+} elseif ($err = $response->asError()) {
+    $logger->info("Error adding element to set: {$err->message()}");
     exit(1);
 }
 
