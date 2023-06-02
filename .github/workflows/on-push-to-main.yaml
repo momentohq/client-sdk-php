@@ -36,4 +36,6 @@ jobs:
           project_stability: stable
           project_type: sdk
           sdk_language: PHP
-          usage_example_path: ./examples/example.php
+          dev_docs_slug: php
+          template_file: ./README.template.md
+          output_file: ./README.md
