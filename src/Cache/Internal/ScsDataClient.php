@@ -101,6 +101,9 @@ use Momento\Cache\CacheOperationTypes\ListRemoveValueSuccess;
 use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementError;
 use Momento\Cache\CacheOperationTypes\SetAddElementSuccess;
+use Momento\Cache\CacheOperationTypes\SetUnionResponse;
+use Momento\Cache\CacheOperationTypes\SetUnionError;
+use Momento\Cache\CacheOperationTypes\SetUnionSuccess;
 use Momento\Cache\CacheOperationTypes\SetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchError;
 use Momento\Cache\CacheOperationTypes\SetFetchHit;
@@ -126,6 +129,7 @@ use Psr\Log\LoggerInterface;
 use function Momento\Utilities\validateCacheName;
 use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateElement;
+use function Momento\Utilities\validateElements;
 use function Momento\Utilities\validateFieldName;
 use function Momento\Utilities\validateFields;
 use function Momento\Utilities\validateKeys;
@@ -735,6 +739,33 @@ class ScsDataClient implements LoggerAwareInterface
             return new SetAddElementError(new UnknownError($e->getMessage()));
         }
         return new SetAddElementSuccess();
+    }
+
+    /**
+     * @param list<string> $elements
+     */
+    public function setUnion(string $cacheName, string $setName, array $elements, ?CollectionTtl $ttl = null): SetUnionResponse
+    {
+        try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
+            validateCacheName($cacheName);
+            validateSetName($setName);
+            validateElements($elements);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
+            validateTtl($ttlMillis);
+            $setUnionRequest = new _SetUnionRequest();
+            $setUnionRequest->setSetName($setName);
+            $setUnionRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
+            $setUnionRequest->setTtlMilliseconds($ttlMillis);
+            $setUnionRequest->setElements($elements);
+            $call = $this->grpcManager->client->SetUnion($setUnionRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new SetUnionError($e);
+        } catch (Exception $e) {
+            return new SetUnionError(new UnknownError($e->getMessage()));
+        }
+        return new SetUnionSuccess();
     }
 
     public function setFetch(string $cacheName, string $setName): SetFetchResponse
