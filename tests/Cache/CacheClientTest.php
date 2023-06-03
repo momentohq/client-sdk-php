@@ -2174,7 +2174,10 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($elements, $response->asHit()->valuesArray());
+        asort($elements);
+        $fetchedElements = $response->asHit()->valuesArray();
+        asort($fetchedElements);
+        $this->assertEquals($elements, $fetchedElements);
     }
 
 
