@@ -2031,6 +2031,7 @@ class CacheClientTest extends TestCase
 
     public function testSetAddElementsWithNoElements_ThrowsException()
     {
+        $setName = uniqid();
         $elements = [uniqid(), uniqid()];
         $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, [], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
@@ -2039,6 +2040,7 @@ class CacheClientTest extends TestCase
 
     public function testSetAddElementsWithEmptyElement_ThrowsException()
     {
+        $setName = uniqid();
         $elements = [uniqid(), uniqid()];
         $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, [''], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
