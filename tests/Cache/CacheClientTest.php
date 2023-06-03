@@ -1990,57 +1990,57 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetUnionWithNullCacheName_ThrowsException()
+    public function testSetAddElementsWithNullCacheName_ThrowsException()
     {
         $this->expectException(TypeError::class);
         $setName = uniqid();
         $elements = [uniqid(), uniqid()];
-        $this->client->setUnion(null, $setName, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->client->setAddElements(null, $setName, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
     }
 
-    public function testSetUnionWithEmptyCacheName_ThrowsException()
+    public function testSetAddElementsWithEmptyCacheName_ThrowsException()
     {
         $setName = uniqid();
         $elements = [uniqid(), uniqid()];
-        $response = $this->client->setUnion("", $setName, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $response = $this->client->setAddElements("", $setName, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetUnionWithNullSetName_ThrowsException()
+    public function testSetAddElementsWithNullSetName_ThrowsException()
     {
         $this->expectException(TypeError::class);
         $elements = [uniqid(), uniqid()];
-        $this->client->setUnion($this->TEST_CACHE_NAME, null, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->client->setAddElements($this->TEST_CACHE_NAME, null, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
     }
 
-    public function testSetUnionWithEmptySetName_ThrowsException()
+    public function testSetAddElementsWithEmptySetName_ThrowsException()
     {
         $elements = [uniqid(), uniqid()];
-        $response = $this->client->setUnion($this->TEST_CACHE_NAME, "", $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, "", $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetUnionWithNullElements_ThrowsException()
+    public function testSetAddElementsWithNullElements_ThrowsException()
     {
         $this->expectException(TypeError::class);
         $setName = uniqid();
-        $this->client->setUnion($this->TEST_CACHE_NAME, $setName, null, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, null, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
     }
 
-    public function testSetUnionWithNoElements_ThrowsException()
+    public function testSetAddElementsWithNoElements_ThrowsException()
     {
         $elements = [uniqid(), uniqid()];
-        $response = $this->client->setUnion($this->TEST_CACHE_NAME, $setName, [], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, [], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetUnionWithEmptyElement_ThrowsException()
+    public function testSetAddElementsWithEmptyElement_ThrowsException()
     {
         $elements = [uniqid(), uniqid()];
-        $response = $this->client->setUnion($this->TEST_CACHE_NAME, $setName, [''], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, [''], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -2124,11 +2124,11 @@ class CacheClientTest extends TestCase
         $this->assertEquals($element, $response->asHit()->valuesArray()[0]);
     }
 
-    public function testSetUnionSetFetch_HappyPath()
+    public function testSetAddElementsSetFetch_HappyPath()
     {
         $setName = uniqid();
         $elements = [uniqid(), uniqid()];
-        $response = $this->client->setUnion($this->TEST_CACHE_NAME, $setName, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
@@ -2138,16 +2138,16 @@ class CacheClientTest extends TestCase
         $this->assertEquals($elements, $response->asHit()->valuesArray());
     }
 
-    public function testSetUnionSetFetch_NoRefreshTtl()
+    public function testSetAddElementsSetFetch_NoRefreshTtl()
     {
         $setName = uniqid();
         $elements = [uniqid(), uniqid()];
-        $response = $this->client->setUnion($this->TEST_CACHE_NAME, $setName, $elements, CollectionTtl::of(5)->withNoRefreshTtlOnUpdates());
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, $elements, CollectionTtl::of(5)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(1);
 
-        $response = $this->client->setUnion($this->TEST_CACHE_NAME, $setName, $elements, CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, $elements, CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(4);
@@ -2157,15 +2157,15 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
     }
 
-    public function testSetUnionSetFetch_RefreshTtl()
+    public function testSetAddElementsSetFetch_RefreshTtl()
     {
         $setName = uniqid();
         $elements = [uniqid(), uniqid()];
-        $response = $this->client->setUnion($this->TEST_CACHE_NAME, $setName, $elements, CollectionTtl::of(2)->withNoRefreshTtlOnUpdates());
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, $elements, CollectionTtl::of(2)->withNoRefreshTtlOnUpdates());
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
-        $response = $this->client->setUnion($this->TEST_CACHE_NAME, $setName, $elements, CollectionTtl::of(10));
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, $elements, CollectionTtl::of(10));
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         sleep(2);

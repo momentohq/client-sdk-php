@@ -2193,8 +2193,8 @@ class SetAddElementError extends SetAddElementResponse
  * Parent response type for a set union request. The response object
  * is resolved to a type-safe object of one of the following subtypes:
  *
- * * SetUnionSuccess
- * * SetUnionError
+ * * SetAddElementsSuccess
+ * * SetAddElementsError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -2206,12 +2206,12 @@ class SetAddElementError extends SetAddElementResponse
  * }
  * </code>
  */
-abstract class SetUnionResponse extends ResponseBase
+abstract class SetAddElementsResponse extends ResponseBase
 {
     /**
-     * @return SetUnionSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return SetAddElementsSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): SetUnionSuccess|null
+    public function asSuccess(): SetAddElementsSuccess|null
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2220,9 +2220,9 @@ abstract class SetUnionResponse extends ResponseBase
     }
 
     /**
-     * @return SetUnionError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return SetAddElementsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): SetUnionError|null
+    public function asError(): SetAddElementsError|null
     {
         if ($this->isError()) {
             return $this;
@@ -2234,14 +2234,14 @@ abstract class SetUnionResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class SetUnionSuccess extends SetUnionResponse
+class SetAddElementsSuccess extends SetAddElementsResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class SetUnionError extends SetUnionResponse
+class SetAddElementsError extends SetAddElementsResponse
 {
     use ErrorBody;
 }

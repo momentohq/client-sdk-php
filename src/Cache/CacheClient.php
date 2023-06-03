@@ -25,7 +25,7 @@ use Momento\Cache\CacheOperationTypes\ListPushBackResponse;
 use Momento\Cache\CacheOperationTypes\ListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\ListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
-use Momento\Cache\CacheOperationTypes\SetUnionResponse;
+use Momento\Cache\CacheOperationTypes\SetAddElementsResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsResponse;
 use Momento\Cache\CacheOperationTypes\SetRemoveElementResponse;
@@ -677,17 +677,17 @@ class CacheClient implements LoggerAwareInterface
      * @param string $setName The set to add the element to.
      * @param list<string> $elements The elements to add.
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
-     * @return SetUnionResponse Represents the result of the set union operation.
+     * @return SetAddElementsResponse Represents the result of the set add elements operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * SetUnionSuccess<br>
-     * * SetUnionError<br>
+     * * SetAddElementsSuccess<br>
+     * * SetAddElementsError<br>
      * if ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function setUnion(string $cacheName, string $setName, array $elements, ?CollectionTtl $ttl = null): SetUnionResponse
+    public function setAddElements(string $cacheName, string $setName, array $elements, ?CollectionTtl $ttl = null): SetAddElementsResponse
     {
-        return $this->dataClientWrapper->getClient()->setUnion($cacheName, $setName, $elements, $ttl);
+        return $this->dataClientWrapper->getClient()->setAddElements($cacheName, $setName, $elements, $ttl);
     }
 
     /**

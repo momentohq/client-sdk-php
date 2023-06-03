@@ -101,9 +101,9 @@ use Momento\Cache\CacheOperationTypes\ListRemoveValueSuccess;
 use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementError;
 use Momento\Cache\CacheOperationTypes\SetAddElementSuccess;
-use Momento\Cache\CacheOperationTypes\SetUnionResponse;
-use Momento\Cache\CacheOperationTypes\SetUnionError;
-use Momento\Cache\CacheOperationTypes\SetUnionSuccess;
+use Momento\Cache\CacheOperationTypes\SetAddElementsResponse;
+use Momento\Cache\CacheOperationTypes\SetAddElementsError;
+use Momento\Cache\CacheOperationTypes\SetAddElementsSuccess;
 use Momento\Cache\CacheOperationTypes\SetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchError;
 use Momento\Cache\CacheOperationTypes\SetFetchHit;
@@ -744,7 +744,7 @@ class ScsDataClient implements LoggerAwareInterface
     /**
      * @param list<string> $elements
      */
-    public function setUnion(string $cacheName, string $setName, array $elements, ?CollectionTtl $ttl = null): SetUnionResponse
+    public function setAddElements(string $cacheName, string $setName, array $elements, ?CollectionTtl $ttl = null): SetAddElementsResponse
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -753,19 +753,19 @@ class ScsDataClient implements LoggerAwareInterface
             validateElements($elements);
             $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             validateTtl($ttlMillis);
-            $setUnionRequest = new _SetUnionRequest();
-            $setUnionRequest->setSetName($setName);
-            $setUnionRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
-            $setUnionRequest->setTtlMilliseconds($ttlMillis);
-            $setUnionRequest->setElements($elements);
-            $call = $this->grpcManager->client->SetUnion($setUnionRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $setAddElementsRequest = new _SetUnionRequest();
+            $setAddElementsRequest->setSetName($setName);
+            $setAddElementsRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
+            $setAddElementsRequest->setTtlMilliseconds($ttlMillis);
+            $setAddElementsRequest->setElements($elements);
+            $call = $this->grpcManager->client->SetUnion($setAddElementsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
             $this->processCall($call);
         } catch (SdkError $e) {
-            return new SetUnionError($e);
+            return new SetAddElementsError($e);
         } catch (Exception $e) {
-            return new SetUnionError(new UnknownError($e->getMessage()));
+            return new SetAddElementsError(new UnknownError($e->getMessage()));
         }
-        return new SetUnionSuccess();
+        return new SetAddElementsSuccess();
     }
 
     public function setFetch(string $cacheName, string $setName): SetFetchResponse
