@@ -2137,7 +2137,10 @@ class CacheClientTest extends TestCase
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($elements, $response->asHit()->valuesArray());
+        sort($elements);
+        $fetchedElements = $response->asHit()->valuesArray();
+        sort($fetchedElements);
+        $this->assertEquals($elements, $fetchedElements);
     }
 
     public function testSetAddElementsSetFetch_NoRefreshTtl()
@@ -2174,9 +2177,9 @@ class CacheClientTest extends TestCase
 
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        asort($elements);
+        sort($elements);
         $fetchedElements = $response->asHit()->valuesArray();
-        asort($fetchedElements);
+        sort($fetchedElements);
         $this->assertEquals($elements, $fetchedElements);
     }
 
