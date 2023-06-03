@@ -54,9 +54,9 @@ class CacheClientTest extends TestCase
     private function getBadAuthTokenClient(): CacheClient
     {
         $badEnvName = "_MOMENTO_BAD_AUTH_TOKEN";
-        putenv("{$badEnvName}={$this->BAD_AUTH_TOKEN}");
+        $_SERVER[$badEnvName] = $this->BAD_AUTH_TOKEN;
         $authProvider = new EnvMomentoTokenProvider($badEnvName);
-        putenv($badEnvName);
+        unset($_SERVER[$badEnvName]);
         return new CacheClient($this->configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
     }
 
