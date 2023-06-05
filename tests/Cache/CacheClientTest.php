@@ -2075,6 +2075,33 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+
+    public function testSetLength_HappyPath()
+    {
+        $setName = uniqid();
+        foreach (range(0, 3) as $i) {
+            $val = uniqid();
+            $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, $val, ttl: CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+            $this->assertNull($response->asError());
+            $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+            $response = $this->client->setLength($this->TEST_CACHE_NAME, $setName);
+            $this->assertNull($response->asError());
+            $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+            $this->assertEquals($i + 1, $response->asSuccess()->length());
+            $this->assertEquals("$response", get_class($response) . ": {$response->asSuccess()->length()}");
+        }
+    }
+
+    public function testSetLength_MissingSet()
+    {
+        $response = $this->client->setLength($this->TEST_CACHE_NAME, uniqid());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(0, $response->asSuccess()->length());
+    }
+
+
     public function testSetAddElementSetFetch_HappyPath()
     {
         $setName = uniqid();
