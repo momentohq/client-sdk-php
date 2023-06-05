@@ -70,14 +70,4 @@ class StaticTransportStrategy implements ITransportStrategy
             $this->maxIdleMillis
         );
     }
-
-    public function withForceNewChannel(bool $forceNewChannel): StaticTransportStrategy
-    {
-        return new StaticTransportStrategy(
-            $this->maxConcurrentRequests,
-            $this->grpcConfig->withForceNewChannel($forceNewChannel),
-            $this->loggerFactory,
-            $this->maxIdleMillis
-        );
-    }
 }
