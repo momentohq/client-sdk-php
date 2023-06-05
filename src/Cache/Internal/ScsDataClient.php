@@ -967,9 +967,9 @@ class ScsDataClient implements LoggerAwareInterface
 
                     return new SetAddElementsSuccess();
                 } catch (SdkError $e) {
-                    return ResponseFuture::createResolved(new SetAddElementsError($e));
+                    return new SetAddElementsError($e);
                 } catch (Exception $e) {
-                    return ResponseFuture::createResolved(new SetAddElementsError(new UnknownError($e->getMessage(), 0, $e)));
+                    return new SetAddElementsError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );
