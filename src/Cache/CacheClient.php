@@ -13,6 +13,7 @@ use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldResponse;
 use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldsResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
+use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\GetResponse;
 use Momento\Cache\CacheOperationTypes\IncrementResponse;
 use Momento\Cache\CacheOperationTypes\KeyExistsResponse;
@@ -152,6 +153,35 @@ class CacheClient implements LoggerAwareInterface
      * @param string $value The value to be stored.
      * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
+     * @return ResponseFuture<SetResponse> A waitable future which will provide
+     * the result of the set operation upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the set operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * SetSuccess<br>
+     * * SetError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setAsync(string $cacheName, string $key, string $value, int $ttlSeconds = 0): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->set($cacheName, $key, $value, $ttlSeconds);
+    }
+
+    /**
+     * Set the value in cache with a given time to live (TTL) seconds.
+     *
+     * @param string $cacheName Name of the cache in which to set the value.
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
      * @return SetResponse Represents the result of the set operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
      * * SetSuccess<br>
@@ -163,7 +193,37 @@ class CacheClient implements LoggerAwareInterface
      */
     public function set(string $cacheName, string $key, string $value, int $ttlSeconds = 0): SetResponse
     {
-        return $this->dataClientWrapper->getClient()->set($cacheName, $key, $value, $ttlSeconds);
+        return $this->setAsync($cacheName, $key, $value, $ttlSeconds)->wait();
+    }
+
+    /**
+     * Gets the cache value stored for a given key.
+     *
+     * @param string $cacheName Name of the cache to perform the lookup in.
+     * @param string $key The key to look up.
+     * @return ResponseFuture<GetResponse> A waitable future which will provide
+     * the result of the set operation upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the get operation and stores the
+     * retrieved value. This result is resolved to a type-safe object of one of
+     * the following types:<br>
+     * * GetHit<br>
+     * * GetMiss<br>
+     * * GetError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($hit = $response->asHit()) {<br>
+     * &nbsp;&nbsp;$value = $hit->valueString();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function getAsync(string $cacheName, string $key): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->get($cacheName, $key);
     }
 
     /**
@@ -185,7 +245,44 @@ class CacheClient implements LoggerAwareInterface
      */
     public function get(string $cacheName, string $key): GetResponse
     {
-        return $this->dataClientWrapper->getClient()->get($cacheName, $key);
+        return $this->getAsync($cacheName, $key)->wait();
+    }
+
+    /**
+     * Associates the given key with the given value. If a value for the key is
+     * already present it is not replaced with the new value.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return ResponseFuture<SetIfNotExistsResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the setIfNotExists operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfNotExistsResponseStored<br>
+     * * SetIfNotExistsResponseNotStored<br>
+     * * SetIfNotExistsError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($hit = $response->asStored()) {<br>
+     * &nbsp;&nbsp;$value = $hit->valueString();<br>
+     * } elseif ($error = $response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was already set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setIfNotExistsAsync(string $cacheName, string $key, string $value, int $ttlSeconds = 0): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->setIfNotExists($cacheName, $key, $value, $ttlSeconds);
     }
 
     /**
@@ -213,7 +310,33 @@ class CacheClient implements LoggerAwareInterface
      */
     public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = 0): SetIfNotExistsResponse
     {
-        return $this->dataClientWrapper->getClient()->setIfNotExists($cacheName, $key, $value, $ttlSeconds);
+        return $this->setIfNotExistsAsync($cacheName, $key, $value, $ttlSeconds)->wait();
+    }
+
+    /**
+     * Removes the key from the cache.
+     *
+     * @param string $cacheName Name of the cache from which to remove the key
+     * @param string $key The key to remove
+     * @return ResponseFuture<DeleteResponse> A waitable future which will
+     * provide the result of the set operation upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the delete operation. This result
+     * is resolved to a type-safe object of one of the following types:<br>
+     * * DeleteSuccess<br>
+     * * DeleteError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function deleteAsync(string $cacheName, string $key): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->delete($cacheName, $key);
     }
 
     /**
@@ -232,7 +355,39 @@ class CacheClient implements LoggerAwareInterface
      */
     public function delete(string $cacheName, string $key): DeleteResponse
     {
-        return $this->dataClientWrapper->getClient()->delete($cacheName, $key);
+        return $this->deleteAsync($cacheName, $key)->wait();
+    }
+
+    /**
+     * Check to see if multiple keys exist in the cache.
+     *
+     * @param string $cacheName Name of the cache in which to look for keys
+     * @param array $keys List of keys to check
+     * @return ResponseFuture<KeysExistResponse> A waitable future which will
+     * provide the result of the set operation upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the keys exist operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * KeysExistSuccess<br>
+     * * KeysExistError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * } elseif ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;// get a list of booleans representing the existence of the key at that index<br>
+     * &nbsp;&nbsp;$asList = $success->exists();<br>
+     * &nbsp;&nbsp;// get a dict with the key names as keys and boolean values<br>
+     * &nbsp;&nbsp;$asDict = $success->existsDictionary();<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function keysExistAsync(string $cacheName, array $keys): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->keysExist($cacheName, $keys);
     }
 
     /**
@@ -256,7 +411,36 @@ class CacheClient implements LoggerAwareInterface
      */
     public function keysExist(string $cacheName, array $keys): KeysExistResponse
     {
-        return $this->dataClientWrapper->getClient()->keysExist($cacheName, $keys);
+        return $this->keysExistAsync($cacheName, $keys)->wait();
+    }
+
+    /**
+     * Check to see if a key exists in the cache.
+     *
+     * @param string $cacheName Name of the cache in which to look for the key
+     * @param string $key The key to check
+     * @return ResponseFuture<KeyExistsResponse> A waitable future which will
+     * provide the result of the set operation upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the keys exist operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * KeyExistsSuccess<br>
+     * * KeyExistsError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * } elseif ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$keyIsInCache = $success->exists();<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function keyExistsAsync(string $cacheName, string $key): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->keyExists($cacheName, $key);
     }
 
     /**
@@ -277,7 +461,41 @@ class CacheClient implements LoggerAwareInterface
      */
     public function keyExists(string $cacheName, string $key): KeyExistsResponse
     {
-        return $this->dataClientWrapper->getClient()->keyExists($cacheName, $key);
+        return $this->keyExistsAsync($cacheName, $key)->wait();
+    }
+
+    /**
+     * Increment a key's value in the cache by a specified amount.
+     *
+     * @param string $cacheName Name of the cache in which to increment the key's value
+     * @param string $key The key top increment
+     * @param int $amount The amount to increment by. May be positive, negative, or zero. Defaults to 1.
+     * @param int|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return ResponseFuture<IncrementResponse> A waitable future which will
+     * provide the result of the set operation upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the keys exist operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * IncrementSuccess<br>
+     * * IncrementError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * } elseif ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$keyIsInCache = $success->exists();<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function incrementAsync(
+        string $cacheName, string $key, int $amount = 1, ?int $ttlSeconds = null
+    ): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->increment($cacheName, $key, $amount, $ttlSeconds);
     }
 
     /**
@@ -300,10 +518,10 @@ class CacheClient implements LoggerAwareInterface
      * }</code>
      */
     public function increment(
-        string $cacheName, string $key, int $amount=1, ?int $ttlSeconds=null
-    ) : IncrementResponse
+        string $cacheName, string $key, int $amount = 1, ?int $ttlSeconds = null
+    ): IncrementResponse
     {
-        return $this->dataClientWrapper->getClient()->increment($cacheName, $key, $amount, $ttlSeconds);
+        return $this->incrementAsync($cacheName, $key, $amount, $ttlSeconds)->wait();
     }
 
     /**
@@ -658,6 +876,35 @@ class CacheClient implements LoggerAwareInterface
      * @param string $setName The set to add the element to.
      * @param string $element The element to add.
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+     * @return ResponseFuture<SetAddElementResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the set add element operation.
+     * This result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetAddElementSuccess<br>
+     * * SetAddElementError<br>
+     * if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setAddElementAsync(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->setAddElement($cacheName, $setName, $element, $ttl);
+    }
+
+    /**
+     * Add an element to a set.
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $setName The set to add the element to.
+     * @param string $element The element to add.
+     * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
      * @return SetAddElementResponse Represents the result of the set add element operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * SetAddElementSuccess<br>
@@ -668,7 +915,36 @@ class CacheClient implements LoggerAwareInterface
      */
     public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): SetAddElementResponse
     {
-        return $this->dataClientWrapper->getClient()->setAddElement($cacheName, $setName, $element, $ttl);
+        return $this->setAddElementAsync($cacheName, $setName, $element, $ttl)->wait();
+    }
+
+    /**
+     * Add many elements to a set.
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $setName The set to add the element to.
+     * @param list<string> $elements The elements to add.
+     * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+     * @return ResponseFuture<SetAddElementsResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the set add elements operation.
+     * This result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetAddElementsSuccess<br>
+     * * SetAddElementsError<br>
+     * if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setAddElementsAsync(string $cacheName, string $setName, array $elements, ?CollectionTtl $ttl = null): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->setAddElements($cacheName, $setName, $elements, $ttl);
     }
 
     /**
@@ -688,7 +964,37 @@ class CacheClient implements LoggerAwareInterface
      */
     public function setAddElements(string $cacheName, string $setName, array $elements, ?CollectionTtl $ttl = null): SetAddElementsResponse
     {
-        return $this->dataClientWrapper->getClient()->setAddElements($cacheName, $setName, $elements, $ttl);
+        return $this->setAddElementsAsync($cacheName, $setName, $elements, $ttl)->wait();
+    }
+
+    /**
+     * Fetch an entire set from the cache.
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $setName The set to fetch.
+     * @return ResponseFuture<SetFetchResponse> A waitable future which will
+     * provide the result of the set operation upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the set fetch operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetFetchHit<br>
+     * * SetFetchMiss<br>
+     * * SetFetchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($hit = $response->asHit()) {<br>
+     * &nbsp;&nbsp;$theSet = $response->valueArray();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setFetchAsync(string $cacheName, string $setName): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->setFetch($cacheName, $setName);
     }
 
     /**
@@ -710,7 +1016,35 @@ class CacheClient implements LoggerAwareInterface
      */
     public function setFetch(string $cacheName, string $setName): SetFetchResponse
     {
-        return $this->dataClientWrapper->getClient()->setFetch($cacheName, $setName);
+        return $this->setFetchAsync($cacheName, $setName)->wait();
+    }
+
+    /**
+     * Get the length of a set from the cache.
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $setName The name of the set whose length should be returned.
+     * @return ResponseFuture<SetLengthResponse> A waitable future which will
+     * provide the result of the set operation upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the set length operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SetLengthSuccess<br>
+     * * SetLengthError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$length = success->length();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setLengthAsync(string $cacheName, string $setName): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->setLength($cacheName, $setName);
     }
 
     /**
@@ -731,7 +1065,35 @@ class CacheClient implements LoggerAwareInterface
      */
     public function setLength(string $cacheName, string $setName): SetLengthResponse
     {
-        return $this->dataClientWrapper->getClient()->setLength($cacheName, $setName);
+        return $this->setLengthAsync($cacheName, $setName)->wait();
+    }
+
+    /**
+     * Remove an element from a set.
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $setName The set from which to remove the element.
+     * @param string $element The element to remove.
+     * @return ResponseFuture<SetRemoveElementResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the set remove element operation.
+     * This result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetRemoveElementSuccess<br>
+     * * SetRemoveElementError<br>
+     * if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setRemoveElementAsync(string $cacheName, string $setName, string $element): ResponseFuture
+    {
+        return $this->dataClientWrapper->getClient()->setRemoveElement($cacheName, $setName, $element);
     }
 
     /**
@@ -750,6 +1112,6 @@ class CacheClient implements LoggerAwareInterface
      */
     public function setRemoveElement(string $cacheName, string $setName, string $element): SetRemoveElementResponse
     {
-        return $this->dataClientWrapper->getClient()->setRemoveElement($cacheName, $setName, $element);
+        return $this->setRemoveElementAsync($cacheName, $setName, $element)->wait();
     }
 }

@@ -20,9 +20,11 @@ use Cache_client\_SetIfNotExistsResponse;
 use Cache_client\_SetLengthResponse;
 use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
+use Closure;
 use Control_client\_ListCachesResponse;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
+use Throwable;
 
 trait ErrorBody
 {
@@ -81,6 +83,92 @@ class CacheInfo
     public function name(): string
     {
         return $this->name;
+    }
+}
+
+/**
+ * @template T extends ResponseBase
+ */
+class ResponseFuture
+{
+    /**
+     * @var (Closure(): T)|null
+     */
+    private ?Closure $resolver;
+
+    /**
+     * @var (Closure(): T)|null
+     */
+    private ?Closure $response;
+
+    /**
+     * @param (Closure(): T)|null $resolver
+     * @param (Closure(): T)|null $response
+     */
+    private function __construct(?Closure $resolver, ?Closure $response)
+    {
+        $this->resolver = $resolver;
+        $this->response = $response;
+    }
+
+    public function __destruct()
+    {
+        // if still pending, force resolution to happen. we don't bother to
+        // store the response or null out the resolver because the instance is
+        // already being destroyed at this point, decrementing the resolver
+        // refcount (which is what setting it to null would have done)
+        if (null === $this->response) {
+            ($this->resolver)();
+        }
+    }
+
+    /**
+     * @param Closure(): T $resolver
+     */
+    public static function createPending(Closure $resolver): self
+    {
+        return new self($resolver, null);
+    }
+
+    /**
+     * @param T $response
+     */
+    public static function createResolved(ResponseBase $response): self
+    {
+        return new self(null, fn () => $response);
+    }
+
+    public function isPending(): bool
+    {
+        return null === $this->response;
+    }
+
+    public function isResolved(): bool
+    {
+        return null !== $this->response;
+    }
+
+    /**
+     * @return T
+     */
+    public function wait(): ResponseBase
+    {
+        if (null === $this->response) {
+            try {
+                $response = ($this->resolver)();
+
+                // important to unset the resolver here so that any destructor
+                // code fires and any crashes get caught, instead of this happening
+                // later when our own destructor runs (assuming refcount 0)
+                $this->resolver = null;
+
+                $this->response = fn () => $response;
+            } catch (Throwable $e) {
+                $this->response = fn () => throw $e;
+            }
+        }
+
+        return ($this->response)();
     }
 }
 
