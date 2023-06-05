@@ -19,7 +19,7 @@ class EnvMomentoTokenProvider extends StringMomentoTokenProvider
         ?string $trustedCacheEndpointCertificateName = null
     )
     {
-        if (! array_key_exists($envVariableName, $_SERVER)) {
+        if ((! array_key_exists($envVariableName, $_SERVER)) || $_SERVER[$envVariableName] == null) {
             throw new InvalidArgumentError("Environment variable $envVariableName is empty or null.");
         }
         $authToken = $_SERVER[$envVariableName];
