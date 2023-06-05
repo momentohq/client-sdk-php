@@ -386,7 +386,7 @@ class ScsDataClient implements LoggerAwareInterface
         }
 
         return ResponseFuture::createPending(
-            function () use ($call): KeysExistResponse {
+            function () use ($call, $keys): KeysExistResponse {
                 try {
                     $response = $this->processCall($call);
 
