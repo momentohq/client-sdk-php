@@ -1133,7 +1133,7 @@ class CacheClient implements LoggerAwareInterface
     private function getNextDataClient(): ScsDataClient
     {
         $client = $this->dataClients[$this->nextDataClientIndex]->getClient();
-        $this->nextDataClientIndex = ($this->nextDataClientIndex + 1) % sizeof($this->dataClients);
+        $this->nextDataClientIndex = ($this->nextDataClientIndex + 1) % count($this->dataClients);
         return $client;
     }
 }
