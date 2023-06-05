@@ -25,6 +25,7 @@ use Cache_client\_SetDifferenceRequest\_Subtrahend;
 use Cache_client\_SetDifferenceRequest\_Subtrahend\_Set;
 use Cache_client\_SetFetchRequest;
 use Cache_client\_SetIfNotExistsRequest;
+use Cache_client\_SetLengthRequest;
 use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
 use Cache_client\ECacheResult;
@@ -109,6 +110,9 @@ use Momento\Cache\CacheOperationTypes\SetIfNotExistsResponse;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsError;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsNotStored;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsStored;
+use Momento\Cache\CacheOperationTypes\SetLengthError;
+use Momento\Cache\CacheOperationTypes\SetLengthResponse;
+use Momento\Cache\CacheOperationTypes\SetLengthSuccess;
 use Momento\Cache\CacheOperationTypes\SetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\SetRemoveElementError;
 use Momento\Cache\CacheOperationTypes\SetRemoveElementSuccess;
@@ -755,6 +759,25 @@ class ScsDataClient implements LoggerAwareInterface
             return new SetFetchHit($setFetchResponse);
         }
         return new SetFetchMiss();
+    }
+
+    public function setLength(string $cacheName, string $setName): SetLengthResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSetName($setName);
+            $setLengthRequest = new _SetLengthRequest();
+            $setLengthRequest->setSetName($setName);
+            $call = $this->grpcManager->client->SetLength(
+                $setLengthRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+            );
+            $response = $this->processCall($call);
+        } catch (SdkError $e) {
+            return new SetLengthError($e);
+        } catch (Exception $e) {
+            return new SetLengthError(new UnknownError($e->getMessage()));
+        }
+        return new SetLengthSuccess($response);
     }
 
     public function setRemoveElement(string $cacheName, string $setName, string $element): SetRemoveElementResponse

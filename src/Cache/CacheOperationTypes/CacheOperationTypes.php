@@ -17,6 +17,7 @@ use Cache_client\_ListPushBackResponse;
 use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetFetchResponse;
 use Cache_client\_SetIfNotExistsResponse;
+use Cache_client\_SetLengthResponse;
 use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
 use Control_client\_ListCachesResponse;
@@ -1408,8 +1409,8 @@ class ListRemoveValueError extends ListRemoveValueResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * ListRemoveValueSuccess
- * * ListRemoveValueError
+ * * ListLengthSuccess
+ * * ListLengthError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -2291,6 +2292,85 @@ class SetFetchError extends SetFetchResponse
 {
     use ErrorBody;
 }
+
+/**
+ * Parent response type for a set length request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SetLengthSuccess
+ * * SetLengthError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($success = $response->asSuccess()) {
+ *     return $success->length();
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetLengthResponse extends ResponseBase
+{
+    /**
+     * @return SetLengthSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): SetLengthSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetLengthError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): SetLengthError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class SetLengthSuccess extends SetLengthResponse
+{
+    private int $length;
+
+    public function __construct(_SetLengthResponse $response)
+    {
+        parent::__construct();
+        $this->length = $response->getFound() ? $response->getFound()->getLength() : 0;
+    }
+
+    /**
+     * @return int Length of the specified set.
+     */
+    public function length(): int
+    {
+        return $this->length;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": {$this->length}";
+    }
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetLengthError extends SetLengthResponse
+{
+    use ErrorBody;
+}
+
 
 /**
  * Parent response type for a set remove element request. The

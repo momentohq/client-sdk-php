@@ -27,6 +27,7 @@ use Momento\Cache\CacheOperationTypes\ListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsResponse;
+use Momento\Cache\CacheOperationTypes\SetLengthResponse;
 use Momento\Cache\CacheOperationTypes\SetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
@@ -452,8 +453,8 @@ class CacheClient implements LoggerAwareInterface
      * * ListLengthSuccess<br>
      * * ListLengthError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$theLength = $hit->length();<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$theLength = $success->length();<br>
      * } elseif ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
@@ -689,6 +690,27 @@ class CacheClient implements LoggerAwareInterface
     public function setFetch(string $cacheName, string $setName): SetFetchResponse
     {
         return $this->dataClientWrapper->getClient()->setFetch($cacheName, $setName);
+    }
+
+    /**
+     * Get the length of a set from the cache.
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $setName The name of the set whose length should be returned.
+     * @return SetLengthResponse Represents the result of the set length operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SetLengthSuccess<br>
+     * * SetLengthError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$length = success->length();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
+    public function setLength(string $cacheName, string $setName): SetLengthResponse
+    {
+        return $this->dataClientWrapper->getClient()->setLength($cacheName, $setName);
     }
 
     /**
