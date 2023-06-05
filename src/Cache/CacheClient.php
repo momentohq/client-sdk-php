@@ -35,6 +35,7 @@ use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
+use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Internal\IdleDataClientWrapper;
 use Momento\Cache\Internal\ScsControlClient;
 use Momento\Cache\Internal\ScsDataClient;
@@ -83,7 +84,13 @@ class CacheClient implements LoggerAwareInterface
             );
         };
         $this->dataClients = [];
-        for ($i = 0; $i < $configuration->getTransportStrategy()->getGrpcConfig()->getNumGrpcChannels(); $i++) {
+
+        $numGrpcChannels = $configuration->getTransportStrategy()->getGrpcConfig()->getNumGrpcChannels();
+        $forceNewChannels = $configuration->getTransportStrategy()->getGrpcConfig()->getForceNewChannel();
+        if (($numGrpcChannels > 0) && (! $forceNewChannels)) {
+            throw new InvalidArgumentError("When setting NumGrpcChannels > 1, you must also set ForceNewChannel to true, or else the gRPC library will re-use the same channel.");
+        }
+        for ($i = 0; $i < $numGrpcChannels; $i++) {
             array_push($this->dataClients, new IdleDataClientWrapper($dataClientFactory, $this->configuration));
         }
     }
