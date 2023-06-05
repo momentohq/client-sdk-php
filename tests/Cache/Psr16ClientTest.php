@@ -29,7 +29,7 @@ class Psr16ClientTest extends \PHPUnit\Framework\TestCase
     {
         $loggerFactory = new NullLoggerFactory();
         $grpcConfiguration = new StaticGrpcConfiguration(5000);
-        $transportStrategy = new StaticTransportStrategy(null, $grpcConfiguration);
+        $transportStrategy = new StaticTransportStrategy($grpcConfiguration);
         $configuration = new Configuration($loggerFactory, $transportStrategy);
         $authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
         $this->client = new Psr16CacheClient($configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);

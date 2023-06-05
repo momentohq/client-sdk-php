@@ -64,7 +64,7 @@ class CacheClientTest extends TestCase
     {
         $loggerFactory = new NullLoggerFactory();
         $grpcConfig = new StaticGrpcConfiguration($deadline);
-        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory);
+        $transportStrategy = new StaticTransportStrategy($grpcConfig, $loggerFactory);
         return new Configuration($loggerFactory, $transportStrategy);
     }
 

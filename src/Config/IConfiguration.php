@@ -16,6 +16,12 @@ interface IConfiguration
      */
     public function getLoggerFactory(): ILoggerFactory;
 
+
+    /**
+     * @return ITransportStrategy The currently active transport strategy
+     */
+    public function getTransportStrategy(): ITransportStrategy;
+
     /**
      * Creates a new instance of the Configuration object, updated to use the specified transport strategy.
      *
