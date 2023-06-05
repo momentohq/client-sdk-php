@@ -14,11 +14,13 @@ use Google\Protobuf\Internal\GPBUtil;
 class _GenerateApiTokenRequest extends \Google\Protobuf\Internal\Message
 {
     /**
-     * session token recieved from `momento login` command
-     *
-     * Generated from protobuf field <code>string session_token = 3;</code>
+     * Generated from protobuf field <code>string auth_token = 3;</code>
      */
-    protected $session_token = '';
+    protected $auth_token = '';
+    /**
+     * Generated from protobuf field <code>.auth._GenerateApiTokenRequest.Permissions permissions = 4;</code>
+     */
+    protected $permissions = null;
     protected $expiry;
 
     /**
@@ -29,8 +31,8 @@ class _GenerateApiTokenRequest extends \Google\Protobuf\Internal\Message
      *
      *     @type \Auth\_GenerateApiTokenRequest\Never $never
      *     @type \Auth\_GenerateApiTokenRequest\Expires $expires
-     *     @type string $session_token
-     *           session token recieved from `momento login` command
+     *     @type string $auth_token
+     *     @type \Auth\_GenerateApiTokenRequest\Permissions $permissions
      * }
      */
     public function __construct($data = NULL) {
@@ -93,27 +95,55 @@ class _GenerateApiTokenRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * session token recieved from `momento login` command
-     *
-     * Generated from protobuf field <code>string session_token = 3;</code>
+     * Generated from protobuf field <code>string auth_token = 3;</code>
      * @return string
      */
-    public function getSessionToken()
+    public function getAuthToken()
     {
-        return $this->session_token;
+        return $this->auth_token;
     }
 
     /**
-     * session token recieved from `momento login` command
-     *
-     * Generated from protobuf field <code>string session_token = 3;</code>
+     * Generated from protobuf field <code>string auth_token = 3;</code>
      * @param string $var
      * @return $this
      */
-    public function setSessionToken($var)
+    public function setAuthToken($var)
     {
         GPBUtil::checkString($var, True);
-        $this->session_token = $var;
+        $this->auth_token = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.auth._GenerateApiTokenRequest.Permissions permissions = 4;</code>
+     * @return \Auth\_GenerateApiTokenRequest\Permissions|null
+     */
+    public function getPermissions()
+    {
+        return $this->permissions;
+    }
+
+    public function hasPermissions()
+    {
+        return isset($this->permissions);
+    }
+
+    public function clearPermissions()
+    {
+        unset($this->permissions);
+    }
+
+    /**
+     * Generated from protobuf field <code>.auth._GenerateApiTokenRequest.Permissions permissions = 4;</code>
+     * @param \Auth\_GenerateApiTokenRequest\Permissions $var
+     * @return $this
+     */
+    public function setPermissions($var)
+    {
+        GPBUtil::checkMessage($var, \Auth\_GenerateApiTokenRequest\Permissions::class);
+        $this->permissions = $var;
 
         return $this;
     }
