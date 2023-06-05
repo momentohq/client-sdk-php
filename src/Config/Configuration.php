@@ -55,7 +55,8 @@ class Configuration implements IConfiguration
      * @param int $clientTimeoutSecs The amount of time in seconds to wait before cancelling the request.
      * @return IConfiguration Configuration object with specified client timeout
      */
-    public function withClientTimeout(int $clientTimeoutSecs): IConfiguration {
+    public function withClientTimeout(int $clientTimeoutSecs): IConfiguration
+    {
         return new Configuration($this->loggerFactory, $this->transportStrategy->withClientTimeout($clientTimeoutSecs));
     }
 }

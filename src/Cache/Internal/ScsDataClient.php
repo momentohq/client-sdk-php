@@ -168,7 +168,7 @@ class ScsDataClient implements LoggerAwareInterface
         validateOperationTimeout($operationTimeoutMs);
         $this->deadline_milliseconds = $operationTimeoutMs ?? self::$DEFAULT_DEADLINE_MILLISECONDS;
         $this->timeout = $this->deadline_milliseconds * self::$TIMEOUT_MULTIPLIER;
-        $this->grpcManager = new DataGrpcManager($authProvider);
+        $this->grpcManager = new DataGrpcManager($authProvider, $configuration);
         $this->setLogger($configuration->getLoggerFactory()->getLogger(get_class($this)));
     }
 
