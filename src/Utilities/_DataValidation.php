@@ -141,6 +141,13 @@ if (!function_exists('validateElement')) {
     }
 }
 
+if (!function_exists('validateElements')) {
+    function validateElements(array $elements): void
+    {
+        validateNullOrEmptyList($elements, "Elements");
+    }
+}
+
 if (!function_exists('validatePsr16Key')) {
     function validatePsr16Key(string $key): void
     {

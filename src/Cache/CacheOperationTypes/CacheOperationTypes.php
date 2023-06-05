@@ -2190,6 +2190,63 @@ class SetAddElementError extends SetAddElementResponse
 }
 
 /**
+ * Parent response type for a set union request. The response object
+ * is resolved to a type-safe object of one of the following subtypes:
+ *
+ * * SetAddElementsSuccess
+ * * SetAddElementsError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($response->asSuccess()) {
+ *     // handle success as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetAddElementsResponse extends ResponseBase
+{
+    /**
+     * @return SetAddElementsSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): SetAddElementsSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetAddElementsError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): SetAddElementsError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class SetAddElementsSuccess extends SetAddElementsResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetAddElementsError extends SetAddElementsResponse
+{
+    use ErrorBody;
+}
+
+/**
  * Parent response type for a set fetch request. The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:

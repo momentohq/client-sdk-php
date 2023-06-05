@@ -101,6 +101,9 @@ use Momento\Cache\CacheOperationTypes\ListRemoveValueSuccess;
 use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementError;
 use Momento\Cache\CacheOperationTypes\SetAddElementSuccess;
+use Momento\Cache\CacheOperationTypes\SetAddElementsResponse;
+use Momento\Cache\CacheOperationTypes\SetAddElementsError;
+use Momento\Cache\CacheOperationTypes\SetAddElementsSuccess;
 use Momento\Cache\CacheOperationTypes\SetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchError;
 use Momento\Cache\CacheOperationTypes\SetFetchHit;
@@ -126,6 +129,7 @@ use Psr\Log\LoggerInterface;
 use function Momento\Utilities\validateCacheName;
 use function Momento\Utilities\validateDictionaryName;
 use function Momento\Utilities\validateElement;
+use function Momento\Utilities\validateElements;
 use function Momento\Utilities\validateFieldName;
 use function Momento\Utilities\validateFields;
 use function Momento\Utilities\validateKeys;
@@ -735,6 +739,33 @@ class ScsDataClient implements LoggerAwareInterface
             return new SetAddElementError(new UnknownError($e->getMessage()));
         }
         return new SetAddElementSuccess();
+    }
+
+    /**
+     * @param list<string> $elements
+     */
+    public function setAddElements(string $cacheName, string $setName, array $elements, ?CollectionTtl $ttl = null): SetAddElementsResponse
+    {
+        try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
+            validateCacheName($cacheName);
+            validateSetName($setName);
+            validateElements($elements);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
+            validateTtl($ttlMillis);
+            $setAddElementsRequest = new _SetUnionRequest();
+            $setAddElementsRequest->setSetName($setName);
+            $setAddElementsRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
+            $setAddElementsRequest->setTtlMilliseconds($ttlMillis);
+            $setAddElementsRequest->setElements($elements);
+            $call = $this->grpcManager->client->SetUnion($setAddElementsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new SetAddElementsError($e);
+        } catch (Exception $e) {
+            return new SetAddElementsError(new UnknownError($e->getMessage()));
+        }
+        return new SetAddElementsSuccess();
     }
 
     public function setFetch(string $cacheName, string $setName): SetFetchResponse
