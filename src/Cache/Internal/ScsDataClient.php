@@ -62,6 +62,7 @@ use Momento\Cache\CacheOperationTypes\DictionarySetFieldSuccess;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsError;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsSuccess;
+use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\GetResponse;
 use Momento\Cache\CacheOperationTypes\GetError;
 use Momento\Cache\CacheOperationTypes\GetHit;
@@ -204,7 +205,10 @@ class ScsDataClient implements LoggerAwareInterface
         return $response;
     }
 
-    public function set(string $cacheName, string $key, string $value, int $ttlSeconds = null): SetResponse
+    /**
+     * @return ResponseFuture<SetResponse>
+     */
+    public function set(string $cacheName, string $key, string $value, int $ttlSeconds = null): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -215,18 +219,35 @@ class ScsDataClient implements LoggerAwareInterface
             $setRequest->setCacheBody($value);
             $setRequest->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->Set(
-                $setRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $setRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
-            $this->processCall($call);
         } catch (SdkError $e) {
-            return new SetError($e);
+            return ResponseFuture::createResolved(new SetError($e));
         } catch (Exception $e) {
-            return new SetError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(SetError(new UnknownError($e->getMessage(), 0, $e)));
         }
-        return new SetSuccess();
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetResponse {
+                try {
+                    $this->processCall($call);
+                } catch (SdkError $e) {
+                    return new SetError($e);
+                } catch (Exception $e) {
+                    return SetError(new UnknownError($e->getMessage(), 0, $e));
+                }
+
+                return new SetSuccess();
+            }
+        );
     }
 
-    public function get(string $cacheName, string $key): GetResponse
+    /**
+     * @return ResponseFuture<GetResponse>
+     */
+    public function get(string $cacheName, string $key): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -234,25 +255,40 @@ class ScsDataClient implements LoggerAwareInterface
             $getRequest = new _GetRequest();
             $getRequest->setCacheKey($key);
             $call = $this->grpcManager->client->Get(
-                $getRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $getRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
-            $response = $this->processCall($call);
-            $ecacheResult = $response->getResult();
-            if ($ecacheResult == ECacheResult::Hit) {
-                return new GetHit($response);
-            } elseif ($ecacheResult == ECacheResult::Miss) {
-                return new GetMiss();
-            } else {
-                throw new InternalServerError("CacheService returned an unexpected result: $ecacheResult");
-            }
         } catch (SdkError $e) {
-            return new GetError($e);
+            return ResponseFuture::createResolved(new GetError($e));
         } catch (Exception $e) {
-            return new GetError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new GetError(new UnknownError($e->getMessage(), 0, $e)));
         }
+
+        return ResponseFuture::createPending(
+            function () use ($call): GetResponse {
+                try {
+                    $response = $this->processCall($call);
+                    $result = $response->getResult();
+
+                    return match ($result) {
+                        ECacheResult::Hit => new GetHit($response),
+                        ECacheResult::Miss => new GetMiss(),
+                        default => throw new InternalServerError("CacheService returned an unexpected result: $result"),
+                    };
+                } catch (SdkError $e) {
+                    return new GetError($e);
+                } catch (Exception $e) {
+                    return new GetError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
-    public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = null): SetIfNotExistsResponse
+    /**
+     * @return ResponseFuture<SetIfNotExistsResponse>
+     */
+    public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = null): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -263,22 +299,39 @@ class ScsDataClient implements LoggerAwareInterface
             $setIfNotExistsRequest->setCacheBody($value);
             $setIfNotExistsRequest->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->SetIfNotExists(
-                $setIfNotExistsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $setIfNotExistsRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
-            $setIfNotExistsResponse = $this->processCall($call);
         } catch (SdkError $e) {
-            return new SetIfNotExistsError($e);
+            return ResponseFuture::createResolved(new SetIfNotExistsError($e));
         } catch (Exception $e) {
-            return new SetIfNotExistsError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new SetIfNotExistsError(new UnknownError($e->getMessage(), 0, $e)));
         }
-        if ($setIfNotExistsResponse->hasStored()) {
-            return new SetIfNotExistsStored();
-        }
-        return new SetIfNotExistsNotStored();
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetIfNotExistsResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasStored()) {
+                        return new SetIfNotExistsStored();
+                    }
+
+                    return new SetIfNotExistsNotStored();
+                } catch (SdkError $e) {
+                    return new SetIfNotExistsError($e);
+                } catch (Exception $e) {
+                    return new SetIfNotExistsError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
-
-    public function delete(string $cacheName, string $key): DeleteResponse
+    /**
+     * @return ResponseFuture<DeleteResponse>
+     */
+    public function delete(string $cacheName, string $key): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -286,18 +339,35 @@ class ScsDataClient implements LoggerAwareInterface
             $deleteRequest = new _DeleteRequest();
             $deleteRequest->setCacheKey($key);
             $call = $this->grpcManager->client->Delete(
-                $deleteRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $deleteRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
-            $this->processCall($call);
         } catch (SdkError $e) {
-            return new DeleteError($e);
+            return ResponseFuture::createResolved(new DeleteError($e));
         } catch (Exception $e) {
-            return new DeleteError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new DeleteError(new UnknownError($e->getMessage(), 0, $e)));
         }
-        return new DeleteSuccess();
+
+        return ResponseFuture::createPending(
+            function () use ($call): DeleteResponse {
+                try {
+                    $this->processCall($call);
+
+                    return new DeleteSuccess();
+                } catch (SdkError $e) {
+                    return new DeleteError($e);
+                } catch (Exception $e) {
+                    return new DeleteError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
-    public function keysExist(string $cacheName, array $keys): KeysExistResponse
+    /**
+     * @return ResponseFuture<KeysExistResponse>
+     */
+    public function keysExist(string $cacheName, array $keys): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -305,27 +375,72 @@ class ScsDataClient implements LoggerAwareInterface
             $keysExistRequest = new _KeysExistRequest();
             $keysExistRequest->setCacheKeys($keys);
             $call = $this->grpcManager->client->KeysExist(
-                $keysExistRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $keysExistRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new KeysExistError($e);
+            return ResponseFuture::createResolved(new KeysExistError($e));
         } catch (Exception $e) {
-            return new KeysExistError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new KeysExistError(new UnknownError($e->getMessage(), 0, $e)));
         }
-        return new KeysExistSuccess($response, $keys);
+
+        return ResponseFuture::createPending(
+            function () use ($call, $keys): KeysExistResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    return new KeysExistSuccess($response, $keys);
+                } catch (SdkError $e) {
+                    return new KeysExistError($e);
+                } catch (Exception $e) {
+                    return new KeysExistError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
-    public function keyExists(string $cacheName, string $key): KeyExistsResponse
+    /**
+     * @return ResponseFuture<KeyExistsResponse>
+     */
+    public function keyExists(string $cacheName, string $key): ResponseFuture
     {
-        $response = $this->keysExist($cacheName, [$key]);
-        if ($response instanceof KeysExistError) {
-            return new KeyExistsError($response->innerException());
+        try {
+            validateCacheName($cacheName);
+            validateKeys([$key]);
+            $keysExistRequest = new _KeysExistRequest();
+            $keysExistRequest->setCacheKeys([$key]);
+            $call = $this->grpcManager->client->KeysExist(
+                $keysExistRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new KeyExistsError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new KeyExistsError(new UnknownError($e->getMessage(), 0, $e)));
         }
-        return new KeyExistsSuccess($response->asSuccess()->exists()[0]);
+
+        return ResponseFuture::createPending(
+            function () use ($call): KeyExistsResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    return new KeyExistsSuccess($response->getExists()[0]);
+                } catch (SdkError $e) {
+                    return new KeyExistsError($e);
+                } catch (Exception $e) {
+                    return new KeyExistsError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
-    public function increment(string $cacheName, string $key, int $amount, int $ttlSeconds=null) : IncrementResponse {
+    /**
+     * @return ResponseFuture<IncrementResponse>
+     */
+    public function increment(string $cacheName, string $key, int $amount, int $ttlSeconds = null): ResponseFuture
+    {
         try {
             validateCacheName($cacheName);
             validateNullOrEmpty($key, "Key");
@@ -335,15 +450,29 @@ class ScsDataClient implements LoggerAwareInterface
             $incrementRequest->setAmount($amount);
             $incrementRequest->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->Increment(
-                $incrementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $incrementRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new IncrementError($e);
+            return ResponseFuture::createResolved(new IncrementError($e));
         } catch (Exception $e) {
-            return new IncrementError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new IncrementError(new UnknownError($e->getMessage(), 0, $e)));
         }
-        return new IncrementSuccess($response);
+
+        return ResponseFuture::createPending(
+            function () use ($call): IncrementResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    return new IncrementSuccess($response);
+                } catch (SdkError $e) {
+                    return new IncrementError($e);
+                } catch (Exception $e) {
+                    return new IncrementError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
     public function listFetch(string $cacheName, string $listName): ListFetchResponse
@@ -354,13 +483,15 @@ class ScsDataClient implements LoggerAwareInterface
             $listFetchRequest = new _ListFetchRequest();
             $listFetchRequest->setListName($listName);
             $call = $this->grpcManager->client->ListFetch(
-                $listFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $listFetchRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new ListFetchError($e);
         } catch (Exception $e) {
-            return new ListFetchError(new UnknownError($e->getMessage()));
+            return new ListFetchError(new UnknownError($e->getMessage(), 0, $e));
         }
         if (!$response->hasFound()) {
             return new ListFetchMiss();
@@ -387,13 +518,15 @@ class ScsDataClient implements LoggerAwareInterface
                 $listPushFrontRequest->setTruncateBackToSize($truncateBackToSize);
             }
             $call = $this->grpcManager->client->ListPushFront(
-                $listPushFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $listPushFrontRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new ListPushFrontError($e);
         } catch (Exception $e) {
-            return new ListPushFrontError(new UnknownError($e->getMessage()));
+            return new ListPushFrontError(new UnknownError($e->getMessage(), 0, $e));
         }
         return new ListPushFrontSuccess($response);
     }
@@ -417,13 +550,15 @@ class ScsDataClient implements LoggerAwareInterface
                 $listPushBackRequest->setTruncateFrontToSize($truncateFrontToSize);
             }
             $call = $this->grpcManager->client->ListPushBack(
-                $listPushBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $listPushBackRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new ListPushBackError($e);
         } catch (Exception $e) {
-            return new ListPushBackError(new UnknownError($e->getMessage()));
+            return new ListPushBackError(new UnknownError($e->getMessage(), 0, $e));
         }
         return new ListPushBackSuccess($response);
     }
@@ -436,13 +571,15 @@ class ScsDataClient implements LoggerAwareInterface
             $listPopFrontRequest = new _ListPopFrontRequest();
             $listPopFrontRequest->setListName($listName);
             $call = $this->grpcManager->client->ListPopFront(
-                $listPopFrontRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $listPopFrontRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new ListPopFrontError($e);
         } catch (Exception $e) {
-            return new ListPopFrontError(new UnknownError($e->getMessage()));
+            return new ListPopFrontError(new UnknownError($e->getMessage(), 0, $e));
         }
         if (!$response->hasFound()) {
             return new ListPopFrontMiss();
@@ -458,13 +595,15 @@ class ScsDataClient implements LoggerAwareInterface
             $listPopBackRequest = new _ListPopBackRequest();
             $listPopBackRequest->setListName($listName);
             $call = $this->grpcManager->client->ListPopBack(
-                $listPopBackRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $listPopBackRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new ListPopBackError($e);
         } catch (Exception $e) {
-            return new ListPopBackError(new UnknownError($e->getMessage()));
+            return new ListPopBackError(new UnknownError($e->getMessage(), 0, $e));
         }
         if (!$response->hasFound()) {
             return new ListPopBackMiss();
@@ -481,13 +620,15 @@ class ScsDataClient implements LoggerAwareInterface
             $listRemoveValueRequest->setListName($listName);
             $listRemoveValueRequest->setAllElementsWithValue($value);
             $call = $this->grpcManager->client->ListRemove(
-                $listRemoveValueRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $listRemoveValueRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
             $this->processCall($call);
         } catch (SdkError $e) {
             return new ListRemoveValueError($e);
         } catch (Exception $e) {
-            return new ListRemoveValueError(new UnknownError($e->getMessage()));
+            return new ListRemoveValueError(new UnknownError($e->getMessage(), 0, $e));
         }
         return new ListRemoveValueSuccess();
     }
@@ -506,7 +647,7 @@ class ScsDataClient implements LoggerAwareInterface
         } catch (SdkError $e) {
             return new ListLengthError($e);
         } catch (Exception $e) {
-            return new ListLengthError(new UnknownError($e->getMessage()));
+            return new ListLengthError(new UnknownError($e->getMessage(), 0, $e));
         }
         return new ListLengthSuccess($response);
     }
@@ -526,12 +667,16 @@ class ScsDataClient implements LoggerAwareInterface
             $dictionarySetFieldRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
             $dictionarySetFieldRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $dictionarySetFieldRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $call = $this->grpcManager->client->DictionarySet(
+                $dictionarySetFieldRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
             $this->processCall($call);
         } catch (SdkError $e) {
             return new DictionarySetFieldError($e);
         } catch (Exception $e) {
-            return new DictionarySetFieldError(new UnknownError($e->getMessage()));
+            return new DictionarySetFieldError(new UnknownError($e->getMessage(), 0, $e));
         }
         return new DictionarySetFieldSuccess();
     }
@@ -553,12 +698,16 @@ class ScsDataClient implements LoggerAwareInterface
             $dictionaryGetFieldRequest = new _DictionaryGetRequest();
             $dictionaryGetFieldRequest->setDictionaryName($dictionaryName);
             $dictionaryGetFieldRequest->setFields([$field]);
-            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $call = $this->grpcManager->client->DictionaryGet(
+                $dictionaryGetFieldRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
             $dictionaryGetFieldResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new DictionaryGetFieldError($e);
         } catch (Exception $e) {
-            return new DictionaryGetFieldError(new UnknownError($e->getMessage()));
+            return new DictionaryGetFieldError(new UnknownError($e->getMessage(), 0, $e));
         }
         if ($dictionaryGetFieldResponse->hasMissing()) {
             return new DictionaryGetFieldMiss();
@@ -579,12 +728,16 @@ class ScsDataClient implements LoggerAwareInterface
             validateDictionaryName($dictionaryName);
             $dictionaryFetchRequest = new _DictionaryFetchRequest();
             $dictionaryFetchRequest->setDictionaryName($dictionaryName);
-            $call = $this->grpcManager->client->DictionaryFetch($dictionaryFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $call = $this->grpcManager->client->DictionaryFetch(
+                $dictionaryFetchRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
             $dictionaryFetchResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new DictionaryFetchError($e);
         } catch (Exception $e) {
-            return new DictionaryFetchError(new UnknownError($e->getMessage()));
+            return new DictionaryFetchError(new UnknownError($e->getMessage(), 0, $e));
         }
         if ($dictionaryFetchResponse->hasFound()) {
             return new DictionaryFetchHit($dictionaryFetchResponse);
@@ -612,12 +765,16 @@ class ScsDataClient implements LoggerAwareInterface
             $dictionarySetFieldsRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $dictionarySetFieldsRequest->setItems($protoItems);
             $dictionarySetFieldsRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->DictionarySet($dictionarySetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $call = $this->grpcManager->client->DictionarySet(
+                $dictionarySetFieldsRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
             $this->processCall($call);
         } catch (SdkError $e) {
             return new DictionarySetFieldsError($e);
         } catch (Exception $e) {
-            return new DictionarySetFieldsError(new UnknownError($e->getMessage()));
+            return new DictionarySetFieldsError(new UnknownError($e->getMessage(), 0, $e));
         }
         return new DictionarySetFieldsSuccess();
     }
@@ -631,12 +788,16 @@ class ScsDataClient implements LoggerAwareInterface
             $dictionaryGetFieldsRequest = new _DictionaryGetRequest();
             $dictionaryGetFieldsRequest->setDictionaryName($dictionaryName);
             $dictionaryGetFieldsRequest->setFields($fields);
-            $call = $this->grpcManager->client->DictionaryGet($dictionaryGetFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
+            $call = $this->grpcManager->client->DictionaryGet(
+                $dictionaryGetFieldsRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
             $dictionaryGetFieldsResponse = $this->processCall($call);
         } catch (SdkError $e) {
             return new DictionaryGetFieldsError($e);
         } catch (Exception $e) {
-            return new DictionaryGetFieldsError(new UnknownError($e->getMessage()));
+            return new DictionaryGetFieldsError(new UnknownError($e->getMessage(), 0, $e));
         }
         if ($dictionaryGetFieldsResponse->hasFound()) {
             return new DictionaryGetFieldsHit($dictionaryGetFieldsResponse, fields: $fields);
@@ -664,13 +825,15 @@ class ScsDataClient implements LoggerAwareInterface
                 ->setRefreshTtl($collectionTtl->getRefreshTtl())
                 ->setTtlMilliseconds($ttlMillis);
             $call = $this->grpcManager->client->DictionaryIncrement(
-                $dictionaryIncrementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $dictionaryIncrementRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
             return new DictionaryIncrementError($e);
         } catch (Exception $e) {
-            return new DictionaryIncrementError(new UnknownError($e->getMessage()));
+            return new DictionaryIncrementError(new UnknownError($e->getMessage(), 0, $e));
         }
         return new DictionaryIncrementSuccess($response);
     }
@@ -687,13 +850,15 @@ class ScsDataClient implements LoggerAwareInterface
             $dictionaryRemoveFieldRequest->setDictionaryName($dictionaryName);
             $dictionaryRemoveFieldRequest->setSome($some);
             $call = $this->grpcManager->client->DictionaryDelete(
-                $dictionaryRemoveFieldRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $dictionaryRemoveFieldRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
             $this->processCall($call);
         } catch (SdkError $e) {
             return new DictionaryRemoveFieldError($e);
         } catch (Exception $e) {
-            return new DictionaryRemoveFieldError(new UnknownError($e->getMessage()));
+            return new DictionaryRemoveFieldError(new UnknownError($e->getMessage(), 0, $e));
         }
         return new DictionaryRemoveFieldSuccess();
     }
@@ -710,18 +875,23 @@ class ScsDataClient implements LoggerAwareInterface
             $dictionaryRemoveFieldsRequest->setDictionaryName($dictionaryName);
             $dictionaryRemoveFieldsRequest->setSome($some);
             $call = $this->grpcManager->client->DictionaryDelete(
-                $dictionaryRemoveFieldsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $dictionaryRemoveFieldsRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
             $this->processCall($call);
         } catch (SdkError $e) {
             return new DictionaryRemoveFieldsError($e);
         } catch (Exception $e) {
-            return new DictionaryRemoveFieldsError(new UnknownError($e->getMessage()));
+            return new DictionaryRemoveFieldsError(new UnknownError($e->getMessage(), 0, $e));
         }
         return new DictionaryRemoveFieldsSuccess();
     }
 
-    public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): SetAddElementResponse
+    /**
+     * @return ResponseFuture<SetAddElementResponse>
+     */
+    public function setAddElement(string $cacheName, string $setName, string $element, ?CollectionTtl $ttl = null): ResponseFuture
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -735,20 +905,37 @@ class ScsDataClient implements LoggerAwareInterface
             $setAddElementRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $setAddElementRequest->setTtlMilliseconds($ttlMillis);
             $setAddElementRequest->setElements([$element]);
-            $call = $this->grpcManager->client->SetUnion($setAddElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
+            $call = $this->grpcManager->client->SetUnion(
+                $setAddElementRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
         } catch (SdkError $e) {
-            return new SetAddElementError($e);
+            return ResponseFuture::createResolved(new SetAddElementError($e));
         } catch (Exception $e) {
-            return new SetAddElementError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new SetAddElementError(new UnknownError($e->getMessage(), 0, $e)));
         }
-        return new SetAddElementSuccess();
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetAddElementResponse {
+                try {
+                    $this->processCall($call);
+
+                    return new SetAddElementSuccess();
+                } catch (SdkError $e) {
+                    return new SetAddElementError($e);
+                } catch (Exception $e) {
+                    return new SetAddElementError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
     /**
      * @param list<string> $elements
+     * @return ResponseFuture<SetAddElementsResponse>
      */
-    public function setAddElements(string $cacheName, string $setName, array $elements, ?CollectionTtl $ttl = null): SetAddElementsResponse
+    public function setAddElements(string $cacheName, string $setName, array $elements, ?CollectionTtl $ttl = null): ResponseFuture
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
@@ -762,37 +949,75 @@ class ScsDataClient implements LoggerAwareInterface
             $setAddElementsRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $setAddElementsRequest->setTtlMilliseconds($ttlMillis);
             $setAddElementsRequest->setElements($elements);
-            $call = $this->grpcManager->client->SetUnion($setAddElementsRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
+            $call = $this->grpcManager->client->SetUnion(
+                $setAddElementsRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
         } catch (SdkError $e) {
-            return new SetAddElementsError($e);
+            return ResponseFuture::createResolved(new SetAddElementsError($e));
         } catch (Exception $e) {
-            return new SetAddElementsError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new SetAddElementsError(new UnknownError($e->getMessage(), 0, $e)));
         }
-        return new SetAddElementsSuccess();
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetAddElementsResponse {
+                try {
+                    $this->processCall($call);
+
+                    return new SetAddElementsSuccess();
+                } catch (SdkError $e) {
+                    return new SetAddElementsError($e);
+                } catch (Exception $e) {
+                    return new SetAddElementsError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
-    public function setFetch(string $cacheName, string $setName): SetFetchResponse
+    /**
+     * @return ResponseFuture<SetFetchResponse>
+     */
+    public function setFetch(string $cacheName, string $setName): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
             validateSetName($setName);
             $setFetchRequest = new _SetFetchRequest();
             $setFetchRequest->setSetName($setName);
-            $call = $this->grpcManager->client->SetFetch($setFetchRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $setFetchResponse = $this->processCall($call);
+            $call = $this->grpcManager->client->SetFetch(
+                $setFetchRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
         } catch (SdkError $e) {
-            return new SetFetchError($e);
+            return ResponseFuture::createResolved(new SetFetchError($e));
         } catch (Exception $e) {
-            return new SetFetchError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new SetFetchError(new UnknownError($e->getMessage(), 0, $e)));
         }
-        if ($setFetchResponse->hasFound()) {
-            return new SetFetchHit($setFetchResponse);
-        }
-        return new SetFetchMiss();
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetFetchResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasFound()) {
+                        return new SetFetchHit($response);
+                    }
+                    return new SetFetchMiss();
+                } catch (SdkError $e) {
+                    return new SetFetchError($e);
+                } catch (Exception $e) {
+                    return new SetFetchError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
-    public function setLength(string $cacheName, string $setName): SetLengthResponse
+    /**
+     * @return ResponseFuture<SetLengthResponse>
+     */
+    public function setLength(string $cacheName, string $setName): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -800,18 +1025,35 @@ class ScsDataClient implements LoggerAwareInterface
             $setLengthRequest = new _SetLengthRequest();
             $setLengthRequest->setSetName($setName);
             $call = $this->grpcManager->client->SetLength(
-                $setLengthRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $setLengthRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
             );
-            $response = $this->processCall($call);
         } catch (SdkError $e) {
-            return new SetLengthError($e);
+            return ResponseFuture::createResolved(new SetLengthError($e));
         } catch (Exception $e) {
-            return new SetLengthError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new SetLengthError(new UnknownError($e->getMessage())));
         }
-        return new SetLengthSuccess($response);
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetLengthResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    return new SetLengthSuccess($response);
+                } catch (SdkError $e) {
+                    return new SetLengthError($e);
+                } catch (Exception $e) {
+                    return new SetLengthError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
-    public function setRemoveElement(string $cacheName, string $setName, string $element): SetRemoveElementResponse
+    /**
+     * @return ResponseFuture<SetRemoveElementResponse>
+     */
+    public function setRemoveElement(string $cacheName, string $setName, string $element): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -824,17 +1066,34 @@ class ScsDataClient implements LoggerAwareInterface
             $set->setElements([$element]);
             $subtrahend->setSet($set);
             $setRemoveElementRequest->setSubtrahend($subtrahend);
-            $call = $this->grpcManager->client->SetDifference($setRemoveElementRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]);
-            $this->processCall($call);
+            $call = $this->grpcManager->client->SetDifference(
+                $setRemoveElementRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
         } catch (SdkError $e) {
-            return new SetRemoveElementError($e);
+            return ResponseFuture::createResolved(new SetRemoveElementError($e));
         } catch (Exception $e) {
-            return new SetRemoveElementError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new SetRemoveElementError(new UnknownError($e->getMessage())));
         }
-        return new SetRemoveElementSuccess();
+        
+        return ResponseFuture::createPending(
+            function () use ($call): SetRemoveElementResponse {
+                try {
+                    $this->processCall($call);
+
+                    return new SetRemoveElementSuccess();
+                } catch (SdkError $e) {
+                    return new SetRemoveElementError($e);
+                } catch (Exception $e) {
+                    return new SetRemoveElementError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
-    public function close(): void {
+    public function close(): void
+    {
         $this->grpcManager->close();
     }
 }
