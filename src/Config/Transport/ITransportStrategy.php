@@ -20,4 +20,6 @@ interface ITransportStrategy
     public function withMaxIdleMillis(int $maxIdleMillis);
 
     public function withClientTimeout(int $clientTimeout);
+
+    public function withForceNewChannel(bool $forceNewChannel);
 }

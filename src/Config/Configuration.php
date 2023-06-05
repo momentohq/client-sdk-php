@@ -55,7 +55,21 @@ class Configuration implements IConfiguration
      * @param int $clientTimeoutSecs The amount of time in seconds to wait before cancelling the request.
      * @return IConfiguration Configuration object with specified client timeout
      */
-    public function withClientTimeout(int $clientTimeoutSecs): IConfiguration {
+    public function withClientTimeout(int $clientTimeoutSecs): IConfiguration
+    {
         return new Configuration($this->loggerFactory, $this->transportStrategy->withClientTimeout($clientTimeoutSecs));
+    }
+
+    /**
+     * Creates a new instance of the Configuration object, updated to use the specified "force_new" value
+     * when creating a gRPC channel
+     *
+     * @param bool $forceNewChannel If set to boolean "true" value, gRPC channels will be constructed with
+     *   "force_new" set to true
+     * @return IConfiguration Configuration object with the specified force new channel setting
+     */
+    public function withForceNewChannel(bool $forceNewChannel): IConfiguration
+    {
+        return new Configuration($this->loggerFactory, $this->transportStrategy->withForceNewChannel($forceNewChannel));
     }
 }
