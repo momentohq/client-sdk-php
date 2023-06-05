@@ -12,4 +12,8 @@ interface IGrpcConfiguration
     public function getForceNewChannel(): ?bool;
 
     public function withForceNewChannel(bool $forceNewChannel) : IGrpcConfiguration;
+
+    public function getNumGrpcChannels(): int;
+
+    public function withNumGrpcChannels(int $numGrpcChannels): IGrpcConfiguration;
 }

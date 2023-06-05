@@ -31,9 +31,9 @@ class Configuration implements IConfiguration
     }
 
     /**
-     * @return ITransportStrategy|null The currently active transport strategy
+     * @return ITransportStrategy The currently active transport strategy
      */
-    public function getTransportStrategy(): ITransportStrategy|null
+    public function getTransportStrategy(): ITransportStrategy
     {
         return $this->transportStrategy;
     }
