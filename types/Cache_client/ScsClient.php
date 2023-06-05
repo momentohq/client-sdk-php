@@ -213,6 +213,20 @@ class ScsClient extends \Grpc\BaseStub {
     }
 
     /**
+     * @param \Cache_client\_DictionaryLengthRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function DictionaryLength(\Cache_client\_DictionaryLengthRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/DictionaryLength',
+        $argument,
+        ['\Cache_client\_DictionaryLengthResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
      * @param \Cache_client\_SetFetchRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
@@ -265,6 +279,20 @@ class ScsClient extends \Grpc\BaseStub {
         return $this->_simpleRequest('/cache_client.Scs/SetContains',
         $argument,
         ['\Cache_client\_SetContainsResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * @param \Cache_client\_SetLengthRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SetLength(\Cache_client\_SetLengthRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SetLength',
+        $argument,
+        ['\Cache_client\_SetLengthResponse', 'decode'],
         $metadata, $options);
     }
 
