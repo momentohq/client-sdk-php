@@ -386,7 +386,7 @@ class ScsDataClient implements LoggerAwareInterface
         }
 
         return ResponseFuture::createPending(
-            function () use ($call): KeysExistResponse {
+            function () use ($call, $keys): KeysExistResponse {
                 try {
                     $response = $this->processCall($call);
 
@@ -1076,7 +1076,7 @@ class ScsDataClient implements LoggerAwareInterface
         } catch (Exception $e) {
             return ResponseFuture::createResolved(new SetRemoveElementError(new UnknownError($e->getMessage())));
         }
-        
+
         return ResponseFuture::createPending(
             function () use ($call): SetRemoveElementResponse {
                 try {
