@@ -16,11 +16,12 @@ class Psr16CacheClient implements CacheInterface
 {
 
     private CacheClient $momento;
+    private string $cacheName;
     // PSR-16 spec requires a default of as close to "forever" as the engine allows.
     // The below is set to a week and will be truncated as necessary for the cache
     // backend in use.
     private const DEFAULT_TTL_SECONDS = 604800;
-    private const CACHE_NAME = "momento-psr16";
+    private const DEFAULT_CACHE_NAME = "momento-psr16";
     private ?CacheException $lastError = null;
     private bool $throwExceptions = true;
 
@@ -29,12 +30,14 @@ class Psr16CacheClient implements CacheInterface
      * @param ICredentialProvider $authProvider
      * @param int|null $defaultTtlSeconds
      * @param bool|null $throwExceptions
+     * @param string $cacheName
      */
     public function __construct(
         IConfiguration      $configuration,
         ICredentialProvider $authProvider,
         ?int                $defaultTtlSeconds,
-        ?bool               $throwExceptions = null
+        ?bool               $throwExceptions = null,
+        string              $cacheName = self::DEFAULT_CACHE_NAME
     )
     {
         $ttlSeconds = $defaultTtlSeconds ?? self::DEFAULT_TTL_SECONDS;
@@ -42,7 +45,8 @@ class Psr16CacheClient implements CacheInterface
         if (!is_null($throwExceptions)) {
             $this->throwExceptions = $throwExceptions;
         }
-        $response = $this->momento->createCache(self::CACHE_NAME);
+        $this->cacheName = $cacheName;
+        $response = $this->momento->createCache($this->cacheName);
         if ($error = $response->asError()) {
             $this->throwExceptions = true;
             $this->handleCacheError($error);
@@ -110,7 +114,7 @@ class Psr16CacheClient implements CacheInterface
     public function get(string $key, mixed $default = null): mixed
     {
         validatePsr16Key($key);
-        $response = $this->momento->get(self::CACHE_NAME, $key);
+        $response = $this->momento->get($this->cacheName, $key);
         if ($error = $response->asError()) {
             $this->handleCacheError($error);
             return $default;
@@ -139,7 +143,7 @@ class Psr16CacheClient implements CacheInterface
             return $this->delete($key);
         }
 
-        $response = $this->momento->set(self::CACHE_NAME, $key, serialize($value), $ttl);
+        $response = $this->momento->set($this->cacheName, $key, serialize($value), $ttl);
         if ($error = $response->asError()) {
             $this->handleCacheError($error);
             return false;
@@ -153,7 +157,7 @@ class Psr16CacheClient implements CacheInterface
     public function delete(string $key): bool
     {
         validatePsr16Key($key);
-        $response = $this->momento->delete(self::CACHE_NAME, $key);
+        $response = $this->momento->delete($this->cacheName, $key);
         if ($error = $response->asError()) {
             $this->handleCacheError($error);
             return false;

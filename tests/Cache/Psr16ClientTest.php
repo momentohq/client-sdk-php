@@ -11,17 +11,17 @@ use Momento\Cache\Errors\NotImplementedException;
 use Momento\Cache\Psr16CacheClient;
 use Momento\Cache\CacheClient;
 use Momento\Config\Configuration;
+use Momento\Config\Configurations\Laptop;
 use Momento\Config\Transport\StaticGrpcConfiguration;
 use Momento\Config\Transport\StaticTransportStrategy;
 use Momento\Logging\NullLoggerFactory;
-use Psr\Log\NullLogger;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers Psr16CacheClient
  */
-class Psr16ClientTest extends \PHPUnit\Framework\TestCase
+class Psr16ClientTest extends TestCase
 {
-    private string $TEST_CACHE_NAME = "momento-psr16-test";
     private int $DEFAULT_TTL_SECONDS = 10;
     private Psr16CacheClient $client;
 
@@ -89,6 +89,32 @@ class Psr16ClientTest extends \PHPUnit\Framework\TestCase
                 ]
             ]
         ];
+    }
+
+    public function testOverrideDefaultCacheName()
+    {
+        $testCacheName = "PSR16-test-cache";
+        $configuration = Laptop::latest();
+        $authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
+        $client = new CacheClient(
+            $configuration, $authProvider, $this->DEFAULT_TTL_SECONDS
+        );
+        $psrClient = new Psr16CacheClient(
+            $configuration, $authProvider, $this->DEFAULT_TTL_SECONDS, cacheName: $testCacheName
+        );
+        $listResponse = $client->listCaches();
+        $this->assertNull($listResponse->asError());
+        $gotMatch = false;
+        foreach ($listResponse->asSuccess()->caches() as $cache) {
+            $cacheName = $cache->name();
+            if ($cacheName === $testCacheName) {
+                $gotMatch = true;
+                break;
+            }
+        }
+        $this->assertTrue($gotMatch);
+        $deleteResponse = $client->deleteCache($testCacheName);
+        $this->assertNull($deleteResponse->asError());
     }
 
     /**
