@@ -36,7 +36,7 @@ if ($response->asSuccess()) {
     $logger->info("Created cache " . $CACHE_NAME . "\n");
 } elseif ($response->asError()) {
     $logger->info("Error creating cache: " . $response->asError()->message() . "\n");
-    exit;
+    exit(1);
 } elseif ($response->asAlreadyExists()) {
     $logger->info("Cache " . $CACHE_NAME . " already exists.\n");
 }
@@ -52,7 +52,7 @@ if ($response->asSuccess()) {
     $logger->info("\n");
 } elseif ($response->asError()) {
     $logger->info("Error listing cache: " . $response->asError()->message() . "\n");
-    exit;
+    exit(1);
 }
 
 // Set
@@ -62,7 +62,7 @@ if ($response->asSuccess()) {
     $logger->info("SUCCESS: - Set key: " . $KEY . " value: " . $VALUE . " cache: " . $CACHE_NAME . "\n");
 } elseif ($response->asError()) {
     $logger->info("Error setting key: " . $response->asError()->message() . "\n");
-    exit;
+    exit(1);
 }
 
 // Get
@@ -71,10 +71,11 @@ $response = $client->get($CACHE_NAME, $KEY);
 if ($response->asHit()) {
     $logger->info("SUCCESS: - Get key: " . $KEY . " value: " . $response->asHit()->valueString() . " cache: " . $CACHE_NAME . "\n");
 } elseif ($response->asMiss()) {
-    $logger->info("Get operation was a MISS\n");
+    $logger->info("Get operation was an unexpected MISS\n");
+    exit(1);
 } elseif ($response->asError()) {
     $logger->info("Error getting cache: " . $response->asError()->message() . "\n");
-    exit;
+    exit(1);
 }
 
 // Delete test cache
@@ -82,6 +83,7 @@ $logger->info("Deleting cache $CACHE_NAME\n");
 $response = $client->deleteCache($CACHE_NAME);
 if ($response->asError()) {
     $logger->info("Error deleting cache: " . $response->asError()->message() . "\n");
+    exit(1);
 }
 
 printBanner("*                       Momento Example End                      *", $logger);

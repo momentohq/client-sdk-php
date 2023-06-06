@@ -41,7 +41,7 @@ if ($response->asSuccess()) {
     $logger->info("Created cache " . $CACHE_NAME . "\n");
 } elseif ($response->asError()) {
     $logger->info("Error creating cache: " . $response->asError()->message() . "\n");
-    exit;
+    exit(1);
 } elseif ($response->asAlreadyExists()) {
     $logger->info("Cache " . $CACHE_NAME . " already exists.\n");
 }
@@ -58,7 +58,7 @@ if ($response->asSuccess()) {
     $logger->info("SUCCESS: Dictionary set - field: " . $FIELD . " value: " . $VALUE . " dictionary: " . $DICTIONARY_NAME . "\n");
 } elseif ($response->asError()) {
     $logger->info("Error setting a value in a dictionary: " . $response->asError()->message() . "\n");
-    exit;
+    exit(1);
 }
 
 // Dictionary Get
@@ -67,10 +67,11 @@ $response = $client->dictionaryGetField($CACHE_NAME, $DICTIONARY_NAME, $FIELD);
 if ($response->asHit()) {
     $logger->info("HIT: Dictionary get - field: " . $FIELD . " value: " . $response->asHit()->valueString() . " dictionary: " . $DICTIONARY_NAME . "\n");
 } elseif ($response->asMiss()) {
-    $logger->info("Get operation was a MISS\n");
+    $logger->info("Get operation was an unexpected MISS\n");
+    exit(1);
 } elseif ($response->asError()) {
     $logger->info("Error getting a value in a dictionary: " . $response->asError()->message() . "\n");
-    exit;
+    exit(1);
 }
 
 // Delete test cache
@@ -78,6 +79,7 @@ $logger->info("Deleting cache $CACHE_NAME\n");
 $response = $client->deleteCache($CACHE_NAME);
 if ($response->asError()) {
     $logger->info("Error deleting cache: " . $response->asError()->message() . "\n");
+    exit(1);
 }
 
 printBanner("*                       Momento Example End                      *", $logger);

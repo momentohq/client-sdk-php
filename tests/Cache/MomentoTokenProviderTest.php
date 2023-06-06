@@ -23,14 +23,13 @@ class MomentoTokenProviderTest extends TestCase
 
     public function setUp(): void
     {
-        try {
-            $this->authToken = getenv(self::AUTH_TOKEN_NAME);
-        } catch (TypeError) {
-            // getenv returned false
+        if (!isset($_SERVER[self::AUTH_TOKEN_NAME])) {
             throw new RuntimeException(
-                "Integration tests require TEST_AUTH_TOKEN environment variable"
+                sprintf("Integration tests require %s environment variable", self::AUTH_TOKEN_NAME)
             );
         }
+
+        $this->authToken = $_SERVER[self::AUTH_TOKEN_NAME];
     }
 
     public function testEnvVarToken_HappyPath()

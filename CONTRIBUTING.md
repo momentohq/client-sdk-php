@@ -25,6 +25,6 @@ You will likely need to run this only once:
 
 ```bash
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-export TEXT_CACHE_NAME=<YOUR_CACHE_NAME>
+export TEST_CACHE_NAME=<YOUR_CACHE_NAME>
 ./dev-run-integration-tests.sh
 ```

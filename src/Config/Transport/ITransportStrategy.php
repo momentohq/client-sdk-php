@@ -7,8 +7,6 @@ use Momento\Logging\ILoggerFactory;
 
 interface ITransportStrategy
 {
-    public function getMaxConcurrentRequests(): ?int;
-
     public function getGrpcConfig(): ?IGrpcConfiguration;
 
     public function getMaxIdleMillis(): ?int;

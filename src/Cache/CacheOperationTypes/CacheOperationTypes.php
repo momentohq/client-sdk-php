@@ -17,11 +17,14 @@ use Cache_client\_ListPushBackResponse;
 use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetFetchResponse;
 use Cache_client\_SetIfNotExistsResponse;
+use Cache_client\_SetLengthResponse;
 use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
+use Closure;
 use Control_client\_ListCachesResponse;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
+use Throwable;
 
 trait ErrorBody
 {
@@ -80,6 +83,92 @@ class CacheInfo
     public function name(): string
     {
         return $this->name;
+    }
+}
+
+/**
+ * @template T extends ResponseBase
+ */
+class ResponseFuture
+{
+    /**
+     * @var (Closure(): T)|null
+     */
+    private ?Closure $resolver;
+
+    /**
+     * @var (Closure(): T)|null
+     */
+    private ?Closure $response;
+
+    /**
+     * @param (Closure(): T)|null $resolver
+     * @param (Closure(): T)|null $response
+     */
+    private function __construct(?Closure $resolver, ?Closure $response)
+    {
+        $this->resolver = $resolver;
+        $this->response = $response;
+    }
+
+    public function __destruct()
+    {
+        // if still pending, force resolution to happen. we don't bother to
+        // store the response or null out the resolver because the instance is
+        // already being destroyed at this point, decrementing the resolver
+        // refcount (which is what setting it to null would have done)
+        if (null === $this->response) {
+            ($this->resolver)();
+        }
+    }
+
+    /**
+     * @param Closure(): T $resolver
+     */
+    public static function createPending(Closure $resolver): self
+    {
+        return new self($resolver, null);
+    }
+
+    /**
+     * @param T $response
+     */
+    public static function createResolved(ResponseBase $response): self
+    {
+        return new self(null, fn () => $response);
+    }
+
+    public function isPending(): bool
+    {
+        return null === $this->response;
+    }
+
+    public function isResolved(): bool
+    {
+        return null !== $this->response;
+    }
+
+    /**
+     * @return T
+     */
+    public function wait(): ResponseBase
+    {
+        if (null === $this->response) {
+            try {
+                $response = ($this->resolver)();
+
+                // important to unset the resolver here so that any destructor
+                // code fires and any crashes get caught, instead of this happening
+                // later when our own destructor runs (assuming refcount 0)
+                $this->resolver = null;
+
+                $this->response = fn () => $response;
+            } catch (Throwable $e) {
+                $this->response = fn () => throw $e;
+            }
+        }
+
+        return ($this->response)();
     }
 }
 
@@ -1408,8 +1497,8 @@ class ListRemoveValueError extends ListRemoveValueResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * ListRemoveValueSuccess
- * * ListRemoveValueError
+ * * ListLengthSuccess
+ * * ListLengthError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -2190,6 +2279,63 @@ class SetAddElementError extends SetAddElementResponse
 }
 
 /**
+ * Parent response type for a set union request. The response object
+ * is resolved to a type-safe object of one of the following subtypes:
+ *
+ * * SetAddElementsSuccess
+ * * SetAddElementsError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($response->asSuccess()) {
+ *     // handle success as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetAddElementsResponse extends ResponseBase
+{
+    /**
+     * @return SetAddElementsSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): SetAddElementsSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetAddElementsError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): SetAddElementsError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class SetAddElementsSuccess extends SetAddElementsResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetAddElementsError extends SetAddElementsResponse
+{
+    use ErrorBody;
+}
+
+/**
  * Parent response type for a set fetch request. The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
@@ -2291,6 +2437,85 @@ class SetFetchError extends SetFetchResponse
 {
     use ErrorBody;
 }
+
+/**
+ * Parent response type for a set length request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SetLengthSuccess
+ * * SetLengthError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($success = $response->asSuccess()) {
+ *     return $success->length();
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetLengthResponse extends ResponseBase
+{
+    /**
+     * @return SetLengthSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): SetLengthSuccess|null
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetLengthError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): SetLengthError|null
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class SetLengthSuccess extends SetLengthResponse
+{
+    private int $length;
+
+    public function __construct(_SetLengthResponse $response)
+    {
+        parent::__construct();
+        $this->length = $response->getFound() ? $response->getFound()->getLength() : 0;
+    }
+
+    /**
+     * @return int Length of the specified set.
+     */
+    public function length(): int
+    {
+        return $this->length;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": {$this->length}";
+    }
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetLengthError extends SetLengthResponse
+{
+    use ErrorBody;
+}
+
 
 /**
  * Parent response type for a set remove element request. The
