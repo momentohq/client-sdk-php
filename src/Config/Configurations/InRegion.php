@@ -21,7 +21,7 @@ class InRegion extends Configuration
      * improvements we identify for default configurations.
      *
      * @param ILoggerFactory|null $loggerFactory
-     * @return Laptop
+     * @return InRegion
      */
     public static function latest(?ILoggerFactory $loggerFactory = null): Laptop
     {
@@ -33,13 +33,13 @@ class InRegion extends Configuration
      * in future releases of the SDK.
      *
      * @param ILoggerFactory|null $loggerFactory
-     * @return Laptop
+     * @return InRegion
      */
-    public static function v1(?ILoggerFactory $loggerFactory = null): Laptop
+    public static function v1(?ILoggerFactory $loggerFactory = null): InRegion
     {
         $loggerFactory = $loggerFactory ?? new NullLoggerFactory();
         $grpcConfig = new StaticGrpcConfiguration(1100);
-        $transportStrategy = new StaticTransportStrategy(null, $grpcConfig, $loggerFactory, self::$maxIdleMillis);
-        return new Laptop($loggerFactory, $transportStrategy);
+        $transportStrategy = new StaticTransportStrategy($grpcConfig, $loggerFactory, self::$maxIdleMillis);
+        return new self($loggerFactory, $transportStrategy);
     }
 }
