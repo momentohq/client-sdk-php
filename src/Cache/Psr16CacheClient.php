@@ -194,7 +194,7 @@ class Psr16CacheClient implements CacheInterface
 
             foreach ($futures as $key => $future) {
                 $response = $future->wait();
-                $error = $response->asError()
+                $error = $response->asError();
                 if (null !== $error) {
                     $this->handleCacheError($error);
                     $result[$key] = $default;
@@ -240,7 +240,7 @@ class Psr16CacheClient implements CacheInterface
 
             foreach ($futures as $key => $future) {
                 $response = $future->wait();
-                $error = $response->asError()
+                $error = $response->asError();
                 if (null !== $error) {
                     $this->handleCacheError($error);
                     return false;
@@ -272,7 +272,7 @@ class Psr16CacheClient implements CacheInterface
 
             foreach ($futures as $key => $future) {
                 $response = $future->wait();
-                $error = $response->asError()
+                $error = $response->asError();
                 if (null !== $error) {
                     $this->handleCacheError($error);
                     return false;
