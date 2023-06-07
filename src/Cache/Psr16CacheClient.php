@@ -176,13 +176,36 @@ class Psr16CacheClient implements CacheInterface
      */
     public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
+        $keyList = [];
+
         foreach ($keys as $key) {
             validatePsr16Key($key);
+            $keyList[] = $key;
         }
+
         $result = [];
-        foreach ($keys as $key) {
-            $result[$key] = $this->get($key, $default);
+
+        foreach (array_chunk($keyList, 100) as $keyChunk) {
+            $futures = [];
+
+            foreach ($keyChunk as $key) {
+                $futures[$key] = $this->momento->getAsync(self::CACHE_NAME, $key);
+            }
+
+            foreach ($futures as $key => $future) {
+                $response = $future->wait();
+                $error = $response->asError();
+                if (null !== $error) {
+                    $this->handleCacheError($error);
+                    $result[$key] = $default;
+                } elseif (null !== $response->asMiss()) {
+                    $result[$key] = $default;
+                } else {
+                    $result[$key] = unserialize($response->asHit()->valueString());
+                }
+            }
         }
+
         return $result;
     }
 
@@ -191,15 +214,40 @@ class Psr16CacheClient implements CacheInterface
      */
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
+        $keyValueMap = [];
+
         foreach ($values as $key => $value) {
             validatePsr16Key($key);
+            $keyValueMap[$key] = $value;
         }
-        foreach ($values as $key => $value) {
-            $result = $this->set($key, $value);
-            if ($result === false) {
-                return false;
+
+        if (is_null($ttl)) {
+            $ttl = self::DEFAULT_TTL_SECONDS;
+        } elseif ($ttl instanceof DateInterval) {
+            $ttl = self::dateIntervalToSeconds($ttl);
+        }
+
+        if ($ttl <= 0) {
+            return $this->deleteMultiple(array_keys($keyValueMap));
+        }
+
+        foreach (array_chunk($keyValueMap, 100, true) as $keyValueChunk) {
+            $futures = [];
+
+            foreach ($keyValueChunk as $key => $value) {
+                $futures[$key] = $this->momento->setAsync(self::CACHE_NAME, $key, serialize($value), $ttl);
+            }
+
+            foreach ($futures as $key => $future) {
+                $response = $future->wait();
+                $error = $response->asError();
+                if (null !== $error) {
+                    $this->handleCacheError($error);
+                    return false;
+                }
             }
         }
+
         return true;
     }
 
@@ -208,12 +256,30 @@ class Psr16CacheClient implements CacheInterface
      */
     public function deleteMultiple(iterable $keys): bool
     {
+        $keyList = [];
+
         foreach ($keys as $key) {
             validatePsr16Key($key);
+            $keyList[] = $key;
         }
-        foreach ($keys as $key) {
-            $this->delete($key);
+
+        foreach (array_chunk($keyList, 100) as $keyChunk) {
+            $futures = [];
+
+            foreach ($keyChunk as $key) {
+                $futures[$key] = $this->momento->deleteAsync(self::CACHE_NAME, $key);
+            }
+
+            foreach ($futures as $key => $future) {
+                $response = $future->wait();
+                $error = $response->asError();
+                if (null !== $error) {
+                    $this->handleCacheError($error);
+                    return false;
+                }
+            }
         }
+
         return true;
     }
 
