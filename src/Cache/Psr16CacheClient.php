@@ -30,14 +30,14 @@ class Psr16CacheClient implements CacheInterface
      * @param ICredentialProvider $authProvider
      * @param int|null $defaultTtlSeconds
      * @param bool|null $throwExceptions
-     * @param string $cacheName
+     * @param string|null $cacheName
      */
     public function __construct(
         IConfiguration      $configuration,
         ICredentialProvider $authProvider,
         ?int                $defaultTtlSeconds,
         ?bool               $throwExceptions = null,
-        string              $cacheName = self::DEFAULT_CACHE_NAME
+        ?string              $cacheName = null
     )
     {
         $ttlSeconds = $defaultTtlSeconds ?? self::DEFAULT_TTL_SECONDS;
@@ -45,7 +45,7 @@ class Psr16CacheClient implements CacheInterface
         if (!is_null($throwExceptions)) {
             $this->throwExceptions = $throwExceptions;
         }
-        $this->cacheName = $cacheName;
+        $this->cacheName = $cacheName ?? self::DEFAULT_CACHE_NAME;
         $response = $this->momento->createCache($this->cacheName);
         if ($error = $response->asError()) {
             $this->throwExceptions = true;
