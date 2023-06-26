@@ -199,6 +199,15 @@ class ScsDataClient implements LoggerAwareInterface
     {
         [$response, $status] = $call->wait();
         if ($status->code !== 0) {
+            print("=====\nError status:\n");
+            print_r($status);
+            print("Response:\n");
+            print_r($response);
+            print("Metadata:\n");
+            print_r($call->getMetadata());
+            print("Call:\n");
+            print_r($call);
+            print("=====\n");
             $this->logger->debug("Data client error: {$status->details}");
             throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
         }
@@ -1076,7 +1085,7 @@ class ScsDataClient implements LoggerAwareInterface
         } catch (Exception $e) {
             return ResponseFuture::createResolved(new SetRemoveElementError(new UnknownError($e->getMessage())));
         }
-        
+
         return ResponseFuture::createPending(
             function () use ($call): SetRemoveElementResponse {
                 try {
