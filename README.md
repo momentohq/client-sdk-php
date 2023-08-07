@@ -48,6 +48,8 @@ if ($hit = $response->asHit()) {
 
 ## Getting Started and Documentation
 
+To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com).
+
 Documentation is available on the [Momento Docs website](https://docs.momentohq.com).
 
 ## Examples
