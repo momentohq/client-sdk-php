@@ -193,7 +193,7 @@ class Psr16CacheClient implements CacheInterface
             $futures = [];
 
             foreach ($keyChunk as $key) {
-                $futures[$key] = $this->momento->getAsync(self::CACHE_NAME, $key);
+                $futures[$key] = $this->momento->getAsync(self::DEFAULT_CACHE_NAME, $key);
             }
 
             foreach ($futures as $key => $future) {
@@ -271,7 +271,7 @@ class Psr16CacheClient implements CacheInterface
             $futures = [];
 
             foreach ($keyChunk as $key) {
-                $futures[$key] = $this->momento->deleteAsync(self::CACHE_NAME, $key);
+                $futures[$key] = $this->momento->deleteAsync(self::DEFAULT_CACHE_NAME, $key);
             }
 
             foreach ($futures as $key => $future) {
