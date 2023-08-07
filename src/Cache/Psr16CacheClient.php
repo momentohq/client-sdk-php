@@ -239,7 +239,7 @@ class Psr16CacheClient implements CacheInterface
             $futures = [];
 
             foreach ($keyValueChunk as $key => $value) {
-                $futures[$key] = $this->momento->setAsync(self::CACHE_NAME, $key, serialize($value), $ttl);
+                $futures[$key] = $this->momento->setAsync(self::DEFAULT_CACHE_NAME, $key, serialize($value), $ttl);
             }
 
             foreach ($futures as $key => $future) {
