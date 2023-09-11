@@ -42,8 +42,8 @@
         "php": ">=8.0",
         "ext-grpc": "*",
         "firebase/php-jwt": "^6.3",
-        "google/protobuf": "3.22.3",
-        "grpc/grpc": "1.52.0",
+        "google/protobuf": "3.24.3",
+        "grpc/grpc": "1.57.0",
         "psr/log": "^2.0 || ^3.0",
         "psr/simple-cache": "^3.0"
     },
