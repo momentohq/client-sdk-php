@@ -96,7 +96,7 @@ class Psr16CacheClient implements CacheInterface
      * @param bool $clear_error
      * @return CacheException|null
      */
-    public function getLastError(bool $clear_error = true): CacheException|null
+    public function getLastError(bool $clear_error = true): ?CacheException
     {
         if (!$this->throwExceptions) {
             return null;
@@ -216,7 +216,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
+    public function setMultiple(iterable $values, $ttl = null): bool
     {
         $keyValueMap = [];
 

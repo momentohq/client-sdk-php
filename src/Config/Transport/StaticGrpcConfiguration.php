@@ -17,7 +17,7 @@ class StaticGrpcConfiguration implements IGrpcConfiguration
         $this->numGrpcChannels = $numGrpcChannels;
     }
 
-    public function getDeadlineMilliseconds(): int|null
+    public function getDeadlineMilliseconds(): ?int
     {
         return $this->deadlineMilliseconds;
     }
@@ -27,7 +27,7 @@ class StaticGrpcConfiguration implements IGrpcConfiguration
         return new StaticGrpcConfiguration($deadlineMilliseconds, $this->forceNewChannel, $this->numGrpcChannels);
     }
 
-    public function getForceNewChannel(): bool|null
+    public function getForceNewChannel(): ?bool
     {
         return $this->forceNewChannel;
     }
