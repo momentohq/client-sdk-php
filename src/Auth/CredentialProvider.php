@@ -28,12 +28,12 @@ abstract class CredentialProvider implements ICredentialProvider
     /**
      * @return string|null Used for routing gRPC calls through a proxy server
      */
-    public abstract function getTrustedControlEndpointCertificateName(): string|null;
+    public abstract function getTrustedControlEndpointCertificateName(): ?string;
 
     /**
      * @return string|null Used for routing gRPC calls through a proxy server
      */
-    public abstract function getTrustedCacheEndpointCertificateName(): string|null;
+    public abstract function getTrustedCacheEndpointCertificateName(): ?string;
 
     /**
      * Convenience method for reading and parsing a JWT token stored as a string.
