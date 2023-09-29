@@ -800,7 +800,7 @@ class ScsDataClient implements LoggerAwareInterface
             return new DictionaryGetFieldsError(new UnknownError($e->getMessage(), 0, $e));
         }
         if ($dictionaryGetFieldsResponse->hasFound()) {
-            return new DictionaryGetFieldsHit($dictionaryGetFieldsResponse, fields: $fields);
+            return new DictionaryGetFieldsHit($dictionaryGetFieldsResponse, $fields);
         }
         return new DictionaryGetFieldsMiss();
 
