@@ -63,7 +63,7 @@ class ScsControlClient implements LoggerAwareInterface
             $request->setCacheName($cacheName);
             $call = $this->grpcManager->client->CreateCache($request);
             $this->processCall($call);
-        } catch (AlreadyExistsError) {
+        } catch (AlreadyExistsError $e) {
             return new CreateCacheAlreadyExists();
         } catch (SdkError $e) {
             $this->logger->debug("Failed to create cache $cacheName: {$e->getMessage()}");
