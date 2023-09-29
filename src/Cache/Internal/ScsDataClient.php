@@ -195,7 +195,7 @@ class ScsDataClient implements LoggerAwareInterface
         return $ttl;
     }
 
-    private function processCall(UnaryCall $call): mixed
+    private function processCall(UnaryCall $call)
     {
         [$response, $status] = $call->wait();
         if ($status->code !== 0) {
@@ -1076,7 +1076,7 @@ class ScsDataClient implements LoggerAwareInterface
         } catch (Exception $e) {
             return ResponseFuture::createResolved(new SetRemoveElementError(new UnknownError($e->getMessage())));
         }
-        
+
         return ResponseFuture::createPending(
             function () use ($call): SetRemoveElementResponse {
                 try {

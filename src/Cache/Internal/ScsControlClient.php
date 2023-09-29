@@ -46,7 +46,7 @@ class ScsControlClient implements LoggerAwareInterface
         $this->logger = $logger;
     }
 
-    private function processCall(UnaryCall $call): mixed
+    private function processCall(UnaryCall $call)
     {
         [$response, $status] = $call->wait();
         if ($status->code !== 0) {

@@ -111,7 +111,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function get(string $key, mixed $default = null): mixed
+    public function get(string $key, $default = null)
     {
         validatePsr16Key($key);
         $response = $this->momento->get($this->cacheName, $key);
@@ -128,7 +128,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
+    public function set(string $key, $value, $ttl = null): bool
     {
         validatePsr16Key($key);
         if (is_null($ttl)) {
@@ -178,7 +178,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function getMultiple(iterable $keys, mixed $default = null): iterable
+    public function getMultiple(iterable $keys, $default = null): iterable
     {
         $keyList = [];
 

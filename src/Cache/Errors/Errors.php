@@ -84,9 +84,9 @@ class MomentoGrpcErrorDetails
     /**
      * @var mixed|null Headers and other information about the error response
      */
-    public mixed $metadata;
+    public $metadata;
 
-    public function __construct(int $code, string $details, mixed $metadata = null)
+    public function __construct(int $code, string $details, $metadata = null)
     {
         $this->code = $code;
         $this->details = $details;
@@ -128,14 +128,14 @@ abstract class SdkError extends \Exception
     public string $messageWrapper;
 
     public function __construct(
-        string $message, int $code = 0, ?\Throwable $previous = null, mixed $metadata = null
+        string $message, int $code = 0, ?\Throwable $previous = null, $metadata = null
     )
     {
         parent::__construct($message, $code, $previous);
         $this->setTransportDetails($code, $message, $metadata);
     }
 
-    public function setTransportDetails(int $code, string $details, mixed $metadata)
+    public function setTransportDetails(int $code, string $details, $metadata)
     {
         $grpcDetails = new MomentoGrpcErrorDetails($code, $details, $metadata);
         $this->transportDetails = new MomentoErrorTransportDetails($grpcDetails);
