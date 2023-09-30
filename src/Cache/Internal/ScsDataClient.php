@@ -270,12 +270,13 @@ class ScsDataClient implements LoggerAwareInterface
                 try {
                     $response = $this->processCall($call);
                     $result = $response->getResult();
-
-                    return match ($result) {
-                        ECacheResult::Hit => new GetHit($response),
-                        ECacheResult::Miss => new GetMiss(),
-                        default => throw new InternalServerError("CacheService returned an unexpected result: $result"),
-                    };
+                    if ($result == ECacheResult::Hit) {
+                        return new GetHit($response);
+                    } elseif ($result == ECacheResult::Miss) {
+                        return new GetMiss();
+                    } else {
+                        throw new InternalServerError("CacheService returned an unexpected result: $result");
+                    }
                 } catch (SdkError $e) {
                     return new GetError($e);
                 } catch (Exception $e) {
