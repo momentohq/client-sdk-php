@@ -62,7 +62,7 @@ class StderrLogger extends AbstractLogger
         if (!empty($context)) {
             $message = $this->interpolate($message, $context);
         }
-        if (!str_ends_with("$message", "\n")) {
+        if (substr($message, strlen($message) - 1, 1) != "\n") {
             $message = "$message\n";
         }
         if ($this->name) {
