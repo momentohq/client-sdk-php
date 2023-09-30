@@ -164,7 +164,9 @@ class ResponseFuture
 
                 $this->response = fn () => $response;
             } catch (Throwable $e) {
-                $this->response = fn () => throw $e;
+                $this->response = function () use ($e) {
+                    throw $e;
+                };
             }
         }
 
