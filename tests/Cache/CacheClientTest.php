@@ -1211,7 +1211,7 @@ class CacheClientTest extends TestCase
     {
         $dictionaryName = uniqid();
         $field = "";
-        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, null, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $response = $this->client->dictionaryIncrement($this->TEST_CACHE_NAME, $dictionaryName, $field, 1, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
