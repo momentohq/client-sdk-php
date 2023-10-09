@@ -96,7 +96,7 @@ class Psr16CacheClient implements CacheInterface
      * @param bool $clear_error
      * @return CacheException|null
      */
-    public function getLastError(bool $clear_error = true): CacheException|null
+    public function getLastError(bool $clear_error = true): ?CacheException
     {
         if (!$this->throwExceptions) {
             return null;
@@ -111,7 +111,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function get(string $key, mixed $default = null): mixed
+    public function get($key, $default = null)
     {
         validatePsr16Key($key);
         $response = $this->momento->get($this->cacheName, $key);
@@ -128,7 +128,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
+    public function set($key, $value, $ttl = null): bool
     {
         validatePsr16Key($key);
         if (is_null($ttl)) {
@@ -154,7 +154,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function delete(string $key): bool
+    public function delete($key): bool
     {
         validatePsr16Key($key);
         $response = $this->momento->delete($this->cacheName, $key);
@@ -178,7 +178,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function getMultiple(iterable $keys, mixed $default = null): iterable
+    public function getMultiple($keys, $default = null): iterable
     {
         $keyList = [];
 
@@ -216,7 +216,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
+    public function setMultiple($values, $ttl = null): bool
     {
         $keyValueMap = [];
 
@@ -258,7 +258,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function deleteMultiple(iterable $keys): bool
+    public function deleteMultiple($keys): bool
     {
         $keyList = [];
 
@@ -290,7 +290,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function has(string $key): bool
+    public function has($key): bool
     {
         validatePsr16Key($key);
         return (bool)$this->get($key);

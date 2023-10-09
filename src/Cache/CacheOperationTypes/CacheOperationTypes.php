@@ -164,7 +164,9 @@ class ResponseFuture
 
                 $this->response = fn () => $response;
             } catch (Throwable $e) {
-                $this->response = fn () => throw $e;
+                $this->response = function () use ($e) {
+                    throw $e;
+                };
             }
         }
 
@@ -261,7 +263,7 @@ abstract class CreateCacheResponse extends ResponseBase
     /**
      * @return CreateCacheSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): CreateCacheSuccess|null
+    public function asSuccess(): ?CreateCacheSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -272,7 +274,7 @@ abstract class CreateCacheResponse extends ResponseBase
     /**
      * @return CreateCacheError|null Returns the error subtype if the request was successful and null otherwise.
      */
-    public function asError(): CreateCacheError|null
+    public function asError(): ?CreateCacheError
     {
         if ($this->isError()) {
             return $this;
@@ -283,7 +285,7 @@ abstract class CreateCacheResponse extends ResponseBase
     /**
      * @return CreateCacheAlreadyExists|null Returns the "already exists" subtype if the request was successful and null otherwise.
      */
-    public function asAlreadyExists(): CreateCacheAlreadyExists|null
+    public function asAlreadyExists(): ?CreateCacheAlreadyExists
     {
         if ($this->isAlreadyExists()) {
             return $this;
@@ -338,7 +340,7 @@ abstract class DeleteCacheResponse extends ResponseBase
     /**
      * @return DeleteCacheSuccess|null  Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): DeleteCacheSuccess|null
+    public function asSuccess(): ?DeleteCacheSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -349,7 +351,7 @@ abstract class DeleteCacheResponse extends ResponseBase
     /**
      * @return DeleteCacheError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DeleteCacheError|null
+    public function asError(): ?DeleteCacheError
     {
         if ($this->isError()) {
             return $this;
@@ -395,7 +397,7 @@ abstract class ListCachesResponse extends ResponseBase
     /**
      * @return ListCachesSuccess|null  Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): ListCachesSuccess|null
+    public function asSuccess(): ?ListCachesSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -406,7 +408,7 @@ abstract class ListCachesResponse extends ResponseBase
     /**
      * @return ListCachesError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ListCachesError|null
+    public function asError(): ?ListCachesError
     {
         if ($this->isError()) {
             return $this;
@@ -479,7 +481,7 @@ abstract class SetResponse extends ResponseBase
     /**
      * @return SetSuccess|null  Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): SetSuccess|null
+    public function asSuccess(): ?SetSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -490,7 +492,7 @@ abstract class SetResponse extends ResponseBase
     /**
      * @return SetError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): SetError|null
+    public function asError(): ?SetError
     {
         if ($this->isError()) {
             return $this;
@@ -541,7 +543,7 @@ abstract class GetResponse extends ResponseBase
     /**
      * @return GetHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): GetHit|null
+    public function asHit(): ?GetHit
     {
         if ($this->isHit()) {
             return $this;
@@ -552,7 +554,7 @@ abstract class GetResponse extends ResponseBase
     /**
      * @return GetMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): GetMiss|null
+    public function asMiss(): ?GetMiss
     {
         if ($this->isMiss()) {
             return $this;
@@ -563,7 +565,7 @@ abstract class GetResponse extends ResponseBase
     /**
      * @return GetError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): GetError|null
+    public function asError(): ?GetError
     {
         if ($this->isError()) {
             return $this;
@@ -640,7 +642,7 @@ abstract class SetIfNotExistsResponse extends ResponseBase
     /**
      * @return SetIfNotExistsStored|null Returns the subtype for a successfully stored value and null otherwise.
      */
-    public function asStored(): SetIfNotExistsStored|null
+    public function asStored(): ?SetIfNotExistsStored
     {
         if ($this->isStored()) {
             return $this;
@@ -651,7 +653,7 @@ abstract class SetIfNotExistsResponse extends ResponseBase
     /**
      * @return SetIfNotExistsNotStored|null Returns the subtype indicating the value was not stored and null otherwise.
      */
-    public function asNotStored(): SetIfNotExistsNotStored|null
+    public function asNotStored(): ?SetIfNotExistsNotStored
     {
         if($this->isNotStored()) {
             return $this;
@@ -662,7 +664,7 @@ abstract class SetIfNotExistsResponse extends ResponseBase
     /**
      * @return SetIfNotExistsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): SetIfNotExistsError|null
+    public function asError(): ?SetIfNotExistsError
     {
         if ($this->isError()) {
             return $this;
@@ -714,7 +716,7 @@ abstract class DeleteResponse extends ResponseBase
     /**
      * @return DeleteSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): DeleteSuccess|null
+    public function asSuccess(): ?DeleteSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -725,7 +727,7 @@ abstract class DeleteResponse extends ResponseBase
     /**
      * @return DeleteError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DeleteError|null
+    public function asError(): ?DeleteError
     {
         if ($this->isError()) {
             return $this;
@@ -775,7 +777,7 @@ abstract class KeysExistResponse extends ResponseBase
     /**
      * @return KeysExistSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess() : KeysExistSuccess|null
+    public function asSuccess() : ?KeysExistSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -786,7 +788,7 @@ abstract class KeysExistResponse extends ResponseBase
     /**
      * @return KeysExistError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError() : KeysExistError|null
+    public function asError() : ?KeysExistError
     {
         if ($this->isError()) {
             return $this;
@@ -858,7 +860,7 @@ abstract class KeyExistsResponse extends ResponseBase
     /**
      * @return KeyExistsSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess() : KeyExistsSuccess|null
+    public function asSuccess() : ?KeyExistsSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -869,7 +871,7 @@ abstract class KeyExistsResponse extends ResponseBase
     /**
      * @return KeyExistsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError() : KeyExistsError|null
+    public function asError() : ?KeyExistsError
     {
         if ($this->isError()) {
             return $this;
@@ -928,7 +930,7 @@ abstract class IncrementResponse extends ResponseBase
     /**
      * @return IncrementSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess() : IncrementSuccess|null
+    public function asSuccess() : ?IncrementSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -939,7 +941,7 @@ abstract class IncrementResponse extends ResponseBase
     /**
      * @return IncrementError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError() : IncrementError|null
+    public function asError() : ?IncrementError
     {
         if ($this->isError()) {
             return $this;
@@ -1000,7 +1002,7 @@ abstract class ListFetchResponse extends ResponseBase
     /**
      * @return ListFetchHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): ListFetchHit|null
+    public function asHit(): ?ListFetchHit
     {
         if ($this->isHit()) {
             return $this;
@@ -1011,7 +1013,7 @@ abstract class ListFetchResponse extends ResponseBase
     /**
      * @return ListFetchMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): ListFetchMiss|null
+    public function asMiss(): ?ListFetchMiss
     {
         if ($this->isMiss()) {
             return $this;
@@ -1022,7 +1024,7 @@ abstract class ListFetchResponse extends ResponseBase
     /**
      * @return ListFetchError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ListFetchError|null
+    public function asError(): ?ListFetchError
     {
         if ($this->isError()) {
             return $this;
@@ -1103,7 +1105,7 @@ abstract class ListPushFrontResponse extends ResponseBase
     /**
      * @return ListPushFrontSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): ListPushFrontSuccess|null
+    public function asSuccess(): ?ListPushFrontSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1114,7 +1116,7 @@ abstract class ListPushFrontResponse extends ResponseBase
     /**
      * @return ListPushFrontError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ListPushFrontError|null
+    public function asError(): ?ListPushFrontError
     {
         if ($this->isError()) {
             return $this;
@@ -1181,7 +1183,7 @@ abstract class ListPushBackResponse extends ResponseBase
     /**
      * @return ListPushBackSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): ListPushBackSuccess|null
+    public function asSuccess(): ?ListPushBackSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1192,7 +1194,7 @@ abstract class ListPushBackResponse extends ResponseBase
     /**
      * @return ListPushBackError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ListPushBackError|null
+    public function asError(): ?ListPushBackError
     {
         if ($this->isError()) {
             return $this;
@@ -1262,7 +1264,7 @@ abstract class ListPopFrontResponse extends ResponseBase
     /**
      * @return ListPopFrontHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): ListPopFrontHit|null
+    public function asHit(): ?ListPopFrontHit
     {
         if ($this->isHit()) {
             return $this;
@@ -1273,7 +1275,7 @@ abstract class ListPopFrontResponse extends ResponseBase
     /**
      * @return ListPopFrontMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): ListPopFrontMiss|null
+    public function asMiss(): ?ListPopFrontMiss
     {
         if ($this->isMiss()) {
             return $this;
@@ -1284,7 +1286,7 @@ abstract class ListPopFrontResponse extends ResponseBase
     /**
      * @return ListPopFrontError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ListPopFrontError|null
+    public function asError(): ?ListPopFrontError
     {
         if ($this->isError()) {
             return $this;
@@ -1361,7 +1363,7 @@ abstract class ListPopBackResponse extends ResponseBase
     /**
      * @return ListPopBackHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): ListPopBackHit|null
+    public function asHit(): ?ListPopBackHit
     {
         if ($this->isHit()) {
             return $this;
@@ -1372,7 +1374,7 @@ abstract class ListPopBackResponse extends ResponseBase
     /**
      * @return ListPopBackMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): ListPopBackMiss|null
+    public function asMiss(): ?ListPopBackMiss
     {
         if ($this->isMiss()) {
             return $this;
@@ -1383,7 +1385,7 @@ abstract class ListPopBackResponse extends ResponseBase
     /**
      * @return ListPopBackError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ListPopBackError|null
+    public function asError(): ?ListPopBackError
     {
         if ($this->isError()) {
             return $this;
@@ -1457,7 +1459,7 @@ abstract class ListRemoveValueResponse extends ResponseBase
     /**
      * @return ListRemoveValueSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): ListRemoveValueSuccess|null
+    public function asSuccess(): ?ListRemoveValueSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1468,7 +1470,7 @@ abstract class ListRemoveValueResponse extends ResponseBase
     /**
      * @return ListRemoveValueError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ListRemoveValueError|null
+    public function asError(): ?ListRemoveValueError
     {
         if ($this->isError()) {
             return $this;
@@ -1515,7 +1517,7 @@ abstract class ListLengthResponse extends ResponseBase
     /**
      * @return ListLengthSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): ListLengthSuccess|null
+    public function asSuccess(): ?ListLengthSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1526,7 +1528,7 @@ abstract class ListLengthResponse extends ResponseBase
     /**
      * @return ListLengthError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ListLengthError|null
+    public function asError(): ?ListLengthError
     {
         if ($this->isError()) {
             return $this;
@@ -1593,7 +1595,7 @@ abstract class DictionarySetFieldResponse extends ResponseBase
     /**
      * @return DictionarySetFieldSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): DictionarySetFieldSuccess|null
+    public function asSuccess(): ?DictionarySetFieldSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1604,7 +1606,7 @@ abstract class DictionarySetFieldResponse extends ResponseBase
     /**
      * @return DictionarySetFieldError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DictionarySetFieldError|null
+    public function asError(): ?DictionarySetFieldError
     {
         if ($this->isError()) {
             return $this;
@@ -1654,7 +1656,7 @@ abstract class DictionaryGetFieldResponse extends ResponseBase
     /**
      * @return DictionaryGetFieldHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): DictionaryGetFieldHit|null
+    public function asHit(): ?DictionaryGetFieldHit
     {
         if ($this->isHit()) {
             return $this;
@@ -1665,7 +1667,7 @@ abstract class DictionaryGetFieldResponse extends ResponseBase
     /**
      * @return DictionaryGetFieldMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): DictionaryGetFieldMiss|null
+    public function asMiss(): ?DictionaryGetFieldMiss
     {
         if ($this->isMiss()) {
             return $this;
@@ -1676,7 +1678,7 @@ abstract class DictionaryGetFieldResponse extends ResponseBase
     /**
      * @return DictionaryGetFieldError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DictionaryGetFieldError|null
+    public function asError(): ?DictionaryGetFieldError
     {
         if ($this->isError()) {
             return $this;
@@ -1768,7 +1770,7 @@ abstract class DictionaryFetchResponse extends ResponseBase
     /**
      * @return DictionaryFetchHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): DictionaryFetchHit|null
+    public function asHit(): ?DictionaryFetchHit
     {
         if ($this->isHit()) {
             return $this;
@@ -1779,7 +1781,7 @@ abstract class DictionaryFetchResponse extends ResponseBase
     /**
      * @return DictionaryFetchMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): DictionaryFetchMiss|null
+    public function asMiss(): ?DictionaryFetchMiss
     {
         if ($this->isMiss()) {
             return $this;
@@ -1790,7 +1792,7 @@ abstract class DictionaryFetchResponse extends ResponseBase
     /**
      * @return DictionaryFetchError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DictionaryFetchError|null
+    public function asError(): ?DictionaryFetchError
     {
         if ($this->isError()) {
             return $this;
@@ -1868,7 +1870,7 @@ abstract class DictionarySetFieldsResponse extends ResponseBase
     /**
      * @return DictionarySetFieldsSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): DictionarySetFieldsSuccess|null
+    public function asSuccess(): ?DictionarySetFieldsSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -1879,7 +1881,7 @@ abstract class DictionarySetFieldsResponse extends ResponseBase
     /**
      * @return DictionarySetFieldsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DictionarySetFieldsError|null
+    public function asError(): ?DictionarySetFieldsError
     {
         if ($this->isError()) {
             return $this;
@@ -1930,7 +1932,7 @@ abstract class DictionaryGetFieldsResponse extends ResponseBase
     /**
      * @return DictionaryGetFieldsHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): DictionaryGetFieldsHit|null
+    public function asHit(): ?DictionaryGetFieldsHit
     {
         if ($this->isHit()) {
             return $this;
@@ -1941,7 +1943,7 @@ abstract class DictionaryGetFieldsResponse extends ResponseBase
     /**
      * @return DictionaryGetFieldsMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): DictionaryGetFieldsMiss|null
+    public function asMiss(): ?DictionaryGetFieldsMiss
     {
         if ($this->isMiss()) {
             return $this;
@@ -1952,7 +1954,7 @@ abstract class DictionaryGetFieldsResponse extends ResponseBase
     /**
      * @return DictionaryGetFieldsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DictionaryGetFieldsError|null
+    public function asError(): ?DictionaryGetFieldsError
     {
         if ($this->isError()) {
             return $this;
@@ -2048,7 +2050,7 @@ abstract class DictionaryIncrementResponse extends ResponseBase
     /**
      * @return DictionaryIncrementSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): DictionaryIncrementSuccess|null
+    public function asSuccess(): ?DictionaryIncrementSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2059,7 +2061,7 @@ abstract class DictionaryIncrementResponse extends ResponseBase
     /**
      * @return DictionaryIncrementError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DictionaryIncrementError|null
+    public function asError(): ?DictionaryIncrementError
     {
         if ($this->isError()) {
             return $this;
@@ -2127,7 +2129,7 @@ abstract class DictionaryRemoveFieldResponse extends ResponseBase
     /**
      * @return DictionaryRemoveFieldSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): DictionaryRemoveFieldSuccess|null
+    public function asSuccess(): ?DictionaryRemoveFieldSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2138,7 +2140,7 @@ abstract class DictionaryRemoveFieldResponse extends ResponseBase
     /**
      * @return DictionaryRemoveFieldError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DictionaryRemoveFieldError|null
+    public function asError(): ?DictionaryRemoveFieldError
     {
         if ($this->isError()) {
             return $this;
@@ -2185,7 +2187,7 @@ abstract class DictionaryRemoveFieldsResponse extends ResponseBase
     /**
      * @return DictionaryRemoveFieldsSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): DictionaryRemoveFieldsSuccess|null
+    public function asSuccess(): ?DictionaryRemoveFieldsSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2196,7 +2198,7 @@ abstract class DictionaryRemoveFieldsResponse extends ResponseBase
     /**
      * @return DictionaryRemoveFieldsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): DictionaryRemoveFieldsError|null
+    public function asError(): ?DictionaryRemoveFieldsError
     {
         if ($this->isError()) {
             return $this;
@@ -2243,7 +2245,7 @@ abstract class SetAddElementResponse extends ResponseBase
     /**
      * @return SetAddElementSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): SetAddElementSuccess|null
+    public function asSuccess(): ?SetAddElementSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2254,7 +2256,7 @@ abstract class SetAddElementResponse extends ResponseBase
     /**
      * @return SetAddElementError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): SetAddElementError|null
+    public function asError(): ?SetAddElementError
     {
         if ($this->isError()) {
             return $this;
@@ -2300,7 +2302,7 @@ abstract class SetAddElementsResponse extends ResponseBase
     /**
      * @return SetAddElementsSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): SetAddElementsSuccess|null
+    public function asSuccess(): ?SetAddElementsSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2311,7 +2313,7 @@ abstract class SetAddElementsResponse extends ResponseBase
     /**
      * @return SetAddElementsError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): SetAddElementsError|null
+    public function asError(): ?SetAddElementsError
     {
         if ($this->isError()) {
             return $this;
@@ -2362,7 +2364,7 @@ abstract class SetFetchResponse extends ResponseBase
     /**
      * @return SetFetchHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
-    public function asHit(): SetFetchHit|null
+    public function asHit(): ?SetFetchHit
     {
         if ($this->isHit()) {
             return $this;
@@ -2373,7 +2375,7 @@ abstract class SetFetchResponse extends ResponseBase
     /**
      * @return SetFetchMiss|null Returns the miss subtype if the request returned an error and null otherwise.
      */
-    public function asMiss(): SetFetchMiss|null
+    public function asMiss(): ?SetFetchMiss
     {
         if ($this->isMiss()) {
             return $this;
@@ -2384,7 +2386,7 @@ abstract class SetFetchResponse extends ResponseBase
     /**
      * @return SetFetchError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): SetFetchError|null
+    public function asError(): ?SetFetchError
     {
         if ($this->isError()) {
             return $this;
@@ -2461,7 +2463,7 @@ abstract class SetLengthResponse extends ResponseBase
     /**
      * @return SetLengthSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): SetLengthSuccess|null
+    public function asSuccess(): ?SetLengthSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2472,7 +2474,7 @@ abstract class SetLengthResponse extends ResponseBase
     /**
      * @return SetLengthError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): SetLengthError|null
+    public function asError(): ?SetLengthError
     {
         if ($this->isError()) {
             return $this;
@@ -2540,7 +2542,7 @@ abstract class SetRemoveElementResponse extends ResponseBase
     /**
      * @return SetRemoveElementSuccess|null Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): SetRemoveElementSuccess|null
+    public function asSuccess(): ?SetRemoveElementSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2551,7 +2553,7 @@ abstract class SetRemoveElementResponse extends ResponseBase
     /**
      * @return SetRemoveElementError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): SetRemoveElementError|null
+    public function asError(): ?SetRemoveElementError
     {
         if ($this->isError()) {
             return $this;

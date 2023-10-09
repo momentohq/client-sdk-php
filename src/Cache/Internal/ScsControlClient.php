@@ -46,7 +46,7 @@ class ScsControlClient implements LoggerAwareInterface
         $this->logger = $logger;
     }
 
-    private function processCall(UnaryCall $call): mixed
+    private function processCall(UnaryCall $call)
     {
         [$response, $status] = $call->wait();
         if ($status->code !== 0) {
@@ -63,7 +63,7 @@ class ScsControlClient implements LoggerAwareInterface
             $request->setCacheName($cacheName);
             $call = $this->grpcManager->client->CreateCache($request);
             $this->processCall($call);
-        } catch (AlreadyExistsError) {
+        } catch (AlreadyExistsError $e) {
             return new CreateCacheAlreadyExists();
         } catch (SdkError $e) {
             $this->logger->debug("Failed to create cache $cacheName: {$e->getMessage()}");

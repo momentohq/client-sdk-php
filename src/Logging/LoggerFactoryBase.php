@@ -7,7 +7,7 @@ abstract class LoggerFactoryBase implements ILoggerFactory
 {
     protected string $logLevel;
 
-    public function getLogLevel(): string|null
+    public function getLogLevel(): ?string
     {
         return $this->logLevel;
     }

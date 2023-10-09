@@ -48,7 +48,13 @@ class StderrLogger extends AbstractLogger
         return strtr($message, $replace);
     }
 
-    public function log($level, \Stringable|string $message, array $context = []): void
+    /**
+     * @param $level
+     * @param \Stringable|string $message
+     * @param array $context
+     * @return void
+     */
+    public function log($level, $message, array $context = []): void
     {
         if (!$this->shouldLog($level, $this->logLevel)) {
             return;
@@ -56,7 +62,7 @@ class StderrLogger extends AbstractLogger
         if (!empty($context)) {
             $message = $this->interpolate($message, $context);
         }
-        if (!str_ends_with("$message", "\n")) {
+        if (substr($message, strlen($message) - 1, 1) != "\n") {
             $message = "$message\n";
         }
         if ($this->name) {

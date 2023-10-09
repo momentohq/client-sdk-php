@@ -100,7 +100,7 @@ class Psr16ClientTest extends TestCase
             $configuration, $authProvider, $this->DEFAULT_TTL_SECONDS
         );
         $psrClient = new Psr16CacheClient(
-            $configuration, $authProvider, $this->DEFAULT_TTL_SECONDS, cacheName: $testCacheName
+            $configuration, $authProvider, $this->DEFAULT_TTL_SECONDS, null, $testCacheName
         );
         $listResponse = $client->listCaches();
         $this->assertNull($listResponse->asError());
@@ -120,7 +120,7 @@ class Psr16ClientTest extends TestCase
     /**
      * @dataProvider dataTypeProvider
      */
-    public function testGetSetDelete_HappyPath_MultipleTypes(mixed $value)
+    public function testGetSetDelete_HappyPath_MultipleTypes($value)
     {
         $key = "myKey";
 
