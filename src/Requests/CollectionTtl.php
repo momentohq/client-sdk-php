@@ -61,7 +61,7 @@ class CollectionTtl
     /**
      * @return int|null The current value for TTL in seconds.
      */
-    public function getTtl(): int|null
+    public function getTtl(): ?int
     {
         return $this->ttlSeconds;
     }
@@ -69,7 +69,7 @@ class CollectionTtl
     /**
      * @return bool|null The current value for whether or not to refresh the TTL for a collection when it is modified.
      */
-    public function getRefreshTtl(): bool|null
+    public function getRefreshTtl(): ?bool
     {
         return $this->refreshTtl;
     }

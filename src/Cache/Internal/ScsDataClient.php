@@ -195,7 +195,7 @@ class ScsDataClient implements LoggerAwareInterface
         return $ttl;
     }
 
-    private function processCall(UnaryCall $call): mixed
+    private function processCall(UnaryCall $call)
     {
         [$response, $status] = $call->wait();
         if ($status->code !== 0) {
@@ -270,12 +270,13 @@ class ScsDataClient implements LoggerAwareInterface
                 try {
                     $response = $this->processCall($call);
                     $result = $response->getResult();
-
-                    return match ($result) {
-                        ECacheResult::Hit => new GetHit($response),
-                        ECacheResult::Miss => new GetMiss(),
-                        default => throw new InternalServerError("CacheService returned an unexpected result: $result"),
-                    };
+                    if ($result == ECacheResult::Hit) {
+                        return new GetHit($response);
+                    } elseif ($result == ECacheResult::Miss) {
+                        return new GetMiss();
+                    } else {
+                        throw new InternalServerError("CacheService returned an unexpected result: $result");
+                    }
                 } catch (SdkError $e) {
                     return new GetError($e);
                 } catch (Exception $e) {
@@ -800,7 +801,7 @@ class ScsDataClient implements LoggerAwareInterface
             return new DictionaryGetFieldsError(new UnknownError($e->getMessage(), 0, $e));
         }
         if ($dictionaryGetFieldsResponse->hasFound()) {
-            return new DictionaryGetFieldsHit($dictionaryGetFieldsResponse, fields: $fields);
+            return new DictionaryGetFieldsHit($dictionaryGetFieldsResponse, $fields);
         }
         return new DictionaryGetFieldsMiss();
 
@@ -1076,7 +1077,7 @@ class ScsDataClient implements LoggerAwareInterface
         } catch (Exception $e) {
             return ResponseFuture::createResolved(new SetRemoveElementError(new UnknownError($e->getMessage())));
         }
-        
+
         return ResponseFuture::createPending(
             function () use ($call): SetRemoveElementResponse {
                 try {

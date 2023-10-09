@@ -27,10 +27,10 @@ interface ICredentialProvider
     /**
      * @return string|null Used for routing gRPC calls through a proxy server
      */
-    public function getTrustedControlEndpointCertificateName(): string|null;
+    public function getTrustedControlEndpointCertificateName(): ?string;
 
     /**
      * @return string|null Used for routing gRPC calls through a proxy server
      */
-    public function getTrustedCacheEndpointCertificateName(): string|null;
+    public function getTrustedCacheEndpointCertificateName(): ?string;
 }

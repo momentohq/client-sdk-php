@@ -48,7 +48,7 @@ class AuthUtils
             $payload = $exploded[1];
             $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($payload));
             $payload->authToken = $authToken;
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             self::throwBadAuthToken();
         }
 

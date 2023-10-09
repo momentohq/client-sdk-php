@@ -14,7 +14,7 @@ class StaticTransportStrategy implements ITransportStrategy
     public function __construct(
         IGrpcConfiguration $grpcConfig,
         ?ILoggerFactory     $loggerFactory = null,
-        ?int                $maxIdleMillis = null,
+        ?int                $maxIdleMillis = null
     )
     {
         $this->grpcConfig = $grpcConfig;
@@ -22,7 +22,7 @@ class StaticTransportStrategy implements ITransportStrategy
         $this->maxIdleMillis = $maxIdleMillis;
     }
 
-    public function getGrpcConfig(): IGrpcConfiguration|null
+    public function getGrpcConfig(): ?IGrpcConfiguration
     {
         return $this->grpcConfig;
     }
