@@ -459,6 +459,65 @@ class ListCachesError extends ListCachesResponse
 }
 
 /**
+ * Parent response type for a flush cache request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * FlushCacheSuccess
+ * * FlushCacheError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($success = $response->asSuccess()) {
+ *     // handle success if needed
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class FlushCacheResponse extends ResponseBase
+{
+    /**
+     * @return FlushCacheSuccess|null  Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): ?FlushCacheSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return FlushCacheError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?FlushCacheError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class FlushCacheSuccess extends FlushCacheResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class FlushCacheError extends FlushCacheResponse
+{
+    use ErrorBody;
+}
+
+/**
  * Parent response type for a set request. The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:

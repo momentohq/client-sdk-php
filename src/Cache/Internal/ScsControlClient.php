@@ -5,6 +5,7 @@ namespace Momento\Cache\Internal;
 
 use Control_client\_CreateCacheRequest;
 use Control_client\_DeleteCacheRequest;
+use Control_client\_FlushCacheRequest;
 use Control_client\_ListCachesRequest;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
@@ -15,6 +16,9 @@ use Momento\Cache\CacheOperationTypes\CreateCacheSuccess;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheError;
 use Momento\Cache\CacheOperationTypes\DeleteCacheSuccess;
+use Momento\Cache\CacheOperationTypes\FlushCacheError;
+use Momento\Cache\CacheOperationTypes\FlushCacheResponse;
+use Momento\Cache\CacheOperationTypes\FlushCacheSuccess;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesError;
 use Momento\Cache\CacheOperationTypes\ListCachesSuccess;
@@ -106,6 +110,22 @@ class ScsControlClient implements LoggerAwareInterface
             return new ListCachesError(new UnknownError($e->getMessage()));
         }
         return new ListCachesSuccess($response);
+    }
+
+    public function flushCache(string $cacheName): FlushCacheResponse
+    {
+        try {
+            validateCacheName($cacheName);
+            $request = new _FlushCacheRequest();
+            $request->setCacheName($cacheName);
+            $call = $this->grpcManager->client->FlushCache($request);
+            $this->processCall($call);
+        } catch (SdkError $e) {
+            return new FlushCacheError($e);
+        } catch (\Exception $e) {
+            return new FlushCacheError(new UnknownError($e->getMessage()));
+        }
+        return new FlushCacheSuccess();
     }
 
 }
