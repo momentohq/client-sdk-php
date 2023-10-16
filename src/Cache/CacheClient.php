@@ -164,7 +164,7 @@ class CacheClient implements LoggerAwareInterface
     /**
      * Flush a cache.
      *
-     * @param string $cacheName Name of the cache to delete.
+     * @param string $cacheName Name of the cache to flush.
      * @return FlushCacheResponse Represents the result of the flush cache operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
      * * FlushCacheSuccess<br>
