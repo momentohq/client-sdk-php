@@ -37,7 +37,7 @@ class Psr16CacheClient implements CacheInterface
         ICredentialProvider $authProvider,
         ?int                $defaultTtlSeconds,
         ?bool               $throwExceptions = null,
-        ?string              $cacheName = null
+        ?string             $cacheName = null
     )
     {
         $ttlSeconds = $defaultTtlSeconds ?? self::DEFAULT_TTL_SECONDS;

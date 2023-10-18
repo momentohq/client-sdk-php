@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Momento\Tests\Cache;
 
 use DateTime;
+use Momento\Auth\CredentialProvider;
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Errors\InvalidArgumentException;
@@ -23,16 +24,28 @@ use PHPUnit\Framework\TestCase;
 class Psr16ClientTest extends TestCase
 {
     private int $DEFAULT_TTL_SECONDS = 10;
+    private Configuration $configuration;
+    private CredentialProvider $authProvider;
     private Psr16CacheClient $client;
+    private string $cacheName;
 
     public function setUp(): void
     {
         $loggerFactory = new NullLoggerFactory();
         $grpcConfiguration = new StaticGrpcConfiguration(5000);
         $transportStrategy = new StaticTransportStrategy($grpcConfiguration);
-        $configuration = new Configuration($loggerFactory, $transportStrategy);
-        $authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
-        $this->client = new Psr16CacheClient($configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
+        $this->configuration = new Configuration($loggerFactory, $transportStrategy);
+        $this->authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
+        $this->client = new Psr16CacheClient(
+            $this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS
+        );
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        $momento = new CacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
+        $momento->deleteCache("momento-psr16");
     }
 
     public function testDateIntervalToSeconds()
@@ -93,7 +106,7 @@ class Psr16ClientTest extends TestCase
 
     public function testOverrideDefaultCacheName()
     {
-        $testCacheName = "PSR16-test-cache";
+        $testCacheName = uniqid("php-PSR16-name-test");
         $configuration = Laptop::latest();
         $authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
         $client = new CacheClient(
