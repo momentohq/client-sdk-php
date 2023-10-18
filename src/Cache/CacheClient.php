@@ -13,6 +13,7 @@ use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldResponse;
 use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldsResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
+use Momento\Cache\CacheOperationTypes\FlushCacheResponse;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\GetResponse;
 use Momento\Cache\CacheOperationTypes\IncrementResponse;
@@ -158,6 +159,24 @@ class CacheClient implements LoggerAwareInterface
     public function deleteCache(string $cacheName): DeleteCacheResponse
     {
         return $this->controlClient->deleteCache($cacheName);
+    }
+
+    /**
+     * Flush a cache.
+     *
+     * @param string $cacheName Name of the cache to flush.
+     * @return FlushCacheResponse Represents the result of the flush cache operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * FlushCacheSuccess<br>
+     * * FlushCacheError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
+    public function flushCache(string $cacheName): FlushCacheResponse
+    {
+        return $this->controlClient->flushCache($cacheName);
     }
 
     /**
