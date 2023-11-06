@@ -42,6 +42,10 @@ class IdleDataClientWrapper implements LoggerAwareInterface {
         return $this->client;
     }
 
+    public function close(): void {
+        $this->client->close();
+    }
+
     private function getMilliseconds(): int {
         return (int)(gettimeofday(true) * 1000);
     }

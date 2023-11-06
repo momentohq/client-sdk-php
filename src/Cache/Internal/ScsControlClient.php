@@ -45,6 +45,10 @@ class ScsControlClient implements LoggerAwareInterface
         $this->setLogger($this->loggerFactory->getLogger(get_class($this)));
     }
 
+    public function close(): void {
+        $this->grpcManager->close();
+    }
+
     public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
