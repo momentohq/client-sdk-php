@@ -68,6 +68,17 @@ class CacheClientTest extends TestCase
         return new Configuration($loggerFactory, $transportStrategy);
     }
 
+    public function testCreateAndCloseClient() {
+        $client = new CacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
+        $response = $client->listCaches();
+        $this->assertNull($response->asError());
+        $client->close();
+        $client = new CacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
+        $response = $client->listCaches();
+        $this->assertNull($response->asError());
+        $client->close();
+    }
+
     // Happy path test
 
     public function testCreateSetGetDelete()

@@ -97,6 +97,19 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
+     * Close the client and free up all associated resources. NOTE: the client object will not be usable after calling
+     * this method.
+     */
+    public function close(): void
+    {
+        $this->controlClient->close();
+        foreach ($this->dataClients as $dataClient) {
+            $dataClient->close();
+        }
+    }
+
+
+    /**
      * Assigns a LoggerInterface logging object to the client.
      *
      * @param LoggerInterface $logger Object to use for logging

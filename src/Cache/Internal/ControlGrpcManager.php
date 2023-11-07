@@ -16,6 +16,7 @@ class ControlGrpcManager
 {
 
     public ScsControlClient $client;
+    private Channel $channel;
 
     public function __construct(ICredentialProvider $authProvider)
     {
@@ -24,14 +25,18 @@ class ControlGrpcManager
         if ($authProvider->getTrustedControlEndpointCertificateName()) {
             $channelArgs["grpc.ssl_target_name_override"] = $authProvider->getTrustedControlEndpointCertificateName();
         }
-        $channel = new Channel($endpoint, $channelArgs);
+        $this->channel = new Channel($endpoint, $channelArgs);
         $interceptors = [
             new AuthorizationInterceptor($authProvider->getAuthToken()),
             new AgentInterceptor(),
         ];
-        $channel = Interceptor::intercept($channel, $interceptors);
+        $interceptedChannel = Interceptor::intercept($this->channel, $interceptors);
         $options = [];
-        $this->client = new ScsControlClient($endpoint, $options, $channel);
+        $this->client = new ScsControlClient($endpoint, $options, $interceptedChannel);
+    }
+
+    public function close(): void {
+        $this->channel->close();
     }
 
 }
