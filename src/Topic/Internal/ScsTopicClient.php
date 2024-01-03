@@ -7,6 +7,7 @@ use Cache_client\Pubsub\_PublishRequest;
 use Cache_client\Pubsub\_SubscriptionRequest;
 use Cache_client\Pubsub\_TopicValue;
 use Exception;
+use Grpc\ServerStreamingCall;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
@@ -84,6 +85,28 @@ class ScsTopicClient implements LoggerAwareInterface
         return $response;
     }
 
+    private function processStreamingCall(ServerStreamingCall $call): void
+    {
+        // Retrieve metadata and status using the metadata() method
+        list($response, $status) = $call->responses();
+
+        if ($status->code !== 0) {
+            $this->logger->error("Error during streaming call setup: {$status->details}");
+            throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
+        }
+
+        // Optionally, you can log any metadata received during the initial setup.
+        $metadata = $call->getMetadata();
+        $this->logger->info("Initial metadata received: " . json_encode($metadata));
+        
+        // Optionally, log the start of the streaming process.
+        $this->logger->info("Streaming call initiated successfully.");
+    }
+
+
+
+
+
     public function publish(string $cacheName, string $topicName, string $value): TopicPublishResponse
     {
         $this->logger->info("Publishing to topic: $topicName in cache $cacheName\n");
@@ -127,6 +150,7 @@ class ScsTopicClient implements LoggerAwareInterface
             $request->setTopic($topicName);
 
             $call = $this->grpcManager->client->Subscribe($request);
+            $this->processStreamingCall($call);
 
             foreach ($call->responses() as $response) {
                 try {
