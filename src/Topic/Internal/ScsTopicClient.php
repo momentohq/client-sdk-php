@@ -89,19 +89,14 @@ class ScsTopicClient implements LoggerAwareInterface
 
     private function processStreamingCall(ServerStreamingCall $call): void
     {
+        $this->logger->info("Processing streaming call\n");
         foreach ($call->responses() as $response) {
-            // Process each response individually
             $this->logger->info("Received message: " . json_encode($response));
-
-            // Optionally, you can log any metadata received during the initial setup.
-            $metadata = $call->getMetadata();
-            $this->logger->info("Initial metadata received: " . json_encode($metadata));
-
-            // Optionally, log the start of the streaming process.
+//            $metadata = $call->getMetadata();
+//            $this->logger->info("Initial metadata received: " . json_encode($metadata));
             $this->logger->info("Streaming call initiated successfully.");
         }
 
-        // Handle the end of the streaming process
         $status = $call->getStatus();
         if ($status->code !== 0) {
             $this->logger->error("Error during streaming: {$status->details}");
@@ -157,7 +152,7 @@ class ScsTopicClient implements LoggerAwareInterface
             $request->setTopic($topicName);
 
             $call = $this->grpcManager->client->Subscribe($request, ['authorization' => $authToken]);
-            $this->processStreamingCall($call);
+//            $this->processStreamingCall($call);
 
             foreach ($call->responses() as $response) {
                 try {
