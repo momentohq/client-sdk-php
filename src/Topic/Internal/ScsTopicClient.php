@@ -43,7 +43,7 @@ class ScsTopicClient implements LoggerAwareInterface
 
     public function __construct(IConfiguration $configuration, ICredentialProvider $authProvider)
     {
-        $authToken = $authProvider->getAuthToken();
+        $this->authToken = $authProvider->getAuthToken();
         $operationTimeoutMs = $configuration
             ->getTransportStrategy()
             ->getGrpcConfig()
