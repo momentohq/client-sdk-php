@@ -44,7 +44,10 @@ if ($response->asSuccess()) {
 
 // Subscribe to topic
 $logger->info("Subscribing to topic: $TOPIC_NAME\n");
-$response = $topicClient->subscribe($CACHE_NAME, $TOPIC_NAME);
+$callback = function ($message) use ($logger) {
+    $logger->info("Received message: " . json_encode($message));
+};
+$response = $topicClient->subscribe($CACHE_NAME, $TOPIC_NAME, $callback);
 if ($response->asSuccess()) {
     $logger->info("SUCCESS: Subscribed to topic: " . $TOPIC_NAME . "\n");
 } elseif ($response->asError()) {

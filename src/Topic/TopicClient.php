@@ -63,13 +63,9 @@ class TopicClient implements LoggerAwareInterface
         return $this->topicClient->publish($cacheName, $topicName, $message);
     }
 
-    public function subscribe(string $cacheName, string $topicName): TopicSubscribeResponse
+    public function subscribe(string $cacheName, string $topicName, callable $callback): TopicSubscribeResponse
     {
         $this->logger->info("Subscribing to topic: $topicName\n");
-        $callback = function ($message) {
-            $this->logger->info("Received message: " . json_encode($message) . "\n");
-//            echo "Received message: " . json_encode($message) . "\n";
-        };
         return $this->topicClient->subscribe($cacheName, $topicName, $callback);
     }
 }
