@@ -113,9 +113,10 @@ class ScsTopicClient implements LoggerAwareInterface
      *
      * @param string   $cacheName The name of the cache.
      * @param string   $topicName The name of the topic to subscribe to.
-     * @param callable $callback  The callback function to handle incoming messages.
+     * @param callable $onMessage Callback for handling incoming messages.
+     * @return TopicSubscribeResponse
      */
-    public function subscribe(string $cacheName, string $topicName, callable $callback): TopicSubscribeResponse
+    public function subscribe(string $cacheName, string $topicName, callable $onMessage): TopicSubscribeResponse
     {
         $this->logger->info("Subscribing to topic: $topicName in cache $cacheName\n");
 
@@ -128,9 +129,15 @@ class ScsTopicClient implements LoggerAwareInterface
             $call = $this->grpcManager->client->Subscribe($request);
 
             foreach ($call->responses() as $response) {
-                $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
-                $callback($response);
+                try {
+                    $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
+                    $onMessage($response);
+                } catch (\Exception $e) {
+                    $this->logger->error("Error processing message: " . $e->getMessage());
+                }
             }
+
+
         } catch (SdkError $e) {
             $this->logger->debug("Failed to subscribe to topic $topicName in cache $cacheName: {$e->getMessage()}");
             return new TopicSubscribeResponseError($e);
@@ -138,6 +145,7 @@ class ScsTopicClient implements LoggerAwareInterface
             $this->logger->debug("Failed to subscribe to topic $topicName in cache $cacheName: {$e->getMessage()}");
             return new TopicSubscribeResponseError(new UnknownError($e->getMessage()));
         }
+
         return new TopicSubscribeResponseSubscription();
     }
 
