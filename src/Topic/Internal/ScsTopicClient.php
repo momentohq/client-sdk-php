@@ -127,9 +127,8 @@ class ScsTopicClient implements LoggerAwareInterface
 
             $call = $this->grpcManager->client->Subscribe($request);
 
-            // Start a loop to handle incoming messages
             foreach ($call->responses() as $response) {
-                // Invoke the callback with the received message
+                $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
                 $callback($response);
             }
         } catch (SdkError $e) {
