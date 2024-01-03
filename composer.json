@@ -22,6 +22,7 @@
             "Momento\\": "src/",
             "Cache_client\\": "types/Cache_client/",
             "Control_client\\": "types/Control_client/",
+            "PubsubClient\\": "types/Cache_client/Pubsub",
             "Auth\\": "types/Auth/",
             "GPBMetadata\\": "types/GPBMetadata"
         },

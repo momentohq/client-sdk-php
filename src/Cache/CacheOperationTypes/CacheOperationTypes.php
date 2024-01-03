@@ -2635,3 +2635,43 @@ class SetRemoveElementError extends SetRemoveElementResponse
 {
     use ErrorBody;
 }
+
+abstract class TopicPublishResponse extends ResponseBase
+{
+    /**
+     * @return TopicPublishResponseSuccess|null
+     */
+    public function asSuccess(): ?TopicPublishResponseSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return TopicPublishResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?TopicPublishResponseError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class TopicPublishResponseSuccess extends TopicPublishResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class TopicPublishResponseError extends TopicPublishResponse
+{
+    use ErrorBody;
+}
