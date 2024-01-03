@@ -64,11 +64,11 @@ if ($response->asSuccess()) {
 
 
 // Delete test cache
-$logger->info("Deleting cache $CACHE_NAME\n");
-$response = $client->deleteCache($CACHE_NAME);
-if ($response->asError()) {
-    $logger->info("Error deleting cache: " . $response->asError()->message() . "\n");
-    exit(1);
-}
+//$logger->info("Deleting cache $CACHE_NAME\n");
+//$response = $client->deleteCache($CACHE_NAME);
+//if ($response->asError()) {
+//    $logger->info("Error deleting cache: " . $response->asError()->message() . "\n");
+//    exit(1);
+//}
 
 printBanner("*                       Momento Example End                      *", $logger);

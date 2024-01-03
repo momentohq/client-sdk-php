@@ -73,51 +73,78 @@ class ScsTopicClient implements LoggerAwareInterface
     private function processCall(UnaryCall $call)
     {
         [$response, $status] = $call->wait();
+        $this->logger->debug("response: . json_encode($response)\n");
         if ($status->code !== 0) {
-            $this->logger->debug("Data client error: {$status->details}");
+            $this->logger->debug("Topic client error: {$status->details}");
             throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
         }
         return $response;
     }
 
-
-    /**
-     * @return ResponseFuture<TopicPublishResponse>
-     */
-    public function publish(string $cacheName, string $topicName, string $value): ResponseFuture
+    public function publish(string $cacheName, string $topicName, string $value): TopicPublishResponse
     {
+        $this->logger->info("Publishing to topic: $topicName in cache $cacheName\n");
         $topicValue = new _TopicValue();
         $topicValue->setText($value);
         try {
             validateCacheName($cacheName);
-            $publishRequest = new _PublishRequest();
-            $publishRequest->setCacheName($cacheName);
-            $publishRequest->setTopic($topicName);
-            $publishRequest->setValue($topicValue);
-
-            $call = $this->grpcManager->client->Publish($publishRequest,);
+            $request = new _PublishRequest();
+            $request->setCacheName($cacheName);
+            $request->setTopic($topicName);
+            $request->setValue($topicValue);
+            $call = $this->grpcManager->client->Publish($request);
+            $this->processCall($call);
         } catch (SdkError $e) {
             $this->logger->debug("Failed to publish message to topic $topicName in cache $cacheName: {$e->getMessage()}");
-            return ResponseFuture::createResolved(new TopicPublishResponseError($e));
-        } catch (Exception $e) {
+            return new TopicPublishResponseError($e);
+        } catch (\Exception $e) {
             $this->logger->debug("Failed to publish message to topic $topicName in cache $cacheName: {$e->getMessage()}");
-            return ResponseFuture::createResolved(new TopicPublishResponseError(new UnknownError($e->getMessage())));
+            return new TopicPublishResponseError(new UnknownError($e->getMessage()));
         }
-
-        return ResponseFuture::createPending(
-            function () use ($call): TopicPublishResponse {
-                try {
-                    $this->processCall($call);
-                } catch (SdkError $e) {
-                    return new TopicPublishResponseError($e);
-                } catch (Exception $e) {
-                    return new TopicPublishResponseError(new UnknownError($e->getMessage()));
-                }
-
-                return new TopicPublishResponseSuccess();
-            }
-        );
+        return new TopicPublishResponseSuccess();
     }
+
+
+//    /**
+//     * @return TopicPublishResponse
+//     */
+//    public function publish(string $cacheName, string $topicName, string $value): TopicPublishResponse
+//    {
+//        $topicValue = new _TopicValue();
+//        $topicValue->setText($value);
+//        try {
+//            $this->logger->info("Publishing to topic: $topicName in cache $cacheName\n");
+//            validateCacheName($cacheName);
+//            $publishRequest = new _PublishRequest();
+//            $publishRequest->setCacheName($cacheName);
+//            $publishRequest->setTopic($topicName);
+//            $publishRequest->setValue($topicValue);
+//            $this->logger->debug("publishRequest: . json_encode($publishRequest)\n");
+//
+//            $call = $this->grpcManager->client->Publish($publishRequest);
+//            this->logger->debug("call: . json_encode($call)\n");
+//        } catch (SdkError $e) {
+//            $this->logger->debug("Failed to publish message to topic $topicName in cache $cacheName: {$e->getMessage()}");
+//            return ResponseFuture::createResolved(new TopicPublishResponseError($e));
+//        } catch (Exception $e) {
+//            $this->logger->debug("Failed to publish message to topic $topicName in cache $cacheName: {$e->getMessage()}");
+//            return ResponseFuture::createResolved(new TopicPublishResponseError(new UnknownError($e->getMessage())));
+//        }
+//
+//        return ResponseFuture::createPending(
+//            function () use ($call): TopicPublishResponse {
+//                try {
+//                    $this->processCall($call);
+//                } catch (SdkError $e) {
+//                    return new TopicPublishResponseError($e);
+//                } catch (Exception $e) {
+//                    return new TopicPublishResponseError(new UnknownError($e->getMessage()));
+//                }
+//
+//                return new TopicPublishResponseSuccess();
+//            }
+//        );
+//    }
 
 
     public function close(): void

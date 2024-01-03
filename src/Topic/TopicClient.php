@@ -59,6 +59,6 @@ class TopicClient implements LoggerAwareInterface
     public function publish(string $cacheName, string $topicName, string $message): TopicPublishResponse
     {
         $this->logger->info("Publishing to topic: $topicName\n");
-        return $this->topicClient->publish($cacheName, $topicName, $message)-> wait();
+        return $this->topicClient->publish($cacheName, $topicName, $message);
     }
 }
