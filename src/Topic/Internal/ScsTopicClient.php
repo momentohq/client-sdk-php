@@ -77,7 +77,6 @@ class ScsTopicClient implements LoggerAwareInterface
     private function processCall(UnaryCall $call)
     {
         [$response, $status] = $call->wait();
-        $this->logger->debug("response: . json_encode($response)\n");
         if ($status->code !== 0) {
             $this->logger->debug("Topic client error: {$status->details}");
             throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());

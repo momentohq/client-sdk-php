@@ -6,6 +6,7 @@ namespace Momento\Topic;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\TopicPublishResponse;
+use Momento\Cache\CacheOperationTypes\TopicSubscribeResponse;
 use Momento\Cache\Internal\ScsControlClient;
 use Momento\Cache\Internal\ScsDataClient;
 use Momento\Config\IConfiguration;
@@ -62,9 +63,12 @@ class TopicClient implements LoggerAwareInterface
         return $this->topicClient->publish($cacheName, $topicName, $message);
     }
 
-    public function subscribe(string $cacheName, string $topicName, string $message): TopicPublishResponse
+    public function subscribe(string $cacheName, string $topicName): TopicSubscribeResponse
     {
         $this->logger->info("Subscribing to topic: $topicName\n");
-        return $this->topicClient->subscribe($cacheName, $topicName, $message);
+        $callback = function ($message) {
+            echo "Received message: " . json_encode($message) . "\n";
+        };
+        return $this->topicClient->subscribe($cacheName, $topicName, $callback);
     }
 }

@@ -43,14 +43,14 @@ if ($response->asSuccess()) {
 }
 
 // Subscribe to topic
-//$logger->info("Subscribing to topic: $TOPIC_NAME\n");
-//$response = $topicClient->subscribe($TOPIC_NAME, $CACHE_NAME);
-//if ($response->asSubscription()) {
-//    $logger->info("SUCCESS: Subscribed to topic: " . $TOPIC_NAME . "\n");
-//} elseif ($response->asError()) {
-//    $logger->info("Error subscribing to topic: " . $response->asError()->message() . "\n");
-//    exit(1);
-//}
+$logger->info("Subscribing to topic: $TOPIC_NAME\n");
+$response = $topicClient->subscribe($CACHE_NAME, $TOPIC_NAME);
+if ($response->asSuccess()) {
+    $logger->info("SUCCESS: Subscribed to topic: " . $TOPIC_NAME . "\n");
+} elseif ($response->asError()) {
+    $logger->info("Error subscribing to topic: " . $response->asError()->message() . "\n");
+    exit(1);
+}
 
 // Publish to topic
 $logger->info("Publishing to topic: $TOPIC_NAME\n");
