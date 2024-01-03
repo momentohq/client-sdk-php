@@ -46,6 +46,7 @@ if ($response->asSuccess()) {
 $logger->info("Subscribing to topic: $TOPIC_NAME\n");
 $callback = function ($message) use ($logger) {
     $logger->info("Received message: " . json_encode($message));
+    file_put_contents('message_received.flag', '1');
 };
 $response = $topicClient->subscribe($CACHE_NAME, $TOPIC_NAME, $callback);
 if ($response->asSuccess()) {
@@ -63,6 +64,11 @@ if ($response->asSuccess()) {
 } elseif ($response->asError()) {
     $logger->info("Error publishing to topic: " . $response->asError()->message() . "\n");
     exit(1);
+}
+
+// Wait for a message to be received and logged
+while (!file_exists('message_received.flag')) {
+    sleep(1); // Sleep for 1 second before checking again
 }
 
 
