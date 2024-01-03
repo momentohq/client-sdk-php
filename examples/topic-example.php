@@ -67,7 +67,8 @@ if ($response->asSuccess()) {
 }
 
 // Wait for a message to be received and logged
-while (!file_exists('message_received.flag')) {
+$timeout = time() + 60;
+while (!file_exists('message_received.flag') && time() < $timeout) {
     sleep(1); // Sleep for 1 second before checking again
 }
 
