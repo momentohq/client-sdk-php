@@ -39,9 +39,11 @@ class ScsTopicClient implements LoggerAwareInterface
     private TopicGrpcManager $grpcManager;
     private LoggerInterface $logger;
     private int $timeout;
+    private $authToken;
 
     public function __construct(IConfiguration $configuration, ICredentialProvider $authProvider)
     {
+        $authToken = $authProvider->getAuthToken();
         $operationTimeoutMs = $configuration
             ->getTransportStrategy()
             ->getGrpcConfig()
@@ -146,11 +148,15 @@ class ScsTopicClient implements LoggerAwareInterface
 
         try {
             validateCacheName($cacheName);
+
+            $authToken = $this->authToken;
+
+
             $request = new _SubscriptionRequest();
             $request->setCacheName($cacheName);
             $request->setTopic($topicName);
 
-            $call = $this->grpcManager->client->Subscribe($request);
+            $call = $this->grpcManager->client->Subscribe($request, ['authorization' => ['Bearer ' . $authToken]]);
             $this->processStreamingCall($call);
 
             foreach ($call->responses() as $response) {
