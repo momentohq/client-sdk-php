@@ -150,7 +150,7 @@ class ScsTopicClient implements LoggerAwareInterface
             validateCacheName($cacheName);
 
             $authToken = $this->authToken;
-
+            $this->logger->info("Using auth token: $authToken\n");
 
             $request = new _SubscriptionRequest();
             $request->setCacheName($cacheName);
