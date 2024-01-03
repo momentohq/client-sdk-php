@@ -56,7 +56,7 @@ if ($response->asSuccess()) {
     exit(1);
 }
 
-sleep(1000); 
+sleep(1000);
 
 // Publish to topic
 //$logger->info("Publishing to topic: $TOPIC_NAME\n");

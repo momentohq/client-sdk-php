@@ -158,6 +158,7 @@ class ScsTopicClient implements LoggerAwareInterface
             $this->logger->info($call->getStatus()->details);
 
             foreach ($call->responses() as $response) {
+                $this->logger->info("inside for loop");
                 try {
                     $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
                     $onMessage($response);
