@@ -61,4 +61,10 @@ class TopicClient implements LoggerAwareInterface
         $this->logger->info("Publishing to topic: $topicName\n");
         return $this->topicClient->publish($cacheName, $topicName, $message);
     }
+
+    public function subscribe(string $cacheName, string $topicName, string $message): TopicPublishResponse
+    {
+        $this->logger->info("Subscribing to topic: $topicName\n");
+        return $this->topicClient->subscribe($cacheName, $topicName, $message);
+    }
 }

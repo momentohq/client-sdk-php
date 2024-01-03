@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Momento\Topic\Internal;
 
 use Cache_client\Pubsub\_PublishRequest;
+use Cache_client\Pubsub\_SubscriptionRequest;
 use Cache_client\Pubsub\_TopicValue;
 use Exception;
 use Grpc\UnaryCall;
@@ -12,6 +13,9 @@ use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\TopicPublishResponse;
 use Momento\Cache\CacheOperationTypes\TopicPublishResponseError;
 use Momento\Cache\CacheOperationTypes\TopicPublishResponseSuccess;
+use Momento\Cache\CacheOperationTypes\TopicSubscribeResponse;
+use Momento\Cache\CacheOperationTypes\TopicSubscribeResponseError;
+use Momento\Cache\CacheOperationTypes\TopicSubscribeResponseSubscription;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Config\IConfiguration;
@@ -105,47 +109,39 @@ class ScsTopicClient implements LoggerAwareInterface
     }
 
 
-//    /**
-//     * @return TopicPublishResponse
-//     */
-//    public function publish(string $cacheName, string $topicName, string $value): TopicPublishResponse
-//    {
-//        $topicValue = new _TopicValue();
-//        $topicValue->setText($value);
-//        try {
-//            $this->logger->info("Publishing to topic: $topicName in cache $cacheName\n");
-//            validateCacheName($cacheName);
-//            $publishRequest = new _PublishRequest();
-//            $publishRequest->setCacheName($cacheName);
-//            $publishRequest->setTopic($topicName);
-//            $publishRequest->setValue($topicValue);
-//            $this->logger->debug("publishRequest: . json_encode($publishRequest)\n");
-//
-//            $call = $this->grpcManager->client->Publish($publishRequest);
-//            this->logger->debug("call: . json_encode($call)\n");
-//        } catch (SdkError $e) {
-//            $this->logger->debug("Failed to publish message to topic $topicName in cache $cacheName: {$e->getMessage()}");
-//            return ResponseFuture::createResolved(new TopicPublishResponseError($e));
-//        } catch (Exception $e) {
-//            $this->logger->debug("Failed to publish message to topic $topicName in cache $cacheName: {$e->getMessage()}");
-//            return ResponseFuture::createResolved(new TopicPublishResponseError(new UnknownError($e->getMessage())));
-//        }
-//
-//        return ResponseFuture::createPending(
-//            function () use ($call): TopicPublishResponse {
-//                try {
-//                    $this->processCall($call);
-//                } catch (SdkError $e) {
-//                    return new TopicPublishResponseError($e);
-//                } catch (Exception $e) {
-//                    return new TopicPublishResponseError(new UnknownError($e->getMessage()));
-//                }
-//
-//                return new TopicPublishResponseSuccess();
-//            }
-//        );
-//    }
+    /**
+     * Subscribe to a topic in a cache.
+     *
+     * @param string   $cacheName The name of the cache.
+     * @param string   $topicName The name of the topic to subscribe to.
+     * @param callable $callback  The callback function to handle incoming messages.
+     */
+    public function subscribe(string $cacheName, string $topicName, callable $callback): TopicSubscribeResponse
+    {
+        $this->logger->info("Subscribing to topic: $topicName in cache $cacheName\n");
 
+        try {
+            validateCacheName($cacheName);
+            $request = new _SubscriptionRequest();
+            $request->setCacheName($cacheName);
+            $request->setTopic($topicName);
+
+            $call = $this->grpcManager->client->Subscribe($request);
+
+            // Start a loop to handle incoming messages
+            foreach ($call->responses() as $response) {
+                // Invoke the callback with the received message
+                $callback($response);
+            }
+        } catch (SdkError $e) {
+            $this->logger->debug("Failed to subscribe to topic $topicName in cache $cacheName: {$e->getMessage()}");
+            return new TopicSubscribeResponseError($e);
+        } catch (\Exception $e) {
+            $this->logger->debug("Failed to subscribe to topic $topicName in cache $cacheName: {$e->getMessage()}");
+            return new TopicSubscribeResponseError(new UnknownError($e->getMessage()));
+        }
+        return new TopicSubscribeResponseSubscription();
+    }
 
     public function close(): void
     {

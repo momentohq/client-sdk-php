@@ -54,11 +54,11 @@ if ($response->asSuccess()) {
 
 // Publish to topic
 $logger->info("Publishing to topic: $TOPIC_NAME\n");
-$response = $topicClient->publish($TOPIC_NAME, $CACHE_NAME, "MyMessage");
+$response = $topicClient->publish($CACHE_NAME, $TOPIC_NAME, "MyMessage");
 if ($response->asSuccess()) {
-    $logger->info("SUCCESS: Subscribed to topic: " . $TOPIC_NAME . "\n");
+    $logger->info("SUCCESS: Published to topic: " . $TOPIC_NAME . "\n");
 } elseif ($response->asError()) {
-    $logger->info("Error subscribing to topic: " . $response->asError()->message() . "\n");
+    $logger->info("Error publishing to topic: " . $response->asError()->message() . "\n");
     exit(1);
 }
 

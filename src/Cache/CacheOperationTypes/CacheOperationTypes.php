@@ -2675,3 +2675,44 @@ class TopicPublishResponseError extends TopicPublishResponse
 {
     use ErrorBody;
 }
+
+
+abstract class TopicSubscribeResponse extends ResponseBase
+{
+    /**
+     * @return TopicSubscribeResponseSubscription|null
+     */
+    public function asSuccess(): ?TopicSubscribeResponseSubscription
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return TopicSubscribeResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?TopicSubscribeResponseError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class TopicSubscribeResponseSubscription extends TopicSubscribeResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class TopicSubscribeResponseError extends TopicSubscribeResponse
+{
+    use ErrorBody;
+}
