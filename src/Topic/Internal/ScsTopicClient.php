@@ -177,16 +177,7 @@ class ScsTopicClient implements LoggerAwareInterface
 //                            $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
 //                            $this->logger->info("Received message content: " . $messageText);
 
-                            // Check if the first message is a heartbeat
-                            if (!$this->firstMessageReceived) {
-                                $this->logger->info("First message received: " . json_encode($response));
-                                $this->firstMessageReceived = true;
-                                continue; // Skip processing the heartbeat
-                            }
-
-
-                            $this->logger->info("Received message content: " . json_encode($response));
-                            $onMessage($response);
+                            $this->logger->info($response->getKind());
                         } catch (\Exception $e) {
                             $this->logger->error("Error processing message: " . $e->getMessage());
                         }

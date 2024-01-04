@@ -45,9 +45,15 @@ if ($response->asSuccess()) {
 // Subscribe to topic
 $logger->info("Subscribing to topic: $TOPIC_NAME\n");
 $onMessage = function ($message) use ($logger) {
-    $logger->info("Received message: " . json_encode($message));
-    file_put_contents('message_received.txt', $message);
+    if (is_string($message)) {
+        $logger->info("Received message onMessage callback: " . json_encode($message));
+        file_put_contents('message_received.txt', json_encode($message, JSON_PRETTY_PRINT));
+    } else {
+        $messageType = gettype($message);
+        $logger->info("Received message of type $messageType: " . json_encode($message, JSON_PRETTY_PRINT));
+    }
 };
+
 $response = $topicClient->subscribe($CACHE_NAME, $TOPIC_NAME, $onMessage);
 if ($response->asSuccess()) {
     $logger->info("SUCCESS: Subscribed to topic: " . $TOPIC_NAME . "\n");
