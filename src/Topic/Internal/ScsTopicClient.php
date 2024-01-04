@@ -145,20 +145,16 @@ class ScsTopicClient implements LoggerAwareInterface
             validateCacheName($cacheName);
 
             $authToken = $this->authToken;
-            $this->logger->info("Using auth token: $authToken\n");
+            $metadata = [
+                'authorization' => [$authToken],
+            ];
 
             $request = new _SubscriptionRequest();
             $request->setCacheName($cacheName);
             $request->setTopic($topicName);
 
             try {
-                $callOptions = [
-                    'timeout' => $this->timeout,
-                    'headers' => [
-                        'authorization' => [$authToken],
-                    ],
-                ];
-                $call = $this->grpcManager->client->Subscribe($request, [], $callOptions);
+                $call = $this->grpcManager->client->Subscribe($request, $metadata);
             } catch (Exception $e) {
                 $this->logger->error("Error during gRPC Subscribe: " . $e->getMessage());
                 throw $e;
