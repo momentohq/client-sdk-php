@@ -163,7 +163,6 @@ class ScsTopicClient implements LoggerAwareInterface
 //            $this->processStreamingCall($call);
             $this->logger->info("Streaming call initiated successfully.");
             $this->logger->info("Waiting for messages...\n");
-            $this->logger->info($call->getStatus()->details);
 
             $this->logger->info("Before foreach");
             try{
