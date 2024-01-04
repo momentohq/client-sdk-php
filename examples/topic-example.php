@@ -46,7 +46,7 @@ if ($response->asSuccess()) {
 $logger->info("Subscribing to topic: $TOPIC_NAME\n");
 $onMessage = function ($message) use ($logger) {
     $logger->info("Received message: " . json_encode($message));
-    file_put_contents('message_received.flag', '1');
+    file_put_contents('message_received.txt', $message);
 };
 $response = $topicClient->subscribe($CACHE_NAME, $TOPIC_NAME, $onMessage);
 if ($response->asSuccess()) {
