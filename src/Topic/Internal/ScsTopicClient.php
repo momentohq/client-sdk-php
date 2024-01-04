@@ -151,7 +151,13 @@ class ScsTopicClient implements LoggerAwareInterface
             $request->setCacheName($cacheName);
             $request->setTopic($topicName);
 
-            $call = $this->grpcManager->client->Subscribe($request, ['authorization' => $authToken]);
+            try {
+                $call = $this->grpcManager->client->Subscribe($request, ['authorization' => $authToken]);
+            } catch (Exception $e) {
+                $this->logger->error("Error during gRPC Subscribe: " . $e->getMessage());
+                throw $e;
+            }
+
 //            $this->processStreamingCall($call);
             $this->logger->info("Streaming call initiated successfully.");
             $this->logger->info("Waiting for messages...\n");
