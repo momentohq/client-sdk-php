@@ -66,6 +66,6 @@ class TopicClient implements LoggerAwareInterface
     public function subscribe(string $cacheName, string $topicName, callable $onMessage): TopicSubscribeResponse
     {
         $this->logger->info("Subscribing to topic: $topicName\n");
-        return $this->topicClient->subscribe($cacheName, $topicName, $onMessage);
+        return $this->topicClient->subscribe($cacheName, $topicName, $onMessage)->wait();
     }
 }
