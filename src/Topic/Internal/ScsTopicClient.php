@@ -9,6 +9,7 @@ use Cache_client\Pubsub\_TopicValue;
 use Exception;
 use Grpc\ServerStreamingCall;
 use Grpc\UnaryCall;
+use http\Env\Response;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\TopicPublishResponse;
@@ -135,63 +136,121 @@ class ScsTopicClient implements LoggerAwareInterface
      * @param string   $cacheName The name of the cache.
      * @param string   $topicName The name of the topic to subscribe to.
      * @param callable $onMessage Callback for handling incoming messages.
-     * @return TopicSubscribeResponse
+     * @return ResponseFuture<TopicSubscribeResponse>
      */
-    public function subscribe(string $cacheName, string $topicName, callable $onMessage): TopicSubscribeResponse
+    public function subscribe(string $cacheName, string $topicName, callable $onMessage): ResponseFuture
     {
-        $this->logger->info("Subscribing to topic: $topicName in cache $cacheName\n");
-
         try {
             validateCacheName($cacheName);
 
             $authToken = $this->authToken;
-            $metadata = [
-                'authorization' => [$authToken],
-            ];
+            $this->logger->info("Using auth token: $authToken\n");
 
             $request = new _SubscriptionRequest();
             $request->setCacheName($cacheName);
             $request->setTopic($topicName);
 
-            try {
-                $call = $this->grpcManager->client->Subscribe($request, $metadata);
-            } catch (Exception $e) {
-                $this->logger->error("Error during gRPC Subscribe: " . $e->getMessage());
-                throw $e;
-            }
-
-//            $this->processStreamingCall($call);
-            $this->logger->info("Streaming call initiated successfully.");
-            $this->logger->info("Waiting for messages...\n");
-
-            $this->logger->info("Before foreach");
-            try{
-                foreach ($call->responses() as $response) {
-                    $this->logger->info("inside for loop");
-                    $this->logger->info("Received message content: " . json_encode($response));
-                    try {
-                        $this->logger->info("Before calling onMessage");
-                        $onMessage($response);
-                        $this->logger->info("After calling onMessage");
-                    } catch (\Exception $e) {
-                        $this->logger->error("Error processing message: " . $e->getMessage());
-                    }
-                }
-            } catch (\Exception $e){
-                $this->logger->error("Exception in response stream: " . $e->getMessage());
-            }
-
-
+            $call = $this->grpcManager->client->Subscribe($request, ['authorization' => [$authToken]]);
         } catch (SdkError $e) {
-            $this->logger->debug("Failed to subscribe to topic $topicName in cache $cacheName: {$e->getMessage()}");
-            return new TopicSubscribeResponseError($e);
-        } catch (\Exception $e) {
-            $this->logger->debug("Failed to subscribe to topic $topicName in cache $cacheName: {$e->getMessage()}");
-            return new TopicSubscribeResponseError(new UnknownError($e->getMessage()));
+            return ResponseFuture::createResolved(new TopicSubscribeResponseError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new TopicSubscribeResponseError(new UnknownError($e->getMessage(), 0, $e)));
         }
 
-        return new TopicSubscribeResponseSubscription();
+        return ResponseFuture::createPending(
+            function () use ($call, $onMessage, $topicName, $cacheName): TopicSubscribeResponse {
+                try {
+                    $this->logger->info("Streaming call initiated successfully for topic $topicName in cache $cacheName.\n");
+                    $this->logger->info("Waiting for messages...\n");
+
+                    foreach ($call->responses() as $response) {
+                        try {
+                            $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
+                            $onMessage($response);
+                        } catch (\Exception $e) {
+                            $this->logger->error("Error processing message: " . $e->getMessage());
+                        }
+                    }
+
+                    return new TopicSubscribeResponseSubscription();
+                } catch (SdkError $e) {
+                    return new TopicSubscribeResponseError($e);
+                } catch (Exception $e) {
+                    return new TopicSubscribeResponseError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
+
+
+
+
+
+
+
+//    /**
+//     * Subscribe to a topic in a cache.
+//     *
+//     * @param string   $cacheName The name of the cache.
+//     * @param string   $topicName The name of the topic to subscribe to.
+//     * @param callable $onMessage Callback for handling incoming messages.
+//     * @return TopicSubscribeResponse
+//     */
+//    public function subscribe(string $cacheName, string $topicName, callable $onMessage): TopicSubscribeResponse
+//    {
+//        $this->logger->info("Subscribing to topic: $topicName in cache $cacheName\n");
+//
+//        try {
+//            validateCacheName($cacheName);
+//
+//            $authToken = $this->authToken;
+//            $metadata = [
+//                'authorization' => [$authToken],
+//            ];
+//
+//            $request = new _SubscriptionRequest();
+//            $request->setCacheName($cacheName);
+//            $request->setTopic($topicName);
+//
+//            try {
+//                $call = $this->grpcManager->client->Subscribe($request, $metadata);
+//            } catch (Exception $e) {
+//                $this->logger->error("Error during gRPC Subscribe: " . $e->getMessage());
+//                throw $e;
+//            }
+//
+////            $this->processStreamingCall($call);
+//            $this->logger->info("Streaming call initiated successfully.");
+//            $this->logger->info("Waiting for messages...\n");
+//
+//            $this->logger->info("Before foreach");
+//            try{
+//                foreach ($call->responses() as $response) {
+//                    $this->logger->info("inside for loop");
+//                    $this->logger->info("Received message content: " . json_encode($response));
+//                    try {
+//                        $this->logger->info("Before calling onMessage");
+//                        $onMessage($response);
+//                        $this->logger->info("After calling onMessage");
+//                    } catch (\Exception $e) {
+//                        $this->logger->error("Error processing message: " . $e->getMessage());
+//                    }
+//                }
+//            } catch (\Exception $e){
+//                $this->logger->error("Exception in response stream: " . $e->getMessage());
+//            }
+//
+//
+//        } catch (SdkError $e) {
+//            $this->logger->debug("Failed to subscribe to topic $topicName in cache $cacheName: {$e->getMessage()}");
+//            return new TopicSubscribeResponseError($e);
+//        } catch (\Exception $e) {
+//            $this->logger->debug("Failed to subscribe to topic $topicName in cache $cacheName: {$e->getMessage()}");
+//            return new TopicSubscribeResponseError(new UnknownError($e->getMessage()));
+//        }
+//
+//        return new TopicSubscribeResponseSubscription();
+//    }
 
     public function close(): void
     {
