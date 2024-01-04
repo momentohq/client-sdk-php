@@ -157,6 +157,7 @@ class ScsTopicClient implements LoggerAwareInterface
             return ResponseFuture::createResolved(new TopicSubscribeResponseError(new UnknownError($e->getMessage(), 0, $e)));
         }
 
+        $firstMessageReceived = false;
         return ResponseFuture::createPending(
             function () use ($call, $onMessage, $topicName, $cacheName): TopicSubscribeResponse {
                 try {
@@ -174,6 +175,15 @@ class ScsTopicClient implements LoggerAwareInterface
 //
 //                            $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
 //                            $this->logger->info("Received message content: " . $messageText);
+
+                            // Check if the first message is a heartbeat
+                            if (!$firstMessageReceived) {
+                                $this->logger->info("First message received: " . json_encode($response));
+                                $firstMessageReceived = true;
+                                continue; // Skip processing the heartbeat
+                            }
+
+
                             $this->logger->info("Received message content: " . json_encode($response));
                             $onMessage($response);
                         } catch (\Exception $e) {
@@ -190,76 +200,6 @@ class ScsTopicClient implements LoggerAwareInterface
             }
         );
     }
-
-
-
-
-
-
-
-//    /**
-//     * Subscribe to a topic in a cache.
-//     *
-//     * @param string   $cacheName The name of the cache.
-//     * @param string   $topicName The name of the topic to subscribe to.
-//     * @param callable $onMessage Callback for handling incoming messages.
-//     * @return TopicSubscribeResponse
-//     */
-//    public function subscribe(string $cacheName, string $topicName, callable $onMessage): TopicSubscribeResponse
-//    {
-//        $this->logger->info("Subscribing to topic: $topicName in cache $cacheName\n");
-//
-//        try {
-//            validateCacheName($cacheName);
-//
-//            $authToken = $this->authToken;
-//            $metadata = [
-//                'authorization' => [$authToken],
-//            ];
-//
-//            $request = new _SubscriptionRequest();
-//            $request->setCacheName($cacheName);
-//            $request->setTopic($topicName);
-//
-//            try {
-//                $call = $this->grpcManager->client->Subscribe($request, $metadata);
-//            } catch (Exception $e) {
-//                $this->logger->error("Error during gRPC Subscribe: " . $e->getMessage());
-//                throw $e;
-//            }
-//
-////            $this->processStreamingCall($call);
-//            $this->logger->info("Streaming call initiated successfully.");
-//            $this->logger->info("Waiting for messages...\n");
-//
-//            $this->logger->info("Before foreach");
-//            try{
-//                foreach ($call->responses() as $response) {
-//                    $this->logger->info("inside for loop");
-//                    $this->logger->info("Received message content: " . json_encode($response));
-//                    try {
-//                        $this->logger->info("Before calling onMessage");
-//                        $onMessage($response);
-//                        $this->logger->info("After calling onMessage");
-//                    } catch (\Exception $e) {
-//                        $this->logger->error("Error processing message: " . $e->getMessage());
-//                    }
-//                }
-//            } catch (\Exception $e){
-//                $this->logger->error("Exception in response stream: " . $e->getMessage());
-//            }
-//
-//
-//        } catch (SdkError $e) {
-//            $this->logger->debug("Failed to subscribe to topic $topicName in cache $cacheName: {$e->getMessage()}");
-//            return new TopicSubscribeResponseError($e);
-//        } catch (\Exception $e) {
-//            $this->logger->debug("Failed to subscribe to topic $topicName in cache $cacheName: {$e->getMessage()}");
-//            return new TopicSubscribeResponseError(new UnknownError($e->getMessage()));
-//        }
-//
-//        return new TopicSubscribeResponseSubscription();
-//    }
 
     public function close(): void
     {
