@@ -45,14 +45,8 @@ if ($response->asSuccess()) {
 // Subscribe to topic
 $logger->info("Subscribing to topic: $TOPIC_NAME\n");
 $onMessage = function ($message) use ($logger) {
-    $messageItem = $message->getItem();
-    $this->logger->info("Received message item: " . json_encode($messageItem));
-    $messageValue = $messageItem->getValue();
-    $this->logger->info("Received message value: " . json_encode($messageValue));
-    $messageText = $messageValue->getText();
-    $this->logger->info("Received message content: " . $messageText);
-//    $logger->info("Received message: " . json_encode($message));
-    file_put_contents('message_received.txt', $messageText);
+    $logger->info("Received message: " . json_encode($message));
+    file_put_contents('message_received.txt', $message);
 };
 $response = $topicClient->subscribe($CACHE_NAME, $TOPIC_NAME, $onMessage);
 if ($response->asSuccess()) {
