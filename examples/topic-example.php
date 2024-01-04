@@ -44,17 +44,7 @@ if ($response->asSuccess()) {
 
 // Subscribe to topic
 $logger->info("Subscribing to topic: $TOPIC_NAME\n");
-$onMessage = function ($message) use ($logger) {
-    if (is_string($message)) {
-        $logger->info("Received message onMessage callback: " . json_encode($message));
-        file_put_contents('message_received.txt', json_encode($message, JSON_PRETTY_PRINT));
-    } else {
-        $messageType = gettype($message);
-        $logger->info("Received message of type $messageType: " . json_encode($message, JSON_PRETTY_PRINT));
-    }
-};
-
-$response = $topicClient->subscribe($CACHE_NAME, $TOPIC_NAME, $onMessage);
+$response = $topicClient->subscribe($CACHE_NAME, $TOPIC_NAME);
 if ($response->asSuccess()) {
     $logger->info("SUCCESS: Subscribed to topic: " . $TOPIC_NAME . "\n");
 } elseif ($response->asError()) {
@@ -63,21 +53,14 @@ if ($response->asSuccess()) {
 }
 
 // Publish to topic
-//$logger->info("Publishing to topic: $TOPIC_NAME\n");
-//$response = $topicClient->publish($CACHE_NAME, $TOPIC_NAME, "MyMessage");
-//if ($response->asSuccess()) {
-//    $logger->info("SUCCESS: Published to topic: " . $TOPIC_NAME . "\n");
-//} elseif ($response->asError()) {
-//    $logger->info("Error publishing to topic: " . $response->asError()->message() . "\n");
-//    exit(1);
-//}
-
-// Wait for a message to be received and logged
-$timeout = time() + 60;
-while (!file_exists('message_received.flag') && time() < $timeout) {
-    sleep(1); // Sleep for 1 second before checking again
+$logger->info("Publishing to topic: $TOPIC_NAME\n");
+$response = $topicClient->publish($CACHE_NAME, $TOPIC_NAME, "MyMessage");
+if ($response->asSuccess()) {
+    $logger->info("SUCCESS: Published to topic: " . $TOPIC_NAME . "\n");
+} elseif ($response->asError()) {
+    $logger->info("Error publishing to topic: " . $response->asError()->message() . "\n");
+    exit(1);
 }
-
 
 // Delete test cache
 //$logger->info("Deleting cache $CACHE_NAME\n");

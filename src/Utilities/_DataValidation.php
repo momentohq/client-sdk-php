@@ -52,6 +52,13 @@ if (!function_exists('validateCacheName')) {
     }
 }
 
+if (!function_exists('validateTopicName')) {
+    function validateTopicName(string $topicName): void
+    {
+        validateNullOrEmpty($topicName, "Topic name");
+    }
+}
+
 if (!function_exists('validateKeys')) {
     function validateKeys(array $keys): void
     {
