@@ -152,7 +152,7 @@ class ScsTopicClient implements LoggerAwareInterface
             $request->setTopic($topicName);
 
             try {
-                $call = $this->grpcManager->client->Subscribe($request, ['authorization' => $authToken]);
+                $call = $this->grpcManager->client->Subscribe($request);
             } catch (Exception $e) {
                 $this->logger->error("Error during gRPC Subscribe: " . $e->getMessage());
                 throw $e;
