@@ -180,7 +180,7 @@ class ScsTopicClient implements LoggerAwareInterface
                             // Check if the first message is a heartbeat
                             if (!$this->firstMessageReceived) {
                                 $this->logger->info("First message received: " . json_encode($response));
-                                $firstMessageReceived = true;
+                                $this->firstMessageReceived = true;
                                 continue; // Skip processing the heartbeat
                             }
 
