@@ -167,17 +167,23 @@ class ScsTopicClient implements LoggerAwareInterface
 
                     foreach ($call->responses() as $response) {
                         try {
-//                            $messageItem = $response->getItem();
-//                            $this->logger->info("Received message item: " . json_encode($messageItem));
-//                            $messageValue = $messageItem->getValue();
-//                            $this->logger->info("Received message value: " . json_encode($messageValue));
-//                            $messageText = $messageValue->getText();
-//                            $this->logger->info("Received message text: " . json_encode($messageText));
-//
-//                            $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
-//                            $this->logger->info("Received message content: " . $messageText);
+                            if (!$this->firstMessageReceived && $response->getKind() === "heartbeat") {
+                                $this->logger->info("Received heartbeat from topic $topicName in cache $cacheName\n");
+                                $this->firstMessageReceived = true;
+                                continue;
+                            }
 
-                            $this->logger->info($response->getKind());
+                            if ($response->getKind() === "item") {
+                                $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
+                                $this->logger->info("Received message content: " . $response->getItem()->getValue()->getText());
+                             } else if($response->getKind() === "discontinuity") {
+                                $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
+                                $this->logger->info("Received message content: " . $response->getDiscontinuity()->getReason());
+                            }
+                            else {
+                                $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
+                                $this->logger->info("Received message content: " . $response->getKind());
+                            }
                         } catch (\Exception $e) {
                             $this->logger->error("Error processing message: " . $e->getMessage());
                         }
