@@ -166,7 +166,8 @@ class ScsTopicClient implements LoggerAwareInterface
                     foreach ($call->responses() as $response) {
                         try {
                             $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
-                            $this->logger->info("Received message content: $response\n");
+                            $this->logger->info("Received message content: $response->getMetadata()\n");
+                            $this->logger->info("Received message content: " . json_encode($response->getMetadata()));
                             $onMessage($response);
                         } catch (\Exception $e) {
                             $this->logger->error("Error processing message: " . $e->getMessage());
