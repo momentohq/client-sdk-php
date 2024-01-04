@@ -54,7 +54,7 @@ if ($response->asSuccess()) {
 
 // Publish to topic
 $logger->info("Publishing to topic: $TOPIC_NAME\n");
-$response = $topicClient->publish($CACHE_NAME, $TOPIC_NAME, "MyMessage");
+$response = $topicClient->publish($CACHE_NAME, $TOPIC_NAME, decbin(110101));
 if ($response->asSuccess()) {
     $logger->info("SUCCESS: Published to topic: " . $TOPIC_NAME . "\n");
 } elseif ($response->asError()) {

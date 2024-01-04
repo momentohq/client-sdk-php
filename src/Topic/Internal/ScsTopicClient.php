@@ -5,6 +5,7 @@ namespace Momento\Topic\Internal;
 
 use Cache_client\Pubsub\_PublishRequest;
 use Cache_client\Pubsub\_SubscriptionRequest;
+use Cache_client\Pubsub\_TopicItem;
 use Cache_client\Pubsub\_TopicValue;
 use Exception;
 use Grpc\UnaryCall;
@@ -138,7 +139,7 @@ class ScsTopicClient implements LoggerAwareInterface
                                     }
                                     break;
                                 case "item":
-                                    $this->logger->info("Received message content: " . $response->getItem()->getValue()->getText());
+                                    $this->handleSubscriptionItem($response->getItem());
                                     break;
                                 case "discontinuity":
                                     $this->logger->info("Received message content: " . $response->getDiscontinuity()->getReason());
@@ -160,6 +161,48 @@ class ScsTopicClient implements LoggerAwareInterface
             }
         );
     }
+
+    /**
+     * Handle the subscription item based on its type.
+     *
+     * @param _TopicItem $item The received item from the subscription.
+     */
+    private function handleSubscriptionItem(_TopicItem $item): void
+    {
+        try {
+            $itemType = $item->getValue()->getKind();
+            $this->logger->info("Received item type: $itemType");
+
+            switch ($itemType) {
+                case "text":
+                    $this->handleTextItem($item->getValue()->getText());
+                    break;
+                case "binary":
+                    $this->handleBinaryItem($item->getValue()->getBinary());
+                    break;
+                default:
+                    $this->logger->info("Received unknown item type: $itemType");
+            }
+        } catch (\Exception $e) {
+            $this->logger->error("Error handling subscription item: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Handle a text item received during subscription.
+     *
+     * @param string $textContent The received text content.
+     */
+    private function handleTextItem(string $textContent): void
+    {
+        $this->logger->info("Received message content: $textContent");
+    }
+
+    private function handleBinaryItem(string $binaryContent): void
+    {
+        $this->logger->info("Received message content: $binaryContent");
+    }
+
 
     public function close(): void
     {

@@ -12,6 +12,7 @@ use Momento\Cache\Internal\ScsDataClient;
 use Momento\Config\IConfiguration;
 use Momento\Logging\ILoggerFactory;
 use Momento\Topic\Internal\ScsTopicClient;
+use MongoDB\BSON\Binary;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
