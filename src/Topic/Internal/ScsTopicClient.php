@@ -165,14 +165,21 @@ class ScsTopicClient implements LoggerAwareInterface
             $this->logger->info("Waiting for messages...\n");
             $this->logger->info($call->getStatus()->details);
 
-            foreach ($call->responses() as $response) {
-                $this->logger->info("inside for loop");
-                try {
-                    $this->logger->info("Received message from topic $topicName in cache $cacheName\n");
-                    $onMessage($response);
-                } catch (\Exception $e) {
-                    $this->logger->error("Error processing message: " . $e->getMessage());
+            $this->logger->info("Before foreach");
+            try{
+                foreach ($call->responses() as $response) {
+                    $this->logger->info("inside for loop");
+                    $this->logger->info("Received message content: " . json_encode($response));
+                    try {
+                        $this->logger->info("Before calling onMessage");
+                        $onMessage($response);
+                        $this->logger->info("After calling onMessage");
+                    } catch (\Exception $e) {
+                        $this->logger->error("Error processing message: " . $e->getMessage());
+                    }
                 }
+            } catch (\Exception $e){
+                $this->logger->error("Exception in response stream: " . $e->getMessage());
             }
 
 

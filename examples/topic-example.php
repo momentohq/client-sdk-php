@@ -46,7 +46,7 @@ if ($response->asSuccess()) {
 $logger->info("Subscribing to topic: $TOPIC_NAME\n");
 $onMessage = function ($message) use ($logger) {
     $logger->info("Received message: " . json_encode($message));
-//    file_put_contents('message_received.flag', '1');
+    file_put_contents('message_received.flag', '1');
 };
 $response = $topicClient->subscribe($CACHE_NAME, $TOPIC_NAME, $onMessage);
 if ($response->asSuccess()) {
@@ -67,10 +67,10 @@ if ($response->asSuccess()) {
 //}
 
 // Wait for a message to be received and logged
-//$timeout = time() + 60;
-//while (!file_exists('message_received.flag') && time() < $timeout) {
-//    sleep(1); // Sleep for 1 second before checking again
-//}
+$timeout = time() + 60;
+while (!file_exists('message_received.flag') && time() < $timeout) {
+    sleep(1); // Sleep for 1 second before checking again
+}
 
 
 // Delete test cache
