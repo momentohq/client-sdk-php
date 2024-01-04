@@ -41,6 +41,7 @@ class ScsTopicClient implements LoggerAwareInterface
     private LoggerInterface $logger;
     private int $timeout;
     private $authToken;
+    private $firstMessageReceived = false;
 
     public function __construct(IConfiguration $configuration, ICredentialProvider $authProvider)
     {
@@ -157,7 +158,7 @@ class ScsTopicClient implements LoggerAwareInterface
             return ResponseFuture::createResolved(new TopicSubscribeResponseError(new UnknownError($e->getMessage(), 0, $e)));
         }
 
-        $firstMessageReceived = false;
+
         return ResponseFuture::createPending(
             function () use ($call, $onMessage, $topicName, $cacheName): TopicSubscribeResponse {
                 try {
@@ -177,7 +178,7 @@ class ScsTopicClient implements LoggerAwareInterface
 //                            $this->logger->info("Received message content: " . $messageText);
 
                             // Check if the first message is a heartbeat
-                            if (!$firstMessageReceived) {
+                            if (!$this->firstMessageReceived) {
                                 $this->logger->info("First message received: " . json_encode($response));
                                 $firstMessageReceived = true;
                                 continue; // Skip processing the heartbeat
