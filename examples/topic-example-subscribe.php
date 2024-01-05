@@ -5,6 +5,8 @@ require "vendor/autoload.php";
 
 use Momento\Auth\CredentialProvider;
 use Momento\Cache\CacheClient;
+use Momento\Cache\CacheOperationTypes\TopicSubscribeError;
+use Momento\Cache\CacheOperationTypes\TopicSubscribeSubscription;
 use Momento\Config\Configurations\Laptop;
 use Momento\Logging\StderrLoggerFactory;
 use Momento\Topic\PreviewTopicClient;
@@ -44,15 +46,44 @@ if ($response->asSuccess()) {
 
 // Subscribe to topic
 $logger->info("Subscribing to topic: $TOPIC_NAME\n");
-$response = $topicClient->subscribeAsync($CACHE_NAME, $TOPIC_NAME);
+$subscribeResponseFuture = $topicClient->subscribeAsync($CACHE_NAME, $TOPIC_NAME);
 
 // Publish to topic
 $logger->info("Publishing to topic: $TOPIC_NAME\n");
-$response = $topicClient->publish($CACHE_NAME, $TOPIC_NAME, "Hello World " . date("h:i:s"));
+for ($i = 0; $i < 5; $i++) { // publish 5 messages
+    $publishResponse = $topicClient->publish($CACHE_NAME, $TOPIC_NAME, "message-". $i);
+    if ($publishResponse->asSuccess()) {
+        $logger->info("SUCCESS: Published message: " . $publishResponse->asSuccess() . "\n");
+    } elseif ($publishResponse->asError()) {
+        $logger->info("Error publishing message: " . $publishResponse->asError()->message() . "\n");
+        exit(1);
+    }
+}
 
-$messages = $response->getMessages();
-print "Messages:\n";
-print $messages;
+// Counter for received messages
+$receivedMessages = 0;
+
+// Wait for subscription to receive message
+$logger->info("Waiting for subscription to receive messages\n");
+$subscribeResponse = $subscribeResponseFuture->wait();
+
+if ($subscribeResponse instanceof TopicSubscribeSubscription) {
+    foreach ($subscribeResponse->getMessages() as $message) {
+        $logger->info("SUCCESS: Received message: " . $message . "\n");
+        $receivedMessages++;
+        // Exit the loop when the desired number of messages is received otherwise it will hang waiting fpr more messages to be received
+        if ($receivedMessages >= 5) {
+            $logger->info("All messages received. Exiting the program.\n");
+            break;
+        }
+    }
+} elseif ($subscribeResponse instanceof TopicSubscribeError) {
+    $logger->info("Error receiving message: " . $subscribeResponse->message() . "\n");
+    exit(1);
+} else {
+    $logger->info("Unexpected response type\n");
+    exit(1);
+}
 
 // Delete test cache
 $logger->info("Deleting cache $CACHE_NAME\n");
