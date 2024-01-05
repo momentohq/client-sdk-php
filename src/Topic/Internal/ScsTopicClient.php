@@ -11,6 +11,7 @@ use Exception;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
+use Momento\Cache\CacheOperationTypes\TopicPublishError;
 use Momento\Cache\CacheOperationTypes\TopicPublishResponse;
 use Momento\Cache\CacheOperationTypes\TopicPublishResponseError;
 use Momento\Cache\CacheOperationTypes\TopicPublishResponseSuccess;
@@ -90,12 +91,12 @@ class ScsTopicClient implements LoggerAwareInterface
             $this->processCall($call);
         } catch (SdkError $e) {
             $this->logger->debug("Failed to publish message to topic $topicName in cache $cacheName: {$e->getMessage()}");
-            return new TopicPublishResponseError($e);
+            return new TopicPublishError($e);
         } catch (\Exception $e) {
             $this->logger->debug("Failed to publish message to topic $topicName in cache $cacheName: {$e->getMessage()}");
-            return new TopicPublishResponseError(new UnknownError($e->getMessage()));
+            return new TopicPublishError(new UnknownError($e->getMessage()));
         }
-        return new TopicPublishResponseSuccess();
+        return new TopicPublishSuccess();
     }
 
     /**
