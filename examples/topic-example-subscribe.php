@@ -42,15 +42,17 @@ if ($response->asSuccess()) {
     $logger->info("Cache " . $CACHE_NAME . " already exists.\n");
 }
 
+// Subscribe to topic
+$logger->info("Subscribing to topic: $TOPIC_NAME\n");
+$response = $topicClient->subscribeAsync($CACHE_NAME, $TOPIC_NAME);
+
 // Publish to topic
 $logger->info("Publishing to topic: $TOPIC_NAME\n");
 $response = $topicClient->publish($CACHE_NAME, $TOPIC_NAME, "Hello World " . date("h:i:s"));
-if ($response->asSuccess()) {
-    $logger->info("SUCCESS: Published to topic: " . $TOPIC_NAME . "\n");
-} elseif ($response->asError()) {
-    $logger->info("Error publishing to topic: " . $response->asError()->message() . "\n");
-    exit(1);
-}
+
+$messages = $response->getMessages();
+print "Messages:\n";
+print $messages;
 
 // Delete test cache
 $logger->info("Deleting cache $CACHE_NAME\n");

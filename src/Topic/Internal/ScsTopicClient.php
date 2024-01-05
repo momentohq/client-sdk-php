@@ -5,10 +5,8 @@ namespace Momento\Topic\Internal;
 
 use Cache_client\Pubsub\_PublishRequest;
 use Cache_client\Pubsub\_SubscriptionRequest;
-use Cache_client\Pubsub\_TopicItem;
 use Cache_client\Pubsub\_TopicValue;
 use Exception;
-use Grpc\ServerStreamingCall;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
@@ -16,8 +14,8 @@ use Momento\Cache\CacheOperationTypes\TopicPublishError;
 use Momento\Cache\CacheOperationTypes\TopicPublishSuccess;
 use Momento\Cache\CacheOperationTypes\TopicPublishResponse;
 use Momento\Cache\CacheOperationTypes\TopicSubscribeResponse;
-use Momento\Cache\CacheOperationTypes\TopicSubscribeResponseError;
-use Momento\Cache\CacheOperationTypes\TopicSubscribeResponseSubscription;
+use Momento\Cache\CacheOperationTypes\TopicSubscribeError;
+use Momento\Cache\CacheOperationTypes\TopicSubscribeSubscription;
 use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
@@ -123,11 +121,11 @@ class ScsTopicClient implements LoggerAwareInterface
             $request->setTopic($topicName);
 
             $call = $this->grpcManager->client->Subscribe($request, ['authorization' => [$authToken]]);
-            $subscription = new TopicSubscribeResponseSubscription($call, $cacheName, $topicName);
+            $subscription = new TopicSubscribeSubscription($call, $cacheName, $topicName, $this->logger);
         } catch (SdkError $e) {
-            return ResponseFuture::createResolved(new TopicSubscribeResponseError($e));
+            return ResponseFuture::createResolved(new TopicSubscribeError($e));
         } catch (Exception $e) {
-            return ResponseFuture::createResolved(new TopicSubscribeResponseError(new UnknownError($e->getMessage(), 0, $e)));
+            return ResponseFuture::createResolved(new TopicSubscribeError(new UnknownError($e->getMessage(), 0, $e)));
         }
 
         return ResponseFuture::createPending(
@@ -135,9 +133,9 @@ class ScsTopicClient implements LoggerAwareInterface
                 try {
                     return $subscription;
                 } catch (SdkError $e) {
-                    return new TopicSubscribeResponseError($e);
+                    return new TopicSubscribeError($e);
                 } catch (Exception $e) {
-                    return new TopicSubscribeResponseError(new UnknownError($e->getMessage(), 0, $e));
+                    return new TopicSubscribeError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );
