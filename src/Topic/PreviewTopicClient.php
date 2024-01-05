@@ -6,20 +6,17 @@ namespace Momento\Topic;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\TopicPublishResponse;
-use Momento\Cache\CacheOperationTypes\TopicSubscribeResponse;
-use Momento\Cache\Internal\ScsControlClient;
-use Momento\Cache\Internal\ScsDataClient;
+use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Config\IConfiguration;
 use Momento\Logging\ILoggerFactory;
 use Momento\Topic\Internal\ScsTopicClient;
-use MongoDB\BSON\Binary;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
 /**
  * Client to perform operations against Momento Serverless Cache.
  */
-class TopicClient implements LoggerAwareInterface
+class PreviewTopicClient implements LoggerAwareInterface
 {
 
     protected IConfiguration $configuration;
@@ -27,6 +24,9 @@ class TopicClient implements LoggerAwareInterface
     protected LoggerInterface $logger;
     private ScsTopicClient $topicClient;
 
+    /**
+     * @throws InvalidArgumentError
+     */
     public function __construct(
         IConfiguration $configuration, ICredentialProvider $authProvider
     )
@@ -64,9 +64,9 @@ class TopicClient implements LoggerAwareInterface
         return $this->topicClient->publish($cacheName, $topicName, $message);
     }
 
-    public function subscribe(string $cacheName, string $topicName): ResponseFuture
+    public function subscribeAsync(string $cacheName, string $topicName): ResponseFuture
     {
         $this->logger->info("Subscribing to topic: $topicName\n");
-        return $this->topicClient->subscribe($cacheName, $topicName);
+        return $this->topicClient->subscribeAsync($cacheName, $topicName);
     }
 }

@@ -20,10 +20,14 @@ use Cache_client\_SetIfNotExistsResponse;
 use Cache_client\_SetLengthResponse;
 use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
+use Cache_client\Pubsub\_TopicItem;
 use Closure;
 use Control_client\_ListCachesResponse;
+use Generator;
+use Grpc\ServerStreamingCall;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 trait ErrorBody
@@ -2689,7 +2693,7 @@ abstract class TopicSubscribeResponse extends ResponseBase
     /**
      * @return TopicSubscribeResponseSubscription|null
      */
-    public function asSubscription(): ?TopicSubscribeResponseSubscription
+    public function asSubscription(): ?TopicSubscribeSubscription
     {
         if ($this->isSubscription()) {
             return $this;
@@ -2698,9 +2702,9 @@ abstract class TopicSubscribeResponse extends ResponseBase
     }
 
     /**
-     * @return TopicSubscribeResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return TopicSubscribeError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ?TopicSubscribeResponseError
+    public function asError(): ?TopicSubscribeError
     {
         if ($this->isError()) {
             return $this;
@@ -2712,14 +2716,82 @@ abstract class TopicSubscribeResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class TopicSubscribeResponseSubscription extends TopicSubscribeResponse
+class TopicSubscribeSubscription extends TopicSubscribeResponse
 {
+    private ServerStreamingCall $call;
+    private bool $firstMessageReceived;
+    private string $topicName;
+    private string $cacheName;
+    private LoggerInterface $logger;
+
+    public function __construct(ServerStreamingCall $call, string $topicName, string $cacheName, LoggerInterface $logger)
+    {
+        parent::__construct();
+        $this->call = $call;
+        $this->firstMessageReceived = false;
+        $this->cacheName = $cacheName;
+        $this->topicName = $topicName;
+        $this->logger = $logger;
+    }
+    public function getMessages(): Generator
+    {
+        foreach ($this->call->responses() as $response) {
+            try {
+                switch ($response->getKind()) {
+                    case "heartbeat":
+                        if (!$this->firstMessageReceived) {
+                            $this->logger->info("Received heartbeat from topic $this->topicName in cache $this->cacheName\n");
+                            $this->firstMessageReceived = true;
+                            break;
+                        }
+                        break;
+                    case "item":
+                        yield $this->handleSubscriptionItem($response->getItem());
+                        break;
+                    case "discontinuity":
+                        $this->logger->info("Received message content: " . $response->getDiscontinuity()->getReason());
+                        break;
+                    default:
+                        $this->logger->info("Received message content: " . $response->getKind());
+                }
+            } catch (\Exception $e) {
+                $this->logger->error("Error processing message: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Handle the subscription item based on its type and yield values.
+     *
+     * @param _TopicItem $item The received item from the subscription.
+     * @return string
+     */
+    private function handleSubscriptionItem(_TopicItem $item): string
+    {
+        try {
+            $itemType = $item->getValue()->getKind();
+            $this->logger->info("Received item type: $itemType");
+
+            switch ($itemType) {
+                case "text":
+                    return $item->getValue()->getText();
+                case "binary":
+                    return $item->getValue()->getBinary();
+                default:
+                    $this->logger->info("Received unknown item type: $itemType");
+                    return "Unknown item type: $itemType";
+            }
+        } catch (\Exception $e) {
+            $this->logger->error("Error handling subscription item: " . $e->getMessage());
+            return "Error handling subscription item: " . $e->getMessage();
+        }
+    }
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class TopicSubscribeResponseError extends TopicSubscribeResponse
+class TopicSubscribeError extends TopicSubscribeResponse
 {
     use ErrorBody;
 }

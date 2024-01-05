@@ -8,6 +8,7 @@ use Cache_client\Pubsub\_SubscriptionRequest;
 use Cache_client\Pubsub\_TopicItem;
 use Cache_client\Pubsub\_TopicValue;
 use Exception;
+use Grpc\ServerStreamingCall;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
@@ -34,12 +35,10 @@ class ScsTopicClient implements LoggerAwareInterface
     private static int $DEFAULT_DEADLINE_MILLISECONDS = 5000;
     private int $deadline_milliseconds;
     private static int $TIMEOUT_MULTIPLIER = 1000;
-    private int $defaultTtlSeconds;
     private TopicGrpcManager $grpcManager;
     private LoggerInterface $logger;
     private int $timeout;
     private string $authToken;
-    private bool $firstMessageReceived = false;
 
     /**
      * @throws InvalidArgumentError
@@ -75,6 +74,14 @@ class ScsTopicClient implements LoggerAwareInterface
         }
     }
 
+    /**
+     * Publish to a topic in a cache.
+     *
+     * @param string   $cacheName The name of the cache.
+     * @param string   $topicName The name of the topic to publish to.
+     * @param string   $value The message to be published.
+     * @return TopicPublishResponse
+     */
     public function publish(string $cacheName, string $topicName, string $value): TopicPublishResponse
     {
         $this->logger->info("Publishing to topic: $topicName in cache $cacheName\n");
@@ -105,9 +112,8 @@ class ScsTopicClient implements LoggerAwareInterface
      * @param string   $topicName The name of the topic to subscribe to.
      * @return ResponseFuture<TopicSubscribeResponse>
      */
-    public function subscribe(string $cacheName, string $topicName): ResponseFuture
+    public function subscribeAsync(string $cacheName, string $topicName): ResponseFuture
     {
-        $this->logger->info("Inside scs topic client subscribe method\n");
         try {
             validateCacheName($cacheName);
             validateTopicName($topicName);
@@ -117,6 +123,7 @@ class ScsTopicClient implements LoggerAwareInterface
             $request->setTopic($topicName);
 
             $call = $this->grpcManager->client->Subscribe($request, ['authorization' => [$authToken]]);
+            $subscription = new TopicSubscribeResponseSubscription($call, $cacheName, $topicName);
         } catch (SdkError $e) {
             return ResponseFuture::createResolved(new TopicSubscribeResponseError($e));
         } catch (Exception $e) {
@@ -124,36 +131,9 @@ class ScsTopicClient implements LoggerAwareInterface
         }
 
         return ResponseFuture::createPending(
-            function () use ($call, $topicName, $cacheName): TopicSubscribeResponse {
+            function () use ($subscription, $call, $topicName, $cacheName): TopicSubscribeResponse {
                 try {
-                    $this->logger->info("Streaming call initiated successfully for topic $topicName in cache $cacheName.\n");
-                    $this->logger->info("Waiting for messages...\n");
-
-                    foreach ($call->responses() as $response) {
-                        try {
-                            switch ($response->getKind()) {
-                                case "heartbeat":
-                                    if (!$this->firstMessageReceived) {
-                                        $this->logger->info("Received heartbeat from topic $topicName in cache $cacheName\n");
-                                        $this->firstMessageReceived = true;
-                                        break;
-                                    }
-                                    break;
-                                case "item":
-                                    $this->handleSubscriptionItem($response->getItem());
-                                    break;
-                                case "discontinuity":
-                                    $this->logger->info("Received message content: " . $response->getDiscontinuity()->getReason());
-                                    break;
-                                default:
-                                    $this->logger->info("Received message content: " . $response->getKind());
-                            }
-                        } catch (\Exception $e) {
-                            $this->logger->error("Error processing message: " . $e->getMessage());
-                        }
-                    }
-
-                    return new TopicSubscribeResponseSubscription();
+                    return $subscription;
                 } catch (SdkError $e) {
                     return new TopicSubscribeResponseError($e);
                 } catch (Exception $e) {
@@ -162,48 +142,6 @@ class ScsTopicClient implements LoggerAwareInterface
             }
         );
     }
-
-    /**
-     * Handle the subscription item based on its type.
-     *
-     * @param _TopicItem $item The received item from the subscription.
-     */
-    private function handleSubscriptionItem(_TopicItem $item): void
-    {
-        try {
-            $itemType = $item->getValue()->getKind();
-            $this->logger->info("Received item type: $itemType");
-
-            switch ($itemType) {
-                case "text":
-                    $this->handleTextItem($item->getValue()->getText());
-                    break;
-                case "binary":
-                    $this->handleBinaryItem($item->getValue()->getBinary());
-                    break;
-                default:
-                    $this->logger->info("Received unknown item type: $itemType");
-            }
-        } catch (\Exception $e) {
-            $this->logger->error("Error handling subscription item: " . $e->getMessage());
-        }
-    }
-
-    /**
-     * Handle a text item received during subscription.
-     *
-     * @param string $textContent The received text content.
-     */
-    private function handleTextItem(string $textContent): void
-    {
-        $this->logger->info("Received message content: $textContent");
-    }
-
-    private function handleBinaryItem(string $binaryContent): void
-    {
-        $this->logger->info("Received message content: $binaryContent");
-    }
-
 
     public function close(): void
     {
