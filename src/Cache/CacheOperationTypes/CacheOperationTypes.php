@@ -199,6 +199,7 @@ abstract class ResponseBase
 
     protected function isSuccess(): bool
     {
+        print get_class($this) . "\n";
         return get_class($this) == "{$this->baseType}Success";
     }
 
