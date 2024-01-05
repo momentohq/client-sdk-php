@@ -107,6 +107,7 @@ class ScsTopicClient implements LoggerAwareInterface
      */
     public function subscribe(string $cacheName, string $topicName): ResponseFuture
     {
+        $this->logger->info("Inside scs topic client subscribe method\n");
         try {
             validateCacheName($cacheName);
             validateTopicName($topicName);

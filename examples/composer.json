@@ -1,6 +1,10 @@
 {
   "require": {
     "momentohq/client-sdk-php": "dev-feat/topic-poc",
-    "monolog/monolog": "^2.5"
+    "monolog/monolog": "^3.0",
+    "ext-pcntl": "*",
+    "react/event-loop": "^1.5",
+    "react/promise": "^3.1",
+    "react/stream": "^1.3"
   }
 }
