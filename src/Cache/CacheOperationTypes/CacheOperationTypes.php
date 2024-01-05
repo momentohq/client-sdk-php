@@ -209,6 +209,11 @@ abstract class ResponseBase
         return get_class($this) == "{$this->baseType}AlreadyExists";
     }
 
+    protected function isSubscription(): bool
+    {
+        return get_class($this) == "{$this->baseType}Subscription";
+    }
+
     protected function isHit(): bool
     {
         return get_class($this) == "{$this->baseType}Hit";
@@ -2641,9 +2646,9 @@ class SetRemoveElementError extends SetRemoveElementResponse
 abstract class TopicPublishResponse extends ResponseBase
 {
     /**
-     * @return TopicPublishResponseSuccess|null
+     * @return TopicPublishSuccess|null
      */
-    public function asSuccess(): ?TopicPublishResponseSuccess
+    public function asSuccess(): ?TopicPublishSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -2652,9 +2657,9 @@ abstract class TopicPublishResponse extends ResponseBase
     }
 
     /**
-     * @return TopicPublishResponseError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return TopicPublishError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ?TopicPublishResponseError
+    public function asError(): ?TopicPublishError
     {
         if ($this->isError()) {
             return $this;
@@ -2666,14 +2671,14 @@ abstract class TopicPublishResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class TopicPublishResponseSuccess extends TopicPublishResponse
+class TopicPublishSuccess extends TopicPublishResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class TopicPublishResponseError extends TopicPublishResponse
+class TopicPublishError extends TopicPublishResponse
 {
     use ErrorBody;
 }
@@ -2684,9 +2689,9 @@ abstract class TopicSubscribeResponse extends ResponseBase
     /**
      * @return TopicSubscribeResponseSubscription|null
      */
-    public function asSuccess(): ?TopicSubscribeResponseSubscription
+    public function asSubscription(): ?TopicSubscribeResponseSubscription
     {
-        if ($this->isSuccess()) {
+        if ($this->isSubscription()) {
             return $this;
         }
         return null;
