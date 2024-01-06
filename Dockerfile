@@ -6,4 +6,3 @@ RUN cd /usr/local/bin && curl -sS https://getcomposer.org/installer | php
 RUN cd /usr/local/bin && mv composer.phar composer
 RUN pecl install grpc
 RUN docker-php-ext-enable grpc
-RUN docker-php-ext-install pcntl
