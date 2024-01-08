@@ -111,7 +111,7 @@ class Psr16CacheClient implements CacheInterface
     /**
      * @inheritDoc
      */
-    public function get($key, $default = null)
+    public function get($key, $default = null): mixed
     {
         validatePsr16Key($key);
         $response = $this->momento->get($this->cacheName, $key);

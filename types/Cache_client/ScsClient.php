@@ -297,6 +297,20 @@ class ScsClient extends \Grpc\BaseStub {
     }
 
     /**
+     * @param \Cache_client\_SetPopRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SetPop(\Cache_client\_SetPopRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SetPop',
+        $argument,
+        ['\Cache_client\_SetPopResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
      * @param \Cache_client\_ListPushFrontRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
@@ -552,6 +566,36 @@ class ScsClient extends \Grpc\BaseStub {
         return $this->_simpleRequest('/cache_client.Scs/SortedSetGetRank',
         $argument,
         ['\Cache_client\_SortedSetGetRankResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * Returns length of the sorted set
+     * @param \Cache_client\_SortedSetLengthRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SortedSetLength(\Cache_client\_SortedSetLengthRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SortedSetLength',
+        $argument,
+        ['\Cache_client\_SortedSetLengthResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * Returns number of elements in the sorted set between a given min and max score
+     * @param \Cache_client\_SortedSetLengthByScoreRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SortedSetLengthByScore(\Cache_client\_SortedSetLengthByScoreRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SortedSetLengthByScore',
+        $argument,
+        ['\Cache_client\_SortedSetLengthByScoreResponse', 'decode'],
         $metadata, $options);
     }
 
