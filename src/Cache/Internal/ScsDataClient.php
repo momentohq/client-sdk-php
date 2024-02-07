@@ -166,7 +166,6 @@ class ScsDataClient implements LoggerAwareInterface
     private DataGrpcManager $grpcManager;
     private LoggerInterface $logger;
     private int $timeout;
-    private $authToken;
 
     public function __construct(IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds)
     {
@@ -181,7 +180,6 @@ class ScsDataClient implements LoggerAwareInterface
         $this->timeout = $this->deadline_milliseconds * self::$TIMEOUT_MULTIPLIER;
         $this->grpcManager = new DataGrpcManager($authProvider, $configuration);
         $this->setLogger($configuration->getLoggerFactory()->getLogger(get_class($this)));
-        $this->authToken = $authProvider->getAuthToken();
     }
 
     public function setLogger(LoggerInterface $logger): void
