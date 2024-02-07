@@ -2340,12 +2340,14 @@ class CacheClientTest extends TestCase
     {
         $cacheName = "test-php";
         $keys = ["key1", "key2", "key3"];
+        $values = ["value1", "value2", "value3"];
+
+
 
         $response = $this->client->getBatch($cacheName, $keys);
-        print "response: " . json_encode($response) . "\n";
 
         $responses = $response->asSuccess()->getResponses();
-        print "responses: " . json_encode($responses) . "\n";
+        $this->assertCount(3, $responses);
 
         $this->assertInstanceOf(GetBatchResponse::class, $response);
         $this->assertInstanceOf(GetBatchSuccess::class, $response->asSuccess());

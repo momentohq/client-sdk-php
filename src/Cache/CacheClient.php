@@ -1197,9 +1197,6 @@ class CacheClient implements LoggerAwareInterface
      */
     public function getBatchAsync(string $cacheName, array $keys): ResponseFuture
     {
-        print "getBatchAsync\n";
-        print "cacheName: $cacheName\n";
-        print "keys: " . print_r($keys, true) . "\n";
         return $this->getNextDataClient()->getBatch($cacheName, $keys);
     }
 
@@ -1222,7 +1219,6 @@ class CacheClient implements LoggerAwareInterface
      */
     public function getBatch(string $cacheName, array $keys): GetBatchResponse
     {
-        print "getBatch\n";
         return $this->getBatchAsync($cacheName, $keys)->wait();
     }
 }

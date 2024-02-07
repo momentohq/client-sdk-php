@@ -31,6 +31,7 @@ use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
 use Cache_client\ECacheResult;
 use Exception;
+use Grpc\ServerStreamingCall;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\DeleteResponse;
@@ -128,7 +129,6 @@ use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\SetError;
 use Momento\Cache\CacheOperationTypes\SetSuccess;
 use Momento\Cache\Errors\InternalServerError;
-use Momento\Cache\Errors\InvalidArgumentException;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Config\IConfiguration;
@@ -211,6 +211,18 @@ class ScsDataClient implements LoggerAwareInterface
             throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
         }
         return $response;
+    }
+
+    private function processStreamingCall(ServerStreamingCall $call)
+    {
+        $responses = $call->responses();
+        $status = $call->getStatus();
+        print_r($status);
+        if ($status->code !== 0) {
+            $this->logger->debug("Data client error: {$status->details}");
+            throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
+        }
+        return $responses;
     }
 
     /**
@@ -1106,7 +1118,6 @@ class ScsDataClient implements LoggerAwareInterface
      */
     public function getBatch(string $cacheName, array $keys): ResponseFuture
     {
-        print "getBatch . cacheName: $cacheName, keys: " . json_encode($keys) . "\n";
         try {
             validateCacheName($cacheName);
             validateKeys($keys);
@@ -1120,15 +1131,7 @@ class ScsDataClient implements LoggerAwareInterface
 
             $getBatchRequest = new _GetBatchRequest();
             $getBatchRequest->setItems($getRequests);
-
-            $call = $this->grpcManager->client->GetBatch(
-                $getBatchRequest,
-                ["cache" => [$cacheName]],
-                ["timeout" => $this->timeout]);
-
-            print "getBatch . call: " . json_encode($call) . "\n";
-            $response = new GetBatchSuccess($call);
-
+            $call = $this->grpcManager->client->GetBatch($getBatchRequest, ['cache' => [$cacheName]], ['timeout' => $this->timeout]);
         } catch (SdkError $e) {
             return ResponseFuture::createResolved(new GetBatchError($e));
         } catch (Exception $e) {
@@ -1136,10 +1139,10 @@ class ScsDataClient implements LoggerAwareInterface
         }
 
         return ResponseFuture::createPending(
-            function () use ($response, $call): GetBatchResponse {
+            function () use ($call): GetBatchResponse {
                 try {
-                    print "getBatch . response: " . json_encode($response) . "\n";
-                    return $response;
+                    $responses = $this->processStreamingCall($call);
+                    return new GetBatchSuccess($responses);
                 } catch (SdkError $e) {
                     return new GetBatchError($e);
                 } catch (Exception $e) {

@@ -2666,25 +2666,22 @@ abstract class GetBatchResponse extends ResponseBase
 
 class GetBatchSuccess extends GetBatchResponse
 {
-    private ServerStreamingCall $call;
+    private Generator $responses;
 
-    public function __construct(ServerStreamingCall $call)
+    public function __construct(Generator $responses)
     {
-        print "GetBatchSuccess::__construct\n";
         parent::__construct();
-        $this->call = $call;
+        $this->responses = $responses;
     }
 
-    public function getResponses(): Generator
+    public function getResponses(): array
     {
-        foreach ($this->call->responses() as $response) {
-            if ($response instanceof _GetResponse) {
-                yield $response;
-            } else {
-                // Handle unexpected response type
-                print "Unexpected response type: " . get_class($response);
-            }
-        }
+        $array = [];
+       foreach ($this->responses as $response) {
+              $value = $response->getCacheBody();
+              $array[] = $value;
+       }
+       return $array;
     }
 }
 
