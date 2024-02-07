@@ -21,6 +21,7 @@ use Cache_client\_ListPopFrontRequest;
 use Cache_client\_ListPushBackRequest;
 use Cache_client\_ListPushFrontRequest;
 use Cache_client\_ListRemoveRequest;
+use Cache_client\_SetBatchRequest;
 use Cache_client\_SetDifferenceRequest;
 use Cache_client\_SetDifferenceRequest\_Subtrahend;
 use Cache_client\_SetDifferenceRequest\_Subtrahend\_Set;
@@ -111,6 +112,9 @@ use Momento\Cache\CacheOperationTypes\SetAddElementSuccess;
 use Momento\Cache\CacheOperationTypes\SetAddElementsResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementsError;
 use Momento\Cache\CacheOperationTypes\SetAddElementsSuccess;
+use Momento\Cache\CacheOperationTypes\SetBatchError;
+use Momento\Cache\CacheOperationTypes\SetBatchResponse;
+use Momento\Cache\CacheOperationTypes\SetBatchSuccess;
 use Momento\Cache\CacheOperationTypes\SetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchError;
 use Momento\Cache\CacheOperationTypes\SetFetchHit;
@@ -162,7 +166,6 @@ class ScsDataClient implements LoggerAwareInterface
     private DataGrpcManager $grpcManager;
     private LoggerInterface $logger;
     private int $timeout;
-
     private $authToken;
 
     public function __construct(IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds)
@@ -211,18 +214,6 @@ class ScsDataClient implements LoggerAwareInterface
             throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
         }
         return $response;
-    }
-
-    private function processStreamingCall(ServerStreamingCall $call)
-    {
-        $responses = $call->responses();
-        $status = $call->getStatus();
-        print_r($status);
-        if ($status->code !== 0) {
-            $this->logger->debug("Data client error: {$status->details}");
-            throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
-        }
-        return $responses;
     }
 
     /**
@@ -1141,12 +1132,54 @@ class ScsDataClient implements LoggerAwareInterface
         return ResponseFuture::createPending(
             function () use ($call): GetBatchResponse {
                 try {
-                    $responses = $this->processStreamingCall($call);
+                    $responses = $call->responses();
                     return new GetBatchSuccess($responses);
                 } catch (SdkError $e) {
                     return new GetBatchError($e);
                 } catch (Exception $e) {
                     return new GetBatchError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+
+    }
+
+    /**
+     * @return ResponseFuture<SetBatchResponse>
+     */
+    public function setBatch(string $cacheName, array $items, ?CollectionTtl $ttl = null): ResponseFuture
+    {
+        try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
+            validateCacheName($cacheName);
+            validateElements($items);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
+            $setRequests = [];
+            foreach ($items as $key => $value) {
+                $setRequest = new _SetRequest();
+                $setRequest->setCacheKey($key);
+                $setRequest->setCacheBody($value);
+                $setRequest->setTtlMilliseconds($ttlMillis);
+                $setRequests[] = $setRequest;
+            }
+            $setBatchRequest = new _SetBatchRequest();
+            $setBatchRequest->setItems($setRequests);
+            $call = $this->grpcManager->client->SetBatch($setBatchRequest, ['cache' => [$cacheName]], ['timeout' => $this->timeout]);
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SetBatchError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SetBatchError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetBatchResponse {
+                try {
+                    $responses = $call->responses();
+                    return new SetBatchSuccess($responses);
+                } catch (SdkError $e) {
+                    return new SetBatchError($e);
+                } catch (Exception $e) {
+                    return new SetBatchError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );

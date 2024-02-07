@@ -16,14 +16,11 @@ use Cache_client\_ListPopFrontResponse;
 use Cache_client\_ListPushBackResponse;
 use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetFetchResponse;
-use Cache_client\_SetIfNotExistsResponse;
 use Cache_client\_SetLengthResponse;
-use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
 use Closure;
 use Control_client\_ListCachesResponse;
 use Generator;
-use Grpc\ServerStreamingCall;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Throwable;
@@ -2690,3 +2687,53 @@ class GetBatchError extends GetBatchResponse
     use ErrorBody;
 }
 
+abstract class SetBatchResponse extends ResponseBase
+{
+    /**
+     * @return SetBatchSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): ?SetBatchSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetBatchError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SetBatchError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class SetBatchSuccess extends SetBatchResponse
+{
+    private Generator $responses;
+
+    public function __construct(Generator $responses)
+    {
+        parent::__construct();
+        $this->responses = $responses;
+    }
+
+    public function getResponses(): array
+    {
+        $array = [];
+        foreach ($this->responses as $response) {
+            $value = $response->getResult();
+            $array[] = $value;
+        }
+        return $array;
+    }
+}
+
+class SetBatchError extends SetBatchResponse
+{
+    use ErrorBody;
+}

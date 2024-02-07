@@ -29,6 +29,7 @@ use Momento\Cache\CacheOperationTypes\ListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\ListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementsResponse;
+use Momento\Cache\CacheOperationTypes\SetBatchResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsResponse;
 use Momento\Cache\CacheOperationTypes\SetLengthResponse;
@@ -1182,12 +1183,11 @@ class CacheClient implements LoggerAwareInterface
      * The response represents the result of the get operation and stores the
      * retrieved value. This result is resolved to a type-safe object of one of
      * the following types:<br>
-     * * GetBatchHit<br>
-     * * GetBatchMiss<br>
+     * * GetBatchSuccess<br>
      * * GetBatchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$value = $hit->valueString();<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$value = $success->getResponses();<br>
      * } elseif ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error response<br>
      * }</code>
@@ -1207,12 +1207,11 @@ class CacheClient implements LoggerAwareInterface
      * @param array $keys The key to look up.
      * @return GetBatchResponse Represents the result of the get operation and stores the retrieved value. This
      * result is resolved to a type-safe object of one of the following types:<br>
-     * * GetBatchHit<br>
-     * * GetBatchMiss<br>
+     * * GetBatchSuccess<br>
      * * GetBatchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$value = $hit->valueString();<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$value = $success->getResponses();<br>
      * } elseif ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error response<br>
      * }</code>
@@ -1220,5 +1219,55 @@ class CacheClient implements LoggerAwareInterface
     public function getBatch(string $cacheName, array $keys): GetBatchResponse
     {
         return $this->getBatchAsync($cacheName, $keys)->wait();
+    }
+
+    /**
+     * Sets the cache values for given keys.
+     *
+     * @param string $cacheName Name of the cache to set the values in.
+     * @param array $items The keys and values to set.
+     * @return ResponseFuture<SetBatchResponse> A waitable future which will provide
+     * the result of the set operations upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the get operation and stores the
+     * retrieved value. This result is resolved to a type-safe object of one of
+     * the following types:<br>
+     * * SetBatchSuccess<br>
+     * * SetBatchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$value = $success->getResponses();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setBatchAsync(string $cacheName, array $items, ?CollectionTtl $ttl = null): ResponseFuture
+    {
+        return $this->getNextDataClient()->setBatch($cacheName, $items, $ttl);
+    }
+
+    /**
+     * Sets the cache value stored for a given key.
+     *
+     * @param string $cacheName Name of the cache to set the values in.
+     * @param array $items The keys and values to set.
+     * @return SetBatchResponse Represents the result of the set operation. This
+     * result is resolved to a type-safe object of one of the following types:<br>
+     * * SetBatchSuccess<br>
+     * * SetBatchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     *  &nbsp;&nbsp;$value = $success->getResponses();<br>
+     *  } elseif ($error = $response->asError()) {<br>
+     *  &nbsp;&nbsp;// handle error response<br>
+     *  }</code>
+     */
+    public function setBatch(string $cacheName, array $items, ?CollectionTtl $ttl = null): SetBatchResponse
+    {
+        return $this->setBatchAsync($cacheName, $items, $ttl)->wait();
     }
 }
