@@ -7,6 +7,8 @@ use Momento\Auth\AuthUtils;
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\CacheOperationTypes\DictionaryGetFieldHit;
 use Momento\Cache\CacheOperationTypes\DictionaryGetFieldMiss;
+use Momento\Cache\CacheOperationTypes\GetBatchResponse;
+use Momento\Cache\CacheOperationTypes\GetBatchSuccess;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\CacheClient;
 use Momento\Config\Configuration;
@@ -2332,5 +2334,20 @@ class CacheClientTest extends TestCase
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asMiss(), "Expected a miss but got $response.");
+    }
+
+    public function testGetBatch_test()
+    {
+        $cacheName = "test-php";
+        $keys = ["key1", "key2", "key3"];
+
+        $response = $this->client->getBatch($cacheName, $keys);
+        print "response: " . json_encode($response) . "\n";
+
+        $responses = $response->asSuccess()->getResponses();
+        print "responses: " . json_encode($responses) . "\n";
+
+        $this->assertInstanceOf(GetBatchResponse::class, $response);
+        $this->assertInstanceOf(GetBatchSuccess::class, $response->asSuccess());
     }
 }

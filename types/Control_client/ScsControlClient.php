@@ -114,4 +114,46 @@ class ScsControlClient extends \Grpc\BaseStub {
         $metadata, $options);
     }
 
+    /**
+     * @param \Control_client\_CreateIndexRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function CreateIndex(\Control_client\_CreateIndexRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/control_client.ScsControl/CreateIndex',
+        $argument,
+        ['\Control_client\_CreateIndexResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * @param \Control_client\_DeleteIndexRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function DeleteIndex(\Control_client\_DeleteIndexRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/control_client.ScsControl/DeleteIndex',
+        $argument,
+        ['\Control_client\_DeleteIndexResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * @param \Control_client\_ListIndexesRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function ListIndexes(\Control_client\_ListIndexesRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/control_client.ScsControl/ListIndexes',
+        $argument,
+        ['\Control_client\_ListIndexesResponse', 'decode'],
+        $metadata, $options);
+    }
+
 }

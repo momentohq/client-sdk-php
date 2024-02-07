@@ -24,6 +24,7 @@ DOCKER_IMAGE_NAME=momento-php-dev
 
 DOCKER_BASE_COMMAND="docker run -it -v$(pwd):/app -w=/app"
 $DOCKER_BASE_COMMAND $DOCKER_IMAGE_NAME composer install
+$DOCKER_BASE_COMMAND $DOCKER_IMAGE_NAME composer update
 $DOCKER_BASE_COMMAND -e TEST_AUTH_TOKEN="$TEST_AUTH_TOKEN" -e TEST_CACHE_NAME="$TEST_CACHE_NAME" \
-	$DOCKER_IMAGE_NAME php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml
+	$DOCKER_IMAGE_NAME php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml tests/Cache/CacheClientTest.php --filter testGetBatch_test
 

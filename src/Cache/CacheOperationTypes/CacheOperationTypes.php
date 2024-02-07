@@ -22,6 +22,8 @@ use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
 use Closure;
 use Control_client\_ListCachesResponse;
+use Generator;
+use Grpc\ServerStreamingCall;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Throwable;
@@ -2635,3 +2637,59 @@ class SetRemoveElementError extends SetRemoveElementResponse
 {
     use ErrorBody;
 }
+
+
+abstract class GetBatchResponse extends ResponseBase
+{
+    /**
+     * @return GetBatchSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): ?GetBatchSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return GetBatchError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?GetBatchError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class GetBatchSuccess extends GetBatchResponse
+{
+    private ServerStreamingCall $call;
+
+    public function __construct(ServerStreamingCall $call)
+    {
+        print "GetBatchSuccess::__construct\n";
+        parent::__construct();
+        $this->call = $call;
+    }
+
+    public function getResponses(): Generator
+    {
+        foreach ($this->call->responses() as $response) {
+            if ($response instanceof _GetResponse) {
+                yield $response;
+            } else {
+                // Handle unexpected response type
+                print "Unexpected response type: " . get_class($response);
+            }
+        }
+    }
+}
+
+class GetBatchError extends GetBatchResponse
+{
+    use ErrorBody;
+}
+

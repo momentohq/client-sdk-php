@@ -18,9 +18,17 @@ class _GenerateApiTokenRequest extends \Google\Protobuf\Internal\Message
      */
     protected $auth_token = '';
     /**
-     * Generated from protobuf field <code>.auth._GenerateApiTokenRequest.Permissions permissions = 4;</code>
+     * Generated from protobuf field <code>.permission_messages.Permissions permissions = 4;</code>
      */
     protected $permissions = null;
+    /**
+     * Generated from protobuf field <code>string token_id = 5;</code>
+     */
+    protected $token_id = '';
+    /**
+     * Generated from protobuf field <code>string description = 6;</code>
+     */
+    protected $description = '';
     protected $expiry;
 
     /**
@@ -32,7 +40,9 @@ class _GenerateApiTokenRequest extends \Google\Protobuf\Internal\Message
      *     @type \Auth\_GenerateApiTokenRequest\Never $never
      *     @type \Auth\_GenerateApiTokenRequest\Expires $expires
      *     @type string $auth_token
-     *     @type \Auth\_GenerateApiTokenRequest\Permissions $permissions
+     *     @type \Permission_messages\Permissions $permissions
+     *     @type string $token_id
+     *     @type string $description
      * }
      */
     public function __construct($data = NULL) {
@@ -117,8 +127,8 @@ class _GenerateApiTokenRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.auth._GenerateApiTokenRequest.Permissions permissions = 4;</code>
-     * @return \Auth\_GenerateApiTokenRequest\Permissions|null
+     * Generated from protobuf field <code>.permission_messages.Permissions permissions = 4;</code>
+     * @return \Permission_messages\Permissions|null
      */
     public function getPermissions()
     {
@@ -136,14 +146,58 @@ class _GenerateApiTokenRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.auth._GenerateApiTokenRequest.Permissions permissions = 4;</code>
-     * @param \Auth\_GenerateApiTokenRequest\Permissions $var
+     * Generated from protobuf field <code>.permission_messages.Permissions permissions = 4;</code>
+     * @param \Permission_messages\Permissions $var
      * @return $this
      */
     public function setPermissions($var)
     {
-        GPBUtil::checkMessage($var, \Auth\_GenerateApiTokenRequest\Permissions::class);
+        GPBUtil::checkMessage($var, \Permission_messages\Permissions::class);
         $this->permissions = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string token_id = 5;</code>
+     * @return string
+     */
+    public function getTokenId()
+    {
+        return $this->token_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string token_id = 5;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setTokenId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->token_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string description = 6;</code>
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * Generated from protobuf field <code>string description = 6;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setDescription($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->description = $var;
 
         return $this;
     }

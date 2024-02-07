@@ -17,6 +17,14 @@ class _Cache extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string cache_name = 1;</code>
      */
     protected $cache_name = '';
+    /**
+     * Generated from protobuf field <code>.control_client._CacheLimits cache_limits = 2;</code>
+     */
+    protected $cache_limits = null;
+    /**
+     * Generated from protobuf field <code>.control_client._TopicLimits topic_limits = 3;</code>
+     */
+    protected $topic_limits = null;
 
     /**
      * Constructor.
@@ -25,6 +33,8 @@ class _Cache extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $cache_name
+     *     @type \Control_client\_CacheLimits $cache_limits
+     *     @type \Control_client\_TopicLimits $topic_limits
      * }
      */
     public function __construct($data = NULL) {
@@ -50,6 +60,70 @@ class _Cache extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->cache_name = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.control_client._CacheLimits cache_limits = 2;</code>
+     * @return \Control_client\_CacheLimits|null
+     */
+    public function getCacheLimits()
+    {
+        return $this->cache_limits;
+    }
+
+    public function hasCacheLimits()
+    {
+        return isset($this->cache_limits);
+    }
+
+    public function clearCacheLimits()
+    {
+        unset($this->cache_limits);
+    }
+
+    /**
+     * Generated from protobuf field <code>.control_client._CacheLimits cache_limits = 2;</code>
+     * @param \Control_client\_CacheLimits $var
+     * @return $this
+     */
+    public function setCacheLimits($var)
+    {
+        GPBUtil::checkMessage($var, \Control_client\_CacheLimits::class);
+        $this->cache_limits = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.control_client._TopicLimits topic_limits = 3;</code>
+     * @return \Control_client\_TopicLimits|null
+     */
+    public function getTopicLimits()
+    {
+        return $this->topic_limits;
+    }
+
+    public function hasTopicLimits()
+    {
+        return isset($this->topic_limits);
+    }
+
+    public function clearTopicLimits()
+    {
+        unset($this->topic_limits);
+    }
+
+    /**
+     * Generated from protobuf field <code>.control_client._TopicLimits topic_limits = 3;</code>
+     * @param \Control_client\_TopicLimits $var
+     * @return $this
+     */
+    public function setTopicLimits($var)
+    {
+        GPBUtil::checkMessage($var, \Control_client\_TopicLimits::class);
+        $this->topic_limits = $var;
 
         return $this;
     }

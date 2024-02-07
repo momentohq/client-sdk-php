@@ -10,6 +10,7 @@ use Cache_client\_DictionaryFieldValuePair;
 use Cache_client\_DictionaryGetRequest;
 use Cache_client\_DictionaryIncrementRequest;
 use Cache_client\_DictionarySetRequest;
+use Cache_client\_GetBatchRequest;
 use Cache_client\_GetRequest;
 use Cache_client\_IncrementRequest;
 use Cache_client\_KeysExistRequest;
@@ -62,6 +63,9 @@ use Momento\Cache\CacheOperationTypes\DictionarySetFieldSuccess;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsError;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsSuccess;
+use Momento\Cache\CacheOperationTypes\GetBatchError;
+use Momento\Cache\CacheOperationTypes\GetBatchResponse;
+use Momento\Cache\CacheOperationTypes\GetBatchSuccess;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\GetResponse;
 use Momento\Cache\CacheOperationTypes\GetError;
@@ -124,6 +128,7 @@ use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\SetError;
 use Momento\Cache\CacheOperationTypes\SetSuccess;
 use Momento\Cache\Errors\InternalServerError;
+use Momento\Cache\Errors\InvalidArgumentException;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Config\IConfiguration;
@@ -158,6 +163,8 @@ class ScsDataClient implements LoggerAwareInterface
     private LoggerInterface $logger;
     private int $timeout;
 
+    private $authToken;
+
     public function __construct(IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds)
     {
         validateTtl($defaultTtlSeconds);
@@ -171,6 +178,7 @@ class ScsDataClient implements LoggerAwareInterface
         $this->timeout = $this->deadline_milliseconds * self::$TIMEOUT_MULTIPLIER;
         $this->grpcManager = new DataGrpcManager($authProvider, $configuration);
         $this->setLogger($configuration->getLoggerFactory()->getLogger(get_class($this)));
+        $this->authToken = $authProvider->getAuthToken();
     }
 
     public function setLogger(LoggerInterface $logger): void
@@ -1091,6 +1099,55 @@ class ScsDataClient implements LoggerAwareInterface
                 }
             }
         );
+    }
+
+    /**
+     * @return ResponseFuture<GetBatchResponse>
+     */
+    public function getBatch(string $cacheName, array $keys): ResponseFuture
+    {
+        print "getBatch . cacheName: $cacheName, keys: " . json_encode($keys) . "\n";
+        try {
+            validateCacheName($cacheName);
+            validateKeys($keys);
+
+            $getRequests = [];
+            foreach ($keys as $key) {
+                $getRequest = new _GetRequest();
+                $getRequest->setCacheKey($key);
+                $getRequests[] = $getRequest;
+            }
+
+            $getBatchRequest = new _GetBatchRequest();
+            $getBatchRequest->setItems($getRequests);
+
+            $call = $this->grpcManager->client->GetBatch(
+                $getBatchRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout]);
+
+            print "getBatch . call: " . json_encode($call) . "\n";
+            $response = new GetBatchSuccess($call);
+
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new GetBatchError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new GetBatchError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($response, $call): GetBatchResponse {
+                try {
+                    print "getBatch . response: " . json_encode($response) . "\n";
+                    return $response;
+                } catch (SdkError $e) {
+                    return new GetBatchError($e);
+                } catch (Exception $e) {
+                    return new GetBatchError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+
     }
 
     public function close(): void
