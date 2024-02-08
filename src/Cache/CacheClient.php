@@ -1245,7 +1245,7 @@ class CacheClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function setBatchAsync(string $cacheName, array $items, ?CollectionTtl $ttl = null): ResponseFuture
+    public function setBatchAsync(string $cacheName, array $items, int $ttl = 0): ResponseFuture
     {
         return $this->getNextDataClient()->setBatch($cacheName, $items, $ttl);
     }
@@ -1266,7 +1266,7 @@ class CacheClient implements LoggerAwareInterface
      *  &nbsp;&nbsp;// handle error response<br>
      *  }</code>
      */
-    public function setBatch(string $cacheName, array $items, ?CollectionTtl $ttl = null): SetBatchResponse
+    public function setBatch(string $cacheName, array $items, int $ttl = 0): SetBatchResponse
     {
         return $this->setBatchAsync($cacheName, $items, $ttl)->wait();
     }

@@ -1145,13 +1145,12 @@ class ScsDataClient implements LoggerAwareInterface
     /**
      * @return ResponseFuture<SetBatchResponse>
      */
-    public function setBatch(string $cacheName, array $items, ?CollectionTtl $ttl = null): ResponseFuture
+    public function setBatch(string $cacheName, array $items, int $ttl = 0): ResponseFuture
     {
         try {
-            $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateElements($items);
-            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
+            $ttlMillis = $this->ttlToMillis($ttl);
             $setRequests = [];
             foreach ($items as $key => $value) {
                 $setRequest = new _SetRequest();
