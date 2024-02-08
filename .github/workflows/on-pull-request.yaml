@@ -48,10 +48,6 @@ jobs:
       - name: Install dependencies
         run: composer install
 
-      - name: Update for 7.4
-        if: ${{ matrix.php-version == '7.4' }}
-        run: composer update
-
       - name: Run tests
         run: php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml
 
