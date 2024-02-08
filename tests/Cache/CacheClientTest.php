@@ -2395,9 +2395,10 @@ class CacheClientTest extends TestCase
         $setBatchResponse = $this->client->setBatch($cacheName, $items, 60);
         $this->assertNull($setBatchResponse->asError());
         $this->assertNotNull($setBatchResponse->asSuccess(), "Expected a success but got: $setBatchResponse");
+        $setResponses = $setBatchResponse->asSuccess()->getResponses();
+        $this->assertCount(sizeof($keys), $setResponses);
 
         $getBatchResponse = $this->client->getBatch($cacheName, $keys);
-
         $this->assertNull($getBatchResponse->asError());
         $this->assertNotNull($getBatchResponse->asSuccess(), "Expected a success but got: $getBatchResponse");
 
