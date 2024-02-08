@@ -7,8 +7,6 @@ use Momento\Auth\AuthUtils;
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\CacheOperationTypes\DictionaryGetFieldHit;
 use Momento\Cache\CacheOperationTypes\DictionaryGetFieldMiss;
-use Momento\Cache\CacheOperationTypes\GetBatchResponse;
-use Momento\Cache\CacheOperationTypes\GetBatchSuccess;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\CacheClient;
 use Momento\Config\Configuration;
@@ -2338,7 +2336,7 @@ class CacheClientTest extends TestCase
 
     public function testGetBatch_HappyPath()
     {
-        $cacheName = uniqid();
+        $cacheName = $this->TEST_CACHE_NAME;
         $key1 = uniqid();
         $key2 = uniqid();
         $key3 = uniqid();
@@ -2348,10 +2346,6 @@ class CacheClientTest extends TestCase
         $value2 = uniqid();
         $value3 = uniqid();
         $expectedValues = [$value1, $value2, $value3];
-
-        $response = $this->client->createCache($cacheName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
         $response = $this->client->set($cacheName, $key1, $value1);
         $this->assertNull($response->asError());
@@ -2381,7 +2375,7 @@ class CacheClientTest extends TestCase
 
     public function testSetBatch_HappyPath()
     {
-        $cacheName = uniqid();
+        $cacheName = $this->TEST_CACHE_NAME;
         $key1 = uniqid();
         $key2 = uniqid();
         $key3 = uniqid();
@@ -2397,10 +2391,6 @@ class CacheClientTest extends TestCase
             $key2 => $value2,
             $key3 => $value3
         );
-
-        $response = $this->client->createCache($cacheName);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
         $setBatchResponse = $this->client->setBatch($cacheName, $items, 60);
         $this->assertNull($setBatchResponse->asError());
