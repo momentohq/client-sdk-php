@@ -397,7 +397,7 @@ if (version_compare(PHP_VERSION, '8.0.0', '<')) {
         /**
          * @inheritDoc
          */
-        public function get(string $key, mixed $default = null): mixed
+        public function get($key, $default = null): mixed
         {
             validatePsr16Key($key);
             $response = $this->momento->get($this->cacheName, $key);
