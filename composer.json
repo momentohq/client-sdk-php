@@ -52,6 +52,9 @@
         "phpunit/phpunit": "^9.5.23"
     },
     "config": {
+        "platform": {
+            "php": "7.4.15"
+        },
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true
