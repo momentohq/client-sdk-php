@@ -17,6 +17,7 @@ use Cache_client\_ListPushBackResponse;
 use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetFetchResponse;
 use Cache_client\_SetLengthResponse;
+use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
 use Closure;
 use Control_client\_ListCachesResponse;
@@ -2671,7 +2672,23 @@ class GetBatchSuccess extends GetBatchResponse
         $this->responses = $responses;
     }
 
-    public function getResponses(): array
+    public function results(): array
+    {
+        $results = [];
+        foreach ($this->responses as $response) {
+            if ($response->getResult() == ECacheResult::Hit) {
+                $value = new GetHit($response);
+            } elseif ($response->getResult() == ECacheResult::Miss) {
+                $value = new GetMiss();
+            } else {
+                $value = new GetError(new UnknownError(strval($response->getResult())));
+            }
+            $results[] = $value;
+        }
+        return $results;
+    }
+
+    public function values(): array
     {
         $array = [];
        foreach ($this->responses as $response) {
@@ -2722,14 +2739,18 @@ class SetBatchSuccess extends SetBatchResponse
         $this->responses = $responses;
     }
 
-    public function getResponses(): array
+    public function results(): array
     {
-        $array = [];
+        $results = [];
         foreach ($this->responses as $response) {
-            $value = $response->getResult();
-            $array[] = $value;
+            if ($response->getResult() == ECacheResult::Ok) {
+                $value = new SetSuccess();
+            } else {
+                $value = new SetError(new UnknownError(strval($response->getResult())));
+            }
+            $results[] = $value;
         }
-        return $array;
+        return $results;
     }
 }
 
