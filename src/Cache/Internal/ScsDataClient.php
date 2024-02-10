@@ -32,7 +32,6 @@ use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
 use Cache_client\ECacheResult;
 use Exception;
-use Grpc\ServerStreamingCall;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\DeleteResponse;
@@ -1130,8 +1129,19 @@ class ScsDataClient implements LoggerAwareInterface
         return ResponseFuture::createPending(
             function () use ($call): GetBatchResponse {
                 try {
+                    $results= [];
                     $responses = $call->responses();
-                    return new GetBatchSuccess($responses);
+                    foreach ($responses as $response) {
+                        if ($response->getResult() == ECacheResult::Hit) {
+                            $value = new GetHit($response);
+                        } elseif ($response->getResult() == ECacheResult::Miss) {
+                            $value = new GetMiss();
+                        } else {
+                            $value = new GetError(new UnknownError(strval($response->getResult())));
+                        }
+                        $results[] = $value;
+                    }
+                    return new GetBatchSuccess($results);
                 } catch (SdkError $e) {
                     return new GetBatchError($e);
                 } catch (Exception $e) {
@@ -1171,8 +1181,22 @@ class ScsDataClient implements LoggerAwareInterface
         return ResponseFuture::createPending(
             function () use ($call): SetBatchResponse {
                 try {
+                    $results = [];
                     $responses = $call->responses();
-                    return new SetBatchSuccess($responses);
+                    foreach ($responses as $response) {
+                        if ($response->getResult() == ECacheResult::Ok) {
+                            $value = new SetSuccess();
+                        } else {
+                            $value = new SetError(new UnknownError(strval($response->getResult())));
+                        }
+                        $results[] = $value;
+                    }
+
+                    $status = $call->getStatus();
+                    if ($status->code != 0) {
+                        return new SetBatchError(new UnknownError($status->details));
+                    }
+                    return new SetBatchSuccess($results);
                 } catch (SdkError $e) {
                     return new SetBatchError($e);
                 } catch (Exception $e) {

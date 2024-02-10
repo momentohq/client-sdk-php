@@ -2664,38 +2664,31 @@ abstract class GetBatchResponse extends ResponseBase
 
 class GetBatchSuccess extends GetBatchResponse
 {
-    private Generator $responses;
+    private array $values = [];
+    private array $results = [];
 
-    public function __construct(Generator $responses)
+    public function __construct(array $responses)
     {
         parent::__construct();
-        $this->responses = $responses;
+        $this->results = $responses;
     }
 
     public function results(): array
     {
-        $results = [];
-        foreach ($this->responses as $response) {
-            if ($response->getResult() == ECacheResult::Hit) {
-                $value = new GetHit($response);
-            } elseif ($response->getResult() == ECacheResult::Miss) {
-                $value = new GetMiss();
-            } else {
-                $value = new GetError(new UnknownError(strval($response->getResult())));
-            }
-            $results[] = $value;
-        }
-        return $results;
+        return $this->results;
     }
 
     public function values(): array
     {
-        $array = [];
-       foreach ($this->responses as $response) {
-              $value = $response->getCacheBody();
-              $array[] = $value;
-       }
-       return $array;
+        if (!$this->values) {
+            $array = [];
+            foreach ($this->results as $result) {
+                $value = $result->asHit() ? $result->asHit()->valueString() : null;
+                $array[] = $value;
+            }
+            $this->values = $array;
+        }
+        return $this->values;
     }
 }
 
@@ -2731,9 +2724,9 @@ abstract class SetBatchResponse extends ResponseBase
 
 class SetBatchSuccess extends SetBatchResponse
 {
-    private Generator $responses;
+    private array $responses;
 
-    public function __construct(Generator $responses)
+    public function __construct(array $responses)
     {
         parent::__construct();
         $this->responses = $responses;
@@ -2741,16 +2734,7 @@ class SetBatchSuccess extends SetBatchResponse
 
     public function results(): array
     {
-        $results = [];
-        foreach ($this->responses as $response) {
-            if ($response->getResult() == ECacheResult::Ok) {
-                $value = new SetSuccess();
-            } else {
-                $value = new SetError(new UnknownError(strval($response->getResult())));
-            }
-            $results[] = $value;
-        }
-        return $results;
+        return $this->responses;
     }
 }
 
