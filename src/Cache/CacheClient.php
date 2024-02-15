@@ -1187,7 +1187,8 @@ class CacheClient implements LoggerAwareInterface
      * * GetBatchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$value = $success->getResponses();<br>
+     * &nbsp;&nbsp;$results = $success->results();<br>
+     * &nbsp;&nbsp;$values = $success->values();<br>
      * } elseif ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error response<br>
      * }</code>
@@ -1211,7 +1212,8 @@ class CacheClient implements LoggerAwareInterface
      * * GetBatchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$value = $success->getResponses();<br>
+     * &nbsp;&nbsp;$results = $success->results();<br>
+     * &nbsp;&nbsp;$values = $success->values();<br>
      * } elseif ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error response<br>
      * }</code>
@@ -1237,7 +1239,7 @@ class CacheClient implements LoggerAwareInterface
      * * SetBatchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$value = $success->getResponses();<br>
+     * &nbsp;&nbsp;$results = $success->results();<br>
      * } elseif ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error response<br>
      * }</code>
@@ -1261,7 +1263,7 @@ class CacheClient implements LoggerAwareInterface
      * * SetBatchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>if ($success = $response->asSuccess()) {<br>
-     *  &nbsp;&nbsp;$value = $success->getResponses();<br>
+     *  &nbsp;&nbsp;$results = $success->results();<br>
      *  } elseif ($error = $response->asError()) {<br>
      *  &nbsp;&nbsp;// handle error response<br>
      *  }</code>
