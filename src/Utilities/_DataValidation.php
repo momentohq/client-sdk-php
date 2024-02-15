@@ -148,14 +148,6 @@ if (!function_exists('validateElements')) {
     }
 }
 
-if (!function_exists('validateItems')) {
-    function validateItems(array $items): void
-    {
-        $keys = array_keys($items);
-        validateKeys($keys);
-    }
-}
-
 if (!function_exists('validatePsr16Key')) {
     function validatePsr16Key(string $key): void
     {

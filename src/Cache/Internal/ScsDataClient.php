@@ -153,7 +153,6 @@ use function Momento\Utilities\validateSetName;
 use function Momento\Utilities\validateTruncateSize;
 use function Momento\Utilities\validateTtl;
 use function Momento\Utilities\validateValueName;
-use function Momento\Utilities\validateItems;
 
 class ScsDataClient implements LoggerAwareInterface
 {
@@ -1160,7 +1159,7 @@ class ScsDataClient implements LoggerAwareInterface
     {
         try {
             validateCacheName($cacheName);
-            validateItems($items);
+            validateKeys(array_keys($items));
 
             $ttlMillis = $this->ttlToMillis($ttl);
             $setRequests = [];
