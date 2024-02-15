@@ -153,9 +153,6 @@ if (!function_exists('validateItems')) {
     {
         $keys = array_keys($items);
         validateKeys($keys);
-
-        $values = array_values($items);
-        validateNullOrEmptyList($values, "Values");
     }
 }
 
