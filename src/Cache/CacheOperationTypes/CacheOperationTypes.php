@@ -16,12 +16,12 @@ use Cache_client\_ListPopFrontResponse;
 use Cache_client\_ListPushBackResponse;
 use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetFetchResponse;
-use Cache_client\_SetIfNotExistsResponse;
 use Cache_client\_SetLengthResponse;
 use Cache_client\_SetResponse;
 use Cache_client\ECacheResult;
 use Closure;
 use Control_client\_ListCachesResponse;
+use Generator;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Throwable;
@@ -2632,6 +2632,113 @@ class SetRemoveElementSuccess extends SetRemoveElementResponse
  * Contains information about an error returned from the request.
  */
 class SetRemoveElementError extends SetRemoveElementResponse
+{
+    use ErrorBody;
+}
+
+
+abstract class GetBatchResponse extends ResponseBase
+{
+    /**
+     * @return GetBatchSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): ?GetBatchSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return GetBatchError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?GetBatchError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class GetBatchSuccess extends GetBatchResponse
+{
+    private array $values = [];
+    private array $results = [];
+
+    public function __construct(array $responses)
+    {
+        parent::__construct();
+        $this->results = $responses;
+    }
+
+    public function results(): array
+    {
+        return $this->results;
+    }
+
+    public function values(): array
+    {
+        if (!$this->values) {
+            $array = [];
+            foreach ($this->results as $result) {
+                $value = $result->asHit() ? $result->asHit()->valueString() : null;
+                $array[] = $value;
+            }
+            $this->values = $array;
+        }
+        return $this->values;
+    }
+}
+
+class GetBatchError extends GetBatchResponse
+{
+    use ErrorBody;
+}
+
+abstract class SetBatchResponse extends ResponseBase
+{
+    /**
+     * @return SetBatchSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): ?SetBatchSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetBatchError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SetBatchError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class SetBatchSuccess extends SetBatchResponse
+{
+    private array $responses;
+
+    public function __construct(array $responses)
+    {
+        parent::__construct();
+        $this->responses = $responses;
+    }
+
+    public function results(): array
+    {
+        return $this->responses;
+    }
+}
+
+class SetBatchError extends SetBatchResponse
 {
     use ErrorBody;
 }

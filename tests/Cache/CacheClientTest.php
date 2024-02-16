@@ -3,10 +3,13 @@ declare(strict_types=1);
 
 namespace Momento\Tests\Cache;
 
+use Cache_client\_GetResponse;
 use Momento\Auth\AuthUtils;
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\CacheOperationTypes\DictionaryGetFieldHit;
 use Momento\Cache\CacheOperationTypes\DictionaryGetFieldMiss;
+use Momento\Cache\CacheOperationTypes\GetHit;
+use Momento\Cache\CacheOperationTypes\GetMiss;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\CacheClient;
 use Momento\Config\Configuration;
@@ -2332,5 +2335,161 @@ class CacheClientTest extends TestCase
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, $setName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asMiss(), "Expected a miss but got $response.");
+    }
+
+    public function testGetBatch_HappyPath()
+    {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key1 = uniqid();
+        $key2 = uniqid();
+        $key3 = uniqid();
+        $keys = [$key1, $key2, $key3];
+
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $value3 = uniqid();
+        $expectedValues = [$value1, $value2, $value3];
+
+        $response = $this->client->set($cacheName, $key1, $value1);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals("$response", get_class($response));
+
+        $response = $this->client->set($cacheName, $key2, $value2);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals("$response", get_class($response));
+
+        $response = $this->client->set($cacheName, $key3, $value3);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals("$response", get_class($response));
+
+
+        $response = $this->client->getBatch($cacheName, $keys);
+
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $responses = $response->asSuccess()->values();
+        $this->assertCount(sizeof($keys), $responses);
+        $this->assertEquals($responses, $expectedValues);
+    }
+
+    public function testSetBatch_HappyPath()
+    {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key1 = uniqid();
+        $key2 = uniqid();
+        $key3 = uniqid();
+        $keys = [$key1, $key2, $key3];
+
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $value3 = uniqid();
+        $expectedValues = [$value1, $value2, $value3];
+
+        $items = array(
+            $key1 => $value1,
+            $key2 => $value2,
+            $key3 => $value3
+        );
+
+        $setBatchResponse = $this->client->setBatch($cacheName, $items, 60);
+        $this->assertNull($setBatchResponse->asError());
+        $this->assertNotNull($setBatchResponse->asSuccess(), "Expected a success but got: $setBatchResponse");
+        $setResponses = $setBatchResponse->asSuccess()->results();
+        $this->assertCount(sizeof($keys), $setResponses);
+
+        $getBatchResponse = $this->client->getBatch($cacheName, $keys);
+        $success = $getBatchResponse->asSuccess();
+        $this->assertNull($getBatchResponse->asError());
+        $this->assertNotNull($success, "Expected a success but got: $getBatchResponse");
+
+        $responses = $success->values();
+        $this->assertCount(sizeof($keys), $responses);
+        $this->assertEquals($responses, $expectedValues);
+    }
+
+    public function testGetBatchSetBatch()
+    {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key1 = uniqid();
+        $key2 = uniqid();
+        $key3 = uniqid();
+        $keys = [$key1, $key2, $key3, "key4"];
+
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $value3 = uniqid();
+        $expectedValues = [$value1, $value2, $value3, null];
+
+        $items = array(
+            $key1 => $value1,
+            $key2 => $value2,
+            $key3 => $value3
+        );
+
+        $setBatchResponse = $this->client->setBatch($cacheName, $items, 60);
+        $this->assertNull($setBatchResponse->asError());
+        $this->assertNotNull($setBatchResponse->asSuccess(), "Expected a success but got: $setBatchResponse");
+
+        $getBatchResponse = $this->client->getBatch($cacheName, $keys);
+        $this->assertNull($getBatchResponse->asError());
+        $this->assertNotNull($getBatchResponse->asSuccess(), "Expected a success but got: $getBatchResponse");
+
+        $successResponse = $getBatchResponse->asSuccess();
+
+        $results = $successResponse->results();
+        $expectedClasses = [GetHit::class, GetHit::class, GetHit::class, GetMiss::class];
+
+        foreach ($expectedClasses as $index => $expectedClass) {
+            $this->assertInstanceOf($expectedClass, $results[$index]);
+        }
+
+        $responses = $successResponse->values();
+        $this->assertEquals($responses, $expectedValues);
+    }
+
+    public function testGetBatchSetBatchAsync()
+    {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key1 = uniqid();
+        $key2 = uniqid();
+        $key3 = uniqid();
+        $keys = [$key1, $key2, $key3, "key4"];
+
+        $value1 = uniqid();
+        $value2 = uniqid();
+        $value3 = uniqid();
+        $expectedValues = [$value1, $value2, $value3, null];
+
+        $items = array(
+            $key1 => $value1,
+            $key2 => $value2,
+            $key3 => $value3
+        );
+
+        $setBatchResponseFuture = $this->client->setBatchAsync($cacheName, $items, 60);
+        $setBatchResponse = $setBatchResponseFuture->wait();
+        $this->assertNull($setBatchResponse->asError());
+        $this->assertNotNull($setBatchResponse->asSuccess(), "Expected a success but got: $setBatchResponse");
+
+        $getBatchResponse = $this->client->getBatchAsync($cacheName, $keys);
+        $getBatchResponse = $getBatchResponse->wait();
+        $this->assertNull($getBatchResponse->asError());
+        $this->assertNotNull($getBatchResponse->asSuccess(), "Expected a success but got: $getBatchResponse");
+
+        $successResponse = $getBatchResponse->asSuccess();
+
+        $results = $successResponse->results();
+        $expectedClasses = [GetHit::class, GetHit::class, GetHit::class, GetMiss::class];
+
+        foreach ($expectedClasses as $index => $expectedClass) {
+            $this->assertInstanceOf($expectedClass, $results[$index]);
+        }
+
+        $responses = $successResponse->values();
+        $this->assertEquals($responses, $expectedValues);
     }
 }

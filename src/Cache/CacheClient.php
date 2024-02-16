@@ -14,6 +14,7 @@ use Momento\Cache\CacheOperationTypes\DictionaryRemoveFieldsResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\FlushCacheResponse;
+use Momento\Cache\CacheOperationTypes\GetBatchResponse;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\GetResponse;
 use Momento\Cache\CacheOperationTypes\IncrementResponse;
@@ -28,6 +29,7 @@ use Momento\Cache\CacheOperationTypes\ListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\ListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementsResponse;
+use Momento\Cache\CacheOperationTypes\SetBatchResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsResponse;
 use Momento\Cache\CacheOperationTypes\SetLengthResponse;
@@ -1167,5 +1169,107 @@ class CacheClient implements LoggerAwareInterface
         $client = $this->dataClients[$this->nextDataClientIndex]->getClient();
         $this->nextDataClientIndex = ($this->nextDataClientIndex + 1) % count($this->dataClients);
         return $client;
+    }
+
+    /**
+     * Gets the cache values stored for given keys.
+     *
+     * @param string $cacheName Name of the cache to perform the lookup in.
+     * @param array $keys The keys to look up.
+     * @return ResponseFuture<GetBatchResponse> A waitable future which will provide
+     * the result of the get operations upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the get operation and stores the
+     * retrieved value. This result is resolved to a type-safe object of one of
+     * the following types:<br>
+     * * GetBatchSuccess<br>
+     * * GetBatchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$results = $success->results();<br>
+     * &nbsp;&nbsp;$values = $success->values();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function getBatchAsync(string $cacheName, array $keys): ResponseFuture
+    {
+        return $this->getNextDataClient()->getBatch($cacheName, $keys);
+    }
+
+    /**
+     * Gets the cache value stored for a given key.
+     *
+     * @param string $cacheName Name of the cache to perform the lookup in.
+     * @param array $keys The key to look up.
+     * @return GetBatchResponse Represents the result of the get operation and stores the retrieved value. This
+     * result is resolved to a type-safe object of one of the following types:<br>
+     * * GetBatchSuccess<br>
+     * * GetBatchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$results = $success->results();<br>
+     * &nbsp;&nbsp;$values = $success->values();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     */
+    public function getBatch(string $cacheName, array $keys): GetBatchResponse
+    {
+        return $this->getBatchAsync($cacheName, $keys)->wait();
+    }
+
+    /**
+     * Sets the cache values for given keys.
+     *
+     * @param string $cacheName Name of the cache to set the values in.
+     * @param array $items The keys and values to set.
+     * @return ResponseFuture<SetBatchResponse> A waitable future which will provide
+     * the result of the set operations upon a blocking call to wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the get operation and stores the
+     * retrieved value. This result is resolved to a type-safe object of one of
+     * the following types:<br>
+     * * SetBatchSuccess<br>
+     * * SetBatchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     * &nbsp;&nbsp;$results = $success->results();<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setBatchAsync(string $cacheName, array $items, int $ttl = 0): ResponseFuture
+    {
+        return $this->getNextDataClient()->setBatch($cacheName, $items, $ttl);
+    }
+
+    /**
+     * Sets the cache value stored for a given key.
+     *
+     * @param string $cacheName Name of the cache to set the values in.
+     * @param array $items The keys and values to set.
+     * @return SetBatchResponse Represents the result of the set operation. This
+     * result is resolved to a type-safe object of one of the following types:<br>
+     * * SetBatchSuccess<br>
+     * * SetBatchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($success = $response->asSuccess()) {<br>
+     *  &nbsp;&nbsp;$results = $success->results();<br>
+     *  } elseif ($error = $response->asError()) {<br>
+     *  &nbsp;&nbsp;// handle error response<br>
+     *  }</code>
+     */
+    public function setBatch(string $cacheName, array $items, int $ttl = 0): SetBatchResponse
+    {
+        return $this->setBatchAsync($cacheName, $items, $ttl)->wait();
     }
 }
