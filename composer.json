@@ -39,6 +39,8 @@
         }
     },
     "require": {
+        "ext-protobuf": "*",
+        "ext-grpc": "*",
         "php": ">=7.4",
         "firebase/php-jwt": "^6.3",
         "grpc/grpc": "1.52.0",
