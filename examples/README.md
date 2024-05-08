@@ -2,15 +2,15 @@
 
 ## Requirements
 
-- A Momento Auth Token is required, you can generate one using
-  the [Momento CLI](https://github.com/momentohq/momento-cli)
+- A Momento API key is required, you can generate one using the [Momento Console](https://console.gomomento.com/)
 
 ### Running via local PHP
 
 You will need:
 
 - At least PHP 8.0
-  The gRPC PHP extension. See the [gRPC docs](https://github.com/grpc/grpc/blob/v1.46.3/src/php/README.md) section on
+- The gRPC PHP extension. See the [gRPC docs](https://github.com/grpc/grpc/blob/master/src/php/README.md) section on installing the extension.
+- The protobuf C extension. See the [protobuf C extension docs](https://developers.google.com/google-ads/api/docs/client-libs/php/protobuf#c_implementation) for installation instructions.
 - [Composer](https://getcomposer.org/doc/00-intro.md)
 
 Run `composer update` to install the prerequisites.
@@ -63,7 +63,7 @@ Add the repository and dependency to your project's `composer.json`:
 ```json
 {
   "require": {
-    "momentohq/client-sdk-php": "^1.3"
+    "momentohq/client-sdk-php": "^1.7.1"
   }
 }
 ```
@@ -79,7 +79,7 @@ results for each type of operation in `gets.txt` and `sets.txt` output files.
 
 ```bash
 # Run CLI load generator
-MOMENTO_AUTH_TOKEN=<YOUR AUTH TOKEN> php loadgen.php
+MOMENTO_API_KEY=<YOUR API KEY> php loadgen.php
 ```
 
 The `index-loadgen.php` script is intended to be served by a web server to experiment
