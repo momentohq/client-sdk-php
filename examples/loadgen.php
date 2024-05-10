@@ -53,7 +53,7 @@ class LoadGenerator
     private function getClient(): CacheClient
     {
         $cache_item_ttl_seconds = 60;
-        $authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
+        $authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY");
         $configuration = Laptop::latest();
         return new CacheClient(
             $configuration, $authProvider, $cache_item_ttl_seconds
