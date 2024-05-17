@@ -27,11 +27,11 @@ class _ScoreRange extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Leaderboard\_Unbounded $unbounded_min
+     *     @type \Common\_Unbounded $unbounded_min
      *     @type float $min_inclusive
      *           IEEE 754 single precision 64 bit floating point number.
      *           Momento does not support NaN or Inf in leaderboards.
-     *     @type \Leaderboard\_Unbounded $unbounded_max
+     *     @type \Common\_Unbounded $unbounded_max
      *     @type float $max_exclusive
      *           IEEE 754 single precision 64 bit floating point number.
      *           Momento does not support NaN or Inf in leaderboards.
@@ -43,8 +43,8 @@ class _ScoreRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.leaderboard._Unbounded unbounded_min = 1;</code>
-     * @return \Leaderboard\_Unbounded|null
+     * Generated from protobuf field <code>.common._Unbounded unbounded_min = 1;</code>
+     * @return \Common\_Unbounded|null
      */
     public function getUnboundedMin()
     {
@@ -57,13 +57,13 @@ class _ScoreRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.leaderboard._Unbounded unbounded_min = 1;</code>
-     * @param \Leaderboard\_Unbounded $var
+     * Generated from protobuf field <code>.common._Unbounded unbounded_min = 1;</code>
+     * @param \Common\_Unbounded $var
      * @return $this
      */
     public function setUnboundedMin($var)
     {
-        GPBUtil::checkMessage($var, \Leaderboard\_Unbounded::class);
+        GPBUtil::checkMessage($var, \Common\_Unbounded::class);
         $this->writeOneof(1, $var);
 
         return $this;
@@ -103,8 +103,8 @@ class _ScoreRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.leaderboard._Unbounded unbounded_max = 3;</code>
-     * @return \Leaderboard\_Unbounded|null
+     * Generated from protobuf field <code>.common._Unbounded unbounded_max = 3;</code>
+     * @return \Common\_Unbounded|null
      */
     public function getUnboundedMax()
     {
@@ -117,13 +117,13 @@ class _ScoreRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.leaderboard._Unbounded unbounded_max = 3;</code>
-     * @param \Leaderboard\_Unbounded $var
+     * Generated from protobuf field <code>.common._Unbounded unbounded_max = 3;</code>
+     * @param \Common\_Unbounded $var
      * @return $this
      */
     public function setUnboundedMax($var)
     {
-        GPBUtil::checkMessage($var, \Leaderboard\_Unbounded::class);
+        GPBUtil::checkMessage($var, \Common\_Unbounded::class);
         $this->writeOneof(3, $var);
 
         return $this;

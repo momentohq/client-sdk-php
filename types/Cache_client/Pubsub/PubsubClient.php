@@ -50,7 +50,7 @@ class PubsubClient extends \Grpc\BaseStub {
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/cache_client.pubsub.Pubsub/Publish',
         $argument,
-        ['\Cache_client\Pubsub\_Empty', 'decode'],
+        ['\Common\_Empty', 'decode'],
         $metadata, $options);
     }
 
