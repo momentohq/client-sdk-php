@@ -1172,7 +1172,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateCacheName($cacheName);
             validateKeys(array_keys($items));
 
-            $ttlMillis = $this->ttlToMillis($ttl);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $setRequests = [];
             foreach ($items as $key => $value) {
                 $setRequest = new _SetRequest();
