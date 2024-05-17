@@ -189,7 +189,7 @@ class ScsDataClient implements LoggerAwareInterface
     /**
      * @param int|float|null $ttl
      */
-    private function ttlToMillis(?int $ttl = null): int
+    private function ttlToMillis($ttl = null): int
     {
         if (!$ttl) {
             $ttl = $this->defaultTtlSeconds;
