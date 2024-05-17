@@ -20,14 +20,14 @@ namespace Momento\Requests;
  */
 class CollectionTtl
 {
-    private ?int $ttlSeconds;
+    private $ttlSeconds;
     private ?bool $refreshTtl;
 
     /**
-     * @param int|null $ttlSeconds The number of seconds after which to expire the collection from the cache.
+     * @param int|float|null $ttlSeconds The number of seconds after which to expire the collection from the cache.
      * @param bool|null $refreshTtl If true, the collection's TTL will be refreshed (to prolong the life of the collection) on every update.  If false, the collection's TTL will only be set when the collection is initially created.
      */
-    public function __construct(?int $ttlSeconds = null, ?bool $refreshTtl = true)
+    public function __construct($ttlSeconds = null, ?bool $refreshTtl = true)
     {
         $this->ttlSeconds = $ttlSeconds;
         $this->refreshTtl = $refreshTtl;
@@ -50,10 +50,10 @@ class CollectionTtl
      * Constructs a CollectionTtl with the specified TTL in seconds.  The TTL for the collection
      * will be refreshed any time the collection is modified.
      *
-     * @param int $ttlSeconds
+     * @param int|float $ttlSeconds
      * @return CollectionTtl
      */
-    public static function of(int $ttlSeconds): CollectionTtl
+    public static function of($ttlSeconds): CollectionTtl
     {
         return new CollectionTtl($ttlSeconds);
     }
@@ -61,7 +61,7 @@ class CollectionTtl
     /**
      * @return int|null The current value for TTL in seconds.
      */
-    public function getTtl(): ?int
+    public function getTtl()
     {
         return $this->ttlSeconds;
     }
