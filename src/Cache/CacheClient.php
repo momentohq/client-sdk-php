@@ -68,10 +68,10 @@ class CacheClient implements LoggerAwareInterface
     /**
      * @param IConfiguration $configuration Configuration to use for transport.
      * @param ICredentialProvider $authProvider Momento authentication provider.
-     * @param int $defaultTtlSeconds Default time to live for the item in cache in seconds.
+     * @param int|float $defaultTtlSeconds Default time to live for the item in cache in seconds.
      */
     public function __construct(
-        IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds
+        IConfiguration $configuration, ICredentialProvider $authProvider, $defaultTtlSeconds
     )
     {
         $this->configuration = $configuration;
@@ -200,7 +200,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache in which to set the value.
      * @param string $key The key to set.
      * @param string $value The value to be stored.
-     * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetResponse> A waitable future which will provide
      * the result of the set operation upon a blocking call to wait.
@@ -218,7 +218,7 @@ class CacheClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function setAsync(string $cacheName, string $key, string $value, int $ttlSeconds = 0): ResponseFuture
+    public function setAsync(string $cacheName, string $key, string $value, $ttlSeconds = 0): ResponseFuture
     {
         return $this->getNextDataClient()->set($cacheName, $key, $value, $ttlSeconds);
     }
@@ -229,7 +229,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache in which to set the value.
      * @param string $key The key to set.
      * @param string $value The value to be stored.
-     * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return SetResponse Represents the result of the set operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
@@ -240,7 +240,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function set(string $cacheName, string $key, string $value, int $ttlSeconds = 0): SetResponse
+    public function set(string $cacheName, string $key, string $value, $ttlSeconds = 0): SetResponse
     {
         return $this->setAsync($cacheName, $key, $value, $ttlSeconds)->wait();
     }
@@ -304,7 +304,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache to store the key and value in
      * @param string $key The key to set.
      * @param string $value The value to be stored.
-     * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetIfNotExistsResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
@@ -329,7 +329,7 @@ class CacheClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function setIfNotExistsAsync(string $cacheName, string $key, string $value, int $ttlSeconds = 0): ResponseFuture
+    public function setIfNotExistsAsync(string $cacheName, string $key, string $value, $ttlSeconds = 0): ResponseFuture
     {
         return $this->getNextDataClient()->setIfNotExists($cacheName, $key, $value, $ttlSeconds);
     }
@@ -341,7 +341,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache to store the key and value in
      * @param string $key The key to set.
      * @param string $value The value to be stored.
-     * @param int $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return SetIfNotExistsResponse Represents the result of the setIfNotExists operation. This
      * result is resolved to a type-safe object of one of the following types:<br>
@@ -357,7 +357,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error response<br>
      * }</code>
      */
-    public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = 0): SetIfNotExistsResponse
+    public function setIfNotExists(string $cacheName, string $key, string $value, $ttlSeconds = 0): SetIfNotExistsResponse
     {
         return $this->setIfNotExistsAsync($cacheName, $key, $value, $ttlSeconds)->wait();
     }
@@ -519,7 +519,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache in which to increment the key's value
      * @param string $key The key top increment
      * @param int $amount The amount to increment by. May be positive, negative, or zero. Defaults to 1.
-     * @param int|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     * @param int|float|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<IncrementResponse> A waitable future which will
      * provide the result of the set operation upon a blocking call to wait.
@@ -541,7 +541,7 @@ class CacheClient implements LoggerAwareInterface
      * response future.
      */
     public function incrementAsync(
-        string $cacheName, string $key, int $amount = 1, ?int $ttlSeconds = null
+        string $cacheName, string $key, int $amount = 1, $ttlSeconds = null
     ): ResponseFuture
     {
         return $this->getNextDataClient()->increment($cacheName, $key, $amount, $ttlSeconds);
@@ -553,7 +553,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache in which to increment the key's value
      * @param string $key The key top increment
      * @param int $amount The amount to increment by. May be positive, negative, or zero. Defaults to 1.
-     * @param int|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     * @param int|float|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return IncrementResponse Represents the result of the keys exist operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
@@ -567,7 +567,7 @@ class CacheClient implements LoggerAwareInterface
      * }</code>
      */
     public function increment(
-        string $cacheName, string $key, int $amount = 1, ?int $ttlSeconds = null
+        string $cacheName, string $key, int $amount = 1, $ttlSeconds = null
     ): IncrementResponse
     {
         return $this->incrementAsync($cacheName, $key, $amount, $ttlSeconds)->wait();
@@ -1228,6 +1228,8 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache to set the values in.
      * @param array $items The keys and values to set.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetBatchResponse> A waitable future which will provide
      * the result of the set operations upon a blocking call to wait.
      * <code>$response = $responseFuture->wait();
@@ -1247,15 +1249,17 @@ class CacheClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function setBatchAsync(string $cacheName, array $items, int $ttl = 0): ResponseFuture
+    public function setBatchAsync(string $cacheName, array $items, $ttlSeconds = 0): ResponseFuture
     {
-        return $this->getNextDataClient()->setBatch($cacheName, $items, $ttl);
+        return $this->getNextDataClient()->setBatch($cacheName, $items, $ttlSeconds);
     }
 
     /**
      * Sets the cache value stored for a given key.
      *
-     * @param string $cacheName Name of the cache to set the values in.
+     * @param string $cacheName Name of the cache to set 
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.the values in.
      * @param array $items The keys and values to set.
      * @return SetBatchResponse Represents the result of the set operation. This
      * result is resolved to a type-safe object of one of the following types:<br>
@@ -1268,8 +1272,8 @@ class CacheClient implements LoggerAwareInterface
      *  &nbsp;&nbsp;// handle error response<br>
      *  }</code>
      */
-    public function setBatch(string $cacheName, array $items, int $ttl = 0): SetBatchResponse
+    public function setBatch(string $cacheName, array $items, $ttlSeconds = 0): SetBatchResponse
     {
-        return $this->setBatchAsync($cacheName, $items, $ttl)->wait();
+        return $this->setBatchAsync($cacheName, $items, $ttlSeconds)->wait();
     }
 }

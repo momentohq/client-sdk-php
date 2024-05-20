@@ -7,10 +7,10 @@ use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Errors\InvalidArgumentException;
 
 if (!function_exists('validateTtl')) {
-    function validateTtl(int $ttlSeconds): void
+    function validateTtl($ttlSeconds): void
     {
-        if ($ttlSeconds < 0) {
-            throw new InvalidArgumentError("TTL Seconds must be a non-negative integer");
+        if (!(is_int($ttlSeconds) || is_float($ttlSeconds)) || $ttlSeconds < 0) {
+            throw new InvalidArgumentError("TTL Seconds must be a non-negative number");
         }
     }
 }

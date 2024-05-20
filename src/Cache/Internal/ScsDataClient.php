@@ -161,12 +161,12 @@ class ScsDataClient implements LoggerAwareInterface
     private int $deadline_milliseconds;
     // Used to convert deadline_milliseconds into microseconds for gRPC
     private static int $TIMEOUT_MULTIPLIER = 1000;
-    private int $defaultTtlSeconds;
+    private $defaultTtlSeconds;
     private DataGrpcManager $grpcManager;
     private LoggerInterface $logger;
-    private int $timeout;
+    private $timeout;
 
-    public function __construct(IConfiguration $configuration, ICredentialProvider $authProvider, int $defaultTtlSeconds)
+    public function __construct(IConfiguration $configuration, ICredentialProvider $authProvider, $defaultTtlSeconds)
     {
         validateTtl($defaultTtlSeconds);
         $this->defaultTtlSeconds = $defaultTtlSeconds;
@@ -186,13 +186,16 @@ class ScsDataClient implements LoggerAwareInterface
         $this->logger = $logger;
     }
 
-    private function ttlToMillis(?int $ttl = null): int
+    /**
+     * @param int|float|null $ttl
+     */
+    private function ttlToMillis($ttl = null): int
     {
         if (!$ttl) {
             $ttl = $this->defaultTtlSeconds;
         }
         validateTtl($ttl);
-        return $ttl * 1000;
+        return (int) round($ttl * 1000);
     }
 
     private function returnCollectionTtl(?CollectionTtl $ttl): CollectionTtl
@@ -214,9 +217,11 @@ class ScsDataClient implements LoggerAwareInterface
     }
 
     /**
+     * @param int|float|null $ttlSeconds
+     *
      * @return ResponseFuture<SetResponse>
      */
-    public function set(string $cacheName, string $key, string $value, int $ttlSeconds = null): ResponseFuture
+    public function set(string $cacheName, string $key, string $value, $ttlSeconds = null): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -295,9 +300,11 @@ class ScsDataClient implements LoggerAwareInterface
     }
 
     /**
+     * @param int|float|null $ttlSeconds
+     *
      * @return ResponseFuture<SetIfNotExistsResponse>
      */
-    public function setIfNotExists(string $cacheName, string $key, string $value, int $ttlSeconds = null): ResponseFuture
+    public function setIfNotExists(string $cacheName, string $key, string $value, $ttlSeconds = null): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -446,9 +453,11 @@ class ScsDataClient implements LoggerAwareInterface
     }
 
     /**
+     * @param int|float|null $ttlSeconds
+     *
      * @return ResponseFuture<IncrementResponse>
      */
-    public function increment(string $cacheName, string $key, int $amount, int $ttlSeconds = null): ResponseFuture
+    public function increment(string $cacheName, string $key, int $amount, $ttlSeconds = null): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -1153,15 +1162,17 @@ class ScsDataClient implements LoggerAwareInterface
     }
 
     /**
+     * @param int|float $ttlSeconds
+     *
      * @return ResponseFuture<SetBatchResponse>
      */
-    public function setBatch(string $cacheName, array $items, int $ttl = 0): ResponseFuture
+    public function setBatch(string $cacheName, array $items, int $ttlSeconds = 0): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
             validateKeys(array_keys($items));
 
-            $ttlMillis = $this->ttlToMillis($ttl);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
             $setRequests = [];
             foreach ($items as $key => $value) {
                 $setRequest = new _SetRequest();
