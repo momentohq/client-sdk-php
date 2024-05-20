@@ -115,7 +115,7 @@ class CacheClientTest extends TestCase
 
     public function testNegativeDefaultTtl()
     {
-        $this->expectExceptionMessage("TTL Seconds must be a non-negative integer");
+        $this->expectExceptionMessage("TTL Seconds must be a non-negative number");
         $client = new CacheClient($this->configuration, $this->authProvider, -1);
     }
 
