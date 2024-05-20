@@ -16,7 +16,7 @@ To get started with Momento you will need a Momento Auth Token. You can get one 
 * Website: [https://www.gomomento.com/](https://www.gomomento.com/)
 * Momento Documentation: [https://docs.momentohq.com/](https://docs.momentohq.com/)
 * Getting Started: [https://docs.momentohq.com/getting-started](https://docs.momentohq.com/getting-started)
-* PHP SDK Documentation: [https://docs.momentohq.com/develop/sdks/php](https://docs.momentohq.com/develop/sdks/php)
+* PHP SDK Documentation: [https://docs.momentohq.com/sdks/php](https://docs.momentohq.com/sdks/php)
 * Discuss: [Momento Discord](https://discord.gg/3HkAKjUZGq)
 
 Japanese: [日本語](README.ja.md)
@@ -48,7 +48,7 @@ if ($hit = $response->asHit()) {
 
 ## Getting Started and Documentation
 
-To get started with Momento you will need a Momento Auth Token. You can get one from the [Momento Console](https://console.gomomento.com).
+To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
 
 Documentation is available on the [Momento Docs website](https://docs.momentohq.com).
 
