@@ -73,6 +73,21 @@ class ScsClient extends \Grpc\BaseStub {
     }
 
     /**
+     * @param \Cache_client\_SetIfRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SetIf(\Cache_client\_SetIfRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SetIf',
+        $argument,
+        ['\Cache_client\_SetIfResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * Deprecated because we have SetIf - Absent to cover this case.
      * @param \Cache_client\_SetIfNotExistsRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
