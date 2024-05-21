@@ -27,10 +27,17 @@ use Cache_client\_SetDifferenceRequest\_Subtrahend;
 use Cache_client\_SetDifferenceRequest\_Subtrahend\_Set;
 use Cache_client\_SetFetchRequest;
 use Cache_client\_SetIfNotExistsRequest;
+use Cache_client\_SetIfRequest;
 use Cache_client\_SetLengthRequest;
 use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
 use Cache_client\ECacheResult;
+use Common\Absent;
+use Common\AbsentOrEqual;
+use Common\Equal;
+use Common\NotEqual;
+use \Common\Present;
+use Common\PresentAndNotEqual;
 use Exception;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
@@ -118,6 +125,30 @@ use Momento\Cache\CacheOperationTypes\SetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchError;
 use Momento\Cache\CacheOperationTypes\SetFetchHit;
 use Momento\Cache\CacheOperationTypes\SetFetchMiss;
+use Momento\Cache\CacheOperationTypes\SetIfAbsentOrEqualError;
+use Momento\Cache\CacheOperationTypes\SetIfAbsentOrEqualResponse;
+use Momento\Cache\CacheOperationTypes\SetIfAbsentOrEqualStored;
+use Momento\Cache\CacheOperationTypes\SetIfAbsentOrEqualNotStored;
+use Momento\Cache\CacheOperationTypes\SetIfAbsentStored;
+use Momento\Cache\CacheOperationTypes\SetIfAbsentNotStored;
+use Momento\Cache\CacheOperationTypes\SetIfAbsentError;
+use Momento\Cache\CacheOperationTypes\SetIfAbsentResponse;
+use Momento\Cache\CacheOperationTypes\SetIfEqualError;
+use Momento\Cache\CacheOperationTypes\SetIfEqualResponse;
+use Momento\Cache\CacheOperationTypes\SetIfEqualStored;
+use Momento\Cache\CacheOperationTypes\SetIfEqualNotStored;
+use Momento\Cache\CacheOperationTypes\SetIfNotEqualError;
+use Momento\Cache\CacheOperationTypes\SetIfNotEqualResponse;
+use Momento\Cache\CacheOperationTypes\SetIfNotEqualStored;
+use Momento\Cache\CacheOperationTypes\SetIfNotEqualNotStored;
+use Momento\Cache\CacheOperationTypes\SetIfPresentAndNotEqualNotStored;
+use Momento\Cache\CacheOperationTypes\SetIfPresentAndNotEqualStored;
+use Momento\Cache\CacheOperationTypes\SetIfPresentAndNotEqualError;
+use Momento\Cache\CacheOperationTypes\SetIfPresentAndNotEqualResponse;
+use Momento\Cache\CacheOperationTypes\SetIfPresentResponse;
+use Momento\Cache\CacheOperationTypes\SetIfPresentStored;
+use Momento\Cache\CacheOperationTypes\SetIfPresentNotStored;
+use Momento\Cache\CacheOperationTypes\SetIfPresentError;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsResponse;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsError;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsNotStored;
@@ -294,6 +325,273 @@ class ScsDataClient implements LoggerAwareInterface
                     return new GetError($e);
                 } catch (Exception $e) {
                     return new GetError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    /**
+     * @param string $cacheName
+     * @param string $key
+     * @param string $value
+     * @param $ttlSeconds
+     * @return ResponseFuture
+     */
+    public function setIfPresent(string $cacheName, string $key, string $value, $ttlSeconds = null): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $setIfPresentRequest = new _SetIfRequest();
+            $setIfPresentRequest->setCacheKey($key);
+            $setIfPresentRequest->setCacheBody($value);
+            $setIfPresentRequest->setTtlMilliseconds($ttlMillis);
+            $setIfPresentRequest->setPresent(new Present(null));
+            $call = $this->grpcManager->client->SetIf(
+                $setIfPresentRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SetIfPresentError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SetIfPresentError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetIfPresentResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasStored()) {
+                        return new SetIfPresentStored();
+                    }
+
+                    return new SetIfPresentNotStored();
+                } catch (SdkError $e) {
+                    return new SetIfPresentError($e);
+                } catch (Exception $e) {
+                    return new SetIfPresentError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+
+    }
+
+    /**
+     * @param string $cacheName
+     * @param string $key
+     * @param string $value
+     * @param string $notEqual
+     * @param $ttlSeconds
+     * @return ResponseFuture
+     */
+    public function setIfPresentAndNotEqual(string $cacheName, string $key, string $value, string $notEqual, $ttlSeconds = null): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $setIfPresentRequest = new _SetIfRequest();
+            $setIfPresentRequest->setCacheKey($key);
+            $setIfPresentRequest->setCacheBody($value);
+            $setIfPresentRequest->setTtlMilliseconds($ttlMillis);
+            $setIfPresentRequest->setPresentAndNotEqual(new PresentAndNotEqual());
+            $setIfPresentRequest->getPresentAndNotEqual()->setValueToCheck($notEqual);
+            $call = $this->grpcManager->client->SetIf(
+                $setIfPresentRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SetIfPresentAndNotEqualError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SetIfPresentAndNotEqualError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetIfPresentAndNotEqualResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasStored()) {
+                        return new SetIfPresentAndNotEqualStored();
+                    }
+
+                    return new SetIfPresentAndNotEqualNotStored();
+                } catch (SdkError $e) {
+                    return new SetIfPresentAndNotEqualError($e);
+                } catch (Exception $e) {
+                    return new SetIfPresentAndNotEqualError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+
+    }
+
+    public function setIfAbsent(string $cacheName, string $key, string $value, $ttlSeconds = null): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $setIfAbsentRequest = new _SetIfRequest();
+            $setIfAbsentRequest->setCacheKey($key);
+            $setIfAbsentRequest->setCacheBody($value);
+            $setIfAbsentRequest->setTtlMilliseconds($ttlMillis);
+            $setIfAbsentRequest->setAbsent(new Absent());
+            $call = $this->grpcManager->client->SetIf(
+                $setIfAbsentRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SetIfAbsentError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SetIfAbsentError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetIfAbsentResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasStored()) {
+                        return new SetIfAbsentStored();
+                    }
+
+                    return new SetIfAbsentNotStored();
+                } catch (SdkError $e) {
+                    return new SetIfAbsentError($e);
+                } catch (Exception $e) {
+                    return new SetIfAbsentError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    public function setIfAbsentOrEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = null): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $setIfAbsentRequest = new _SetIfRequest();
+            $setIfAbsentRequest->setCacheKey($key);
+            $setIfAbsentRequest->setCacheBody($value);
+            $setIfAbsentRequest->setTtlMilliseconds($ttlMillis);
+            $setIfAbsentRequest->setAbsentOrEqual(new AbsentOrEqual());
+            $setIfAbsentRequest->getAbsentOrEqual()->setValueToCheck($equal);
+            $call = $this->grpcManager->client->SetIf(
+                $setIfAbsentRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SetIfAbsentOrEqualError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SetIfAbsentOrEqualError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetIfAbsentOrEqualResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasStored()) {
+                        return new SetIfAbsentOrEqualStored();
+                    }
+
+                    return new SetIfAbsentOrEqualNotStored();
+                } catch (SdkError $e) {
+                    return new SetIfAbsentOrEqualError($e);
+                } catch (Exception $e) {
+                    return new SetIfAbsentOrEqualError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    public function setIfEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = null): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $setIfAbsentRequest = new _SetIfRequest();
+            $setIfAbsentRequest->setCacheKey($key);
+            $setIfAbsentRequest->setCacheBody($value);
+            $setIfAbsentRequest->setTtlMilliseconds($ttlMillis);
+            $setIfAbsentRequest->setEqual(new Equal());
+            $setIfAbsentRequest->getEqual()->setValueToCheck($equal);
+            $call = $this->grpcManager->client->SetIf(
+                $setIfAbsentRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SetIfEqualError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SetIfEqualError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetIfEqualResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasStored()) {
+                        return new SetIfEqualStored();
+                    }
+
+                    return new SetIfEqualNotStored();
+                } catch (SdkError $e) {
+                    return new SetIfEqualError($e);
+                } catch (Exception $e) {
+                    return new SetIfEqualError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    public function setIfNotEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = null): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateNullOrEmpty($key, "Key");
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
+            $setIfAbsentRequest = new _SetIfRequest();
+            $setIfAbsentRequest->setCacheKey($key);
+            $setIfAbsentRequest->setCacheBody($value);
+            $setIfAbsentRequest->setTtlMilliseconds($ttlMillis);
+            $setIfAbsentRequest->setNotEqual(new NotEqual());
+            $setIfAbsentRequest->getNotEqual()->setValueToCheck($equal);
+            $call = $this->grpcManager->client->SetIf(
+                $setIfAbsentRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SetIfNotEqualError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SetIfNotEqualError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SetIfNotEqualResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasStored()) {
+                        return new SetIfNotEqualStored();
+                    }
+
+                    return new SetIfNotEqualNotStored();
+                } catch (SdkError $e) {
+                    return new SetIfNotEqualError($e);
+                } catch (Exception $e) {
+                    return new SetIfNotEqualError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );

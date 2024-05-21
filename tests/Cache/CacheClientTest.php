@@ -454,6 +454,582 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::TIMEOUT_ERROR, $response->asError()->errorCode());
     }
 
+    // SetIfPresent tests
+
+    public function testSetIfPresent()
+    {
+        $key = uniqid();
+        $value = uniqid();
+        $value2 = uniqid();
+
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->setIfPresent($this->TEST_CACHE_NAME, $key, $value2);
+        $this->assertNull($response->asError());
+        $this->assertNull($response->asNotStored());
+        $response = $response->asStored();
+        $this->assertNotNull($response);
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value2, $response->asHit()->valueString());
+
+        $response = $this->client->delete($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->setIfPresent($this->TEST_CACHE_NAME, $key, $value2);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asNotStored());
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testSetIfPresentWithNonexistentCache()
+    {
+        $cacheName = uniqid();
+        $response = $this->client->setIfPresent($cacheName, "key", "value");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfPresentWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfPresent(null, "key", "value");
+    }
+
+    public function testSetIfPresentWithEmptyCacheName()
+    {
+        $response = $this->client->setIfPresent("", "key", "value");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfPresentWithNullKey_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfPresent($this->TEST_CACHE_NAME, null, "value");
+    }
+
+    public function testSetIfPresentWithNullValue_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfPresent($this->TEST_CACHE_NAME, "key", null);
+    }
+
+    public function testSetIfPresentNegativeTtl()
+    {
+        $response = $this->client->setIfPresent($this->TEST_CACHE_NAME, "key", "value", -1);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfPresentBadKey()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfPresent($this->TEST_CACHE_NAME, null, "bar");
+    }
+
+    public function testSetIfPresentBadValue()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfPresent($this->TEST_CACHE_NAME, "foo", null);
+    }
+
+    public function testSetIfPresentBadAuth()
+    {
+        $client = $this->getBadAuthTokenClient();
+        $response = $client->setIfPresent($this->TEST_CACHE_NAME, "foo", "bar");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
+    }
+
+    // SetIfPresentAndNotEqual tests
+
+    public function testSetIfPresentAndNotEqual()
+    {
+        $key = uniqid();
+        $value = uniqid();
+        $value2 = uniqid();
+
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->setIfPresentAndNotEqual($this->TEST_CACHE_NAME, $key, $value2, $value);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asNotStored());
+
+        $response = $this->client->setIfPresentAndNotEqual($this->TEST_CACHE_NAME, $key, $value2, uniqid());
+        $response = $response->asStored();
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asStored());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value2, $response->asHit()->valueString());
+
+        $response = $this->client->delete($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess());
+
+        $response = $this->client->setIfPresentAndNotEqual($this->TEST_CACHE_NAME, $key, $value2, uniqid());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asNotStored());
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss());
+    }
+
+    public function testSetIfPresentAndNotEqualWithNonexistentCache()
+    {
+        $cacheName = uniqid();
+        $response = $this->client->setIfPresentAndNotEqual($cacheName, "key", "value", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfPresentAndNotEqualWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfPresentAndNotEqual(null, "key", "value", uniqid());
+    }
+
+    public function testSetIfPresentAndNotEqualWithEmptyCacheName()
+    {
+        $response = $this->client->setIfPresentAndNotEqual("", "key", "value", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfPresentAndNotEqualWithNullKey_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfPresentAndNotEqual($this->TEST_CACHE_NAME, null, "value", uniqid());
+    }
+
+    public function testSetIfPresentAndNotEqualWithNullValue_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfPresentAndNotEqual($this->TEST_CACHE_NAME, "key", null, uniqid());
+    }
+
+    public function testSetIfPresentAndNotEqualNegativeTtl()
+    {
+        $response = $this->client->setIfPresentAndNotEqual($this->TEST_CACHE_NAME, "key", "value", uniqid(), -1);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfPresentAndNotEqualBadKey()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfPresentAndNotEqual($this->TEST_CACHE_NAME, null, "bar", uniqid());
+    }
+
+    public function testSetIfPresentAndNotEqualBadValue()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfPresentAndNotEqual($this->TEST_CACHE_NAME, "foo", null, uniqid());
+    }
+
+    public function testSetIfPresentAndNotEqualBadAuth()
+    {
+        $client = $this->getBadAuthTokenClient();
+        $response = $client->setIfPresentAndNotEqual($this->TEST_CACHE_NAME, "foo", "bar", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
+    }
+
+    // SetIfAbsent tests
+
+    public function testSetIfAbsent()
+    {
+        $key = uniqid();
+        $value = uniqid();
+        $value2 = uniqid();
+
+        $response = $this->client->setIfAbsent($this->TEST_CACHE_NAME, $key, $value2);
+        $this->assertNull($response->asError());
+        $this->assertNull($response->asNotStored());
+        $response = $response->asStored();
+        $this->assertNotNull($response);
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value2, $response->asHit()->valueString());
+
+        $response = $this->client->delete($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess());
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+        $response = $this->client->setIfAbsent($this->TEST_CACHE_NAME, $key, $value2);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asNotStored());
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value, $response->asHit()->valueString());
+    }
+
+    public function testSetIfAbsentWithNonexistentCache()
+    {
+        $cacheName = uniqid();
+        $response = $this->client->setIfAbsent($cacheName, "key", "value");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfAbsentWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfAbsent(null, "key", "value");
+    }
+
+    public function testSetIfAbsentWithEmptyCacheName()
+    {
+        $response = $this->client->setIfAbsent("", "key", "value");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfAbsentWithNullKey_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfAbsent($this->TEST_CACHE_NAME, null, "value");
+    }
+
+    public function testSetIfAbsentWithNullValue_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfAbsent($this->TEST_CACHE_NAME, "key", null);
+    }
+
+    public function testSetIfAbsentNegativeTtl()
+    {
+        $response = $this->client->setIfAbsent($this->TEST_CACHE_NAME, "key", "value", -1);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfAbsentBadKey()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfAbsent($this->TEST_CACHE_NAME, null, "bar");
+    }
+
+    public function testSetIfAbsentBadValue()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfAbsent($this->TEST_CACHE_NAME, "foo", null);
+    }
+
+    public function testSetIfAbsentBadAuth()
+    {
+        $client = $this->getBadAuthTokenClient();
+        $response = $client->setIfAbsent($this->TEST_CACHE_NAME, "foo", "bar");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
+    }
+
+    // SetIfAbsentOrEqual tests
+
+    public function testSetIfAbsentOrEqual()
+    {
+        $key = uniqid();
+        $value = uniqid();
+        $value2 = uniqid();
+
+        // absent - set
+        $response = $this->client->setIfAbsentOrEqual($this->TEST_CACHE_NAME, $key, $value, $value2);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asStored());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value, $response->asHit()->valueString());
+
+        // present and equal - set
+        $response = $this->client->setIfAbsentOrEqual($this->TEST_CACHE_NAME, $key, $value2, $value);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asStored());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value2, $response->asHit()->valueString());
+
+        // present and not equal - don't set
+        $response = $this->client->setIfAbsentOrEqual($this->TEST_CACHE_NAME, $key, $value, uniqid());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asNotStored());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value2, $response->asHit()->valueString());
+    }
+
+    public function testSetIfAbsentOrEqualWithNonexistentCache()
+    {
+        $cacheName = uniqid();
+        $response = $this->client->setIfAbsentOrEqual($cacheName, "key", "value", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfAbsentOrEqualWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfAbsentOrEqual(null, "key", "value", uniqid());
+    }
+
+    public function testSetIfAbsentOrEqualWithEmptyCacheName()
+    {
+        $response = $this->client->setIfAbsentOrEqual("", "key", "value", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfAbsentOrEqualWithNullKey_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfAbsentOrEqual($this->TEST_CACHE_NAME, null, "value", uniqid());
+    }
+
+    public function testSetIfAbsentOrEqualWithNullValue_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfAbsentOrEqual($this->TEST_CACHE_NAME, "key", null, uniqid());
+    }
+
+    public function testSetIfAbsentOrEqualNegativeTtl()
+    {
+        $response = $this->client->setIfAbsentOrEqual($this->TEST_CACHE_NAME, "key", "value", uniqid(), -1);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfAbsentOrEqualBadKey()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfAbsentOrEqual($this->TEST_CACHE_NAME, null, "bar", uniqid());
+    }
+
+    public function testSetIfAbsentOrEqualBadValue()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfAbsentOrEqual($this->TEST_CACHE_NAME, "foo", null, uniqid());
+    }
+
+    public function testSetIfAbsentOrEqualBadAuth()
+    {
+        $client = $this->getBadAuthTokenClient();
+        $response = $client->setIfAbsentOrEqual($this->TEST_CACHE_NAME, "foo", "bar", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
+    }
+
+    // SetIfEqual tests
+
+    public function testSetIfEqual()
+    {
+        $key = uniqid();
+        $value = uniqid();
+        $value2 = uniqid();
+
+        // absent - not set
+        $response = $this->client->setIfEqual($this->TEST_CACHE_NAME, $key, $value, $value2);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asNotStored());
+
+        // present and equal - set
+        $response = $this->client->set($this->TEST_CACHE_NAME, $key, $value);
+        $this->assertNull($response->asError());
+
+        $response = $this->client->setIfEqual($this->TEST_CACHE_NAME, $key, $value2, $value);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asStored());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value2, $response->asHit()->valueString());
+
+        // present and not equal - don't set
+        $response = $this->client->setIfEqual($this->TEST_CACHE_NAME, $key, $value, uniqid());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asNotStored());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value2, $response->asHit()->valueString());
+    }
+
+    public function testSetIfEqualWithNonexistentCache()
+    {
+        $cacheName = uniqid();
+        $response = $this->client->setIfEqual($cacheName, "key", "value", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfEqualWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfEqual(null, "key", "value", uniqid());
+    }
+
+    public function testSetIfEqualWithEmptyCacheName()
+    {
+        $response = $this->client->setIfEqual("", "key", "value", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfEqualWithNullKey_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfEqual($this->TEST_CACHE_NAME, null, "value", uniqid());
+    }
+
+    public function testSetIfEqualWithNullValue_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfEqual($this->TEST_CACHE_NAME, "key", null, uniqid());
+    }
+
+    public function testSetIfEqualNegativeTtl()
+    {
+        $response = $this->client->setIfEqual($this->TEST_CACHE_NAME, "key", "value", uniqid(), -1);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfEqualBadKey()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfEqual($this->TEST_CACHE_NAME, null, "bar", uniqid());
+    }
+
+    public function testSetIfEqualBadValue()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfEqual($this->TEST_CACHE_NAME, "foo", null, uniqid());
+    }
+
+    public function testSetIfEqualBadAuth()
+    {
+        $client = $this->getBadAuthTokenClient();
+        $response = $client->setIfEqual($this->TEST_CACHE_NAME, "foo", "bar", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
+    }
+
+    // SetIfNotEqual tests
+
+    public function testSetIfNotEqual()
+    {
+        $key = uniqid();
+        $value = uniqid();
+        $value2 = uniqid();
+
+        // absent - set
+        $response = $this->client->setIfNotEqual($this->TEST_CACHE_NAME, $key, $value, $value2);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asStored());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value, $response->asHit()->valueString());
+
+        // present and equal - not set
+        $response = $this->client->setIfNotEqual($this->TEST_CACHE_NAME, $key, $value2, $value);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asNotStored());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value, $response->asHit()->valueString());
+
+        // present and not equal - set
+        $response = $this->client->setIfNotEqual($this->TEST_CACHE_NAME, $key, $value2, uniqid());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asStored());
+
+        $response = $this->client->get($this->TEST_CACHE_NAME, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit());
+        $this->assertEquals($value2, $response->asHit()->valueString());
+    }
+
+    public function testSetIfNotEqualWithNonexistentCache()
+    {
+        $cacheName = uniqid();
+        $response = $this->client->setIfNotEqual($cacheName, "key", "value", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfNotEqualWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfNotEqual(null, "key", "value", uniqid());
+    }
+
+    public function testSetIfNotEqualWithEmptyCacheName()
+    {
+        $response = $this->client->setIfNotEqual("", "key", "value", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfNotEqualWithNullKey_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfNotEqual($this->TEST_CACHE_NAME, null, "value", uniqid());
+    }
+
+    public function testSetIfNotEqualWithNullValue_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfNotEqual($this->TEST_CACHE_NAME, "key", null, uniqid());
+    }
+
+    public function testSetIfNotEqualNegativeTtl()
+    {
+        $response = $this->client->setIfNotEqual($this->TEST_CACHE_NAME, "key", "value", uniqid(), -1);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetIfNotEqualBadKey()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfNotEqual($this->TEST_CACHE_NAME, null, "bar", uniqid());
+    }
+
+    public function testSetIfNotEqualBadValue()
+    {
+        $this->expectException(TypeError::class);
+        $this->client->setIfNotEqual($this->TEST_CACHE_NAME, "foo", null, uniqid());
+    }
+
+    public function testSetIfNotEqualBadAuth()
+    {
+        $client = $this->getBadAuthTokenClient();
+        $response = $client->setIfNotEqual($this->TEST_CACHE_NAME, "foo", "bar", uniqid());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
+    }
+
     // SetIfNotExists tests
 
     public function testSetIfNotExists()
@@ -522,7 +1098,7 @@ class CacheClientTest extends TestCase
     public function testSetIfNotExistsBadKey()
     {
         $this->expectException(TypeError::class);
-        $this->client->set($this->TEST_CACHE_NAME, null, "bar");
+        $this->client->setIfNotExists($this->TEST_CACHE_NAME, null, "bar");
     }
 
     public function testSetIfNotExistsBadValue()
@@ -538,7 +1114,6 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::AUTHENTICATION_ERROR, $response->asError()->errorCode());
     }
-
 
     // Delete tests
 

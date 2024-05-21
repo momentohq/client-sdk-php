@@ -31,7 +31,13 @@ use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementsResponse;
 use Momento\Cache\CacheOperationTypes\SetBatchResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchResponse;
+use Momento\Cache\CacheOperationTypes\SetIfAbsentOrEqualResponse;
+use Momento\Cache\CacheOperationTypes\SetIfAbsentResponse;
+use Momento\Cache\CacheOperationTypes\SetIfEqualResponse;
+use Momento\Cache\CacheOperationTypes\SetIfNotEqualResponse;
 use Momento\Cache\CacheOperationTypes\SetIfNotExistsResponse;
+use Momento\Cache\CacheOperationTypes\SetIfPresentAndNotEqualResponse;
+use Momento\Cache\CacheOperationTypes\SetIfPresentResponse;
 use Momento\Cache\CacheOperationTypes\SetLengthResponse;
 use Momento\Cache\CacheOperationTypes\SetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\SetResponse;
@@ -298,6 +304,413 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
+     * Associates the given key with the given value if a value for the key is
+     * already present. If the key does not exist in the cache the value is not stored.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return ResponseFuture<SetIfPresentResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the setIfPresent operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfPresentResponseStored<br>
+     * * SetIfPresentResponseNotStored<br>
+     * * SetIfPresentError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setIfPresentAsync(string $cacheName, string $key, string $value, $ttlSeconds = 0): ResponseFuture
+    {
+        return $this->getNextDataClient()->setIfPresent($cacheName, $key, $value, $ttlSeconds);
+    }
+
+    /**
+     * Associates the given key with the given value if a value for the key is
+     * already present. If the key does not exist in the cache the value is not stored.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return SetIfPresentResponse Represents the result of the setIfPresent operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfPresentResponseStored<br>
+     * * SetIfPresentResponseNotStored<br>
+     * * SetIfPresentError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     */
+    public function setIfPresent(string $cacheName, string $key, string $value, $ttlSeconds = 0): SetIfPresentResponse
+    {
+        return $this->setIfPresentAsync($cacheName, $key, $value, $ttlSeconds)->wait();
+    }
+
+    /**
+     * Associates the given key with the given value if a value for the key is
+     * already present and is not equal to the supplied value to check.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param string $notEqual The value to check against the value in the cache.
+     *
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return ResponseFuture<SetIfPresentAndNotEqualResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the setIfPresentAndNotEqual operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfPresentAndNotEqualResponseStored<br>
+     * * SetIfPresentAndNotEqualResponseNotStored<br>
+     * * SetIfPresentAndNotEqualError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not already set in the cache or was present and not equal to the value to check<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setIfPresentAndNotEqualAsync(
+        string $cacheName, string $key, string $value, string $notEqual, $ttlSeconds = 0
+    ): ResponseFuture
+    {
+        return $this->getNextDataClient()->setIfPresentAndNotEqual($cacheName, $key, $value, $notEqual, $ttlSeconds);
+    }
+
+    /**
+     *  Associates the given key with the given value if a value for the key is
+     *  already present and is not equal to the supplied value to check.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param string $notEqual The value to check against the value in the cache.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return SetIfPresentAndNotEqualResponse Represents the result of the setIfPresentAndNotEqual operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfPresentAndNotEqualResponseStored<br>
+     * * SetIfPresentAndNotEqualResponseNotStored<br>
+     * * SetIfPresentAndNotEqualError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not already set in the cache or was present and not equal to the value to check<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     */
+    public function setIfPresentAndNotEqual(string $cacheName, string $key, string $value, string $notEqual, $ttlSeconds = 0): SetIfPresentAndNotEqualResponse
+    {
+        return $this->setIfPresentAndNotEqualAsync($cacheName, $key, $value, $notEqual, $ttlSeconds)->wait();
+    }
+
+    /**
+     * Associates the given key with the given value if a value for the key is
+     * absent from the cache.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return ResponseFuture<SetIfAbsentResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the setIfAbsent operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfAbsentResponseStored<br>
+     * * SetIfAbsentResponseNotStored<br>
+     * * SetIfAbsentError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was already set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setIfAbsentAsync(string $cacheName, string $key, string $value, $ttlSeconds = 0): ResponseFuture
+    {
+        return $this->getNextDataClient()->setIfAbsent($cacheName, $key, $value, $ttlSeconds);
+    }
+
+    /**
+     * Associates the given key with the given value if a value for the key is
+     * absent from the cache.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return SetIfAbsentResponse Represents the result of the setIfAbsent operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfAbsentResponseStored<br>
+     * * SetIfAbsentResponseNotStored<br>
+     * * SetIfAbsentError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     */
+    public function setIfAbsent(string $cacheName, string $key, string $value, $ttlSeconds = 0): SetIfAbsentResponse
+    {
+        return $this->setIfAbsentAsync($cacheName, $key, $value, $ttlSeconds)->wait();
+    }
+
+    /**
+     * Associates the given key with the given value if a value for the key is
+     * absent from the cache or if the key is present and equal to the supplied value to check.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param string $equal The value to check against the value in the cache.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return ResponseFuture<SetIfAbsentOrEqualResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the setIfAbsentOrEqual operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfAbsentOrEqualResponseStored<br>
+     * * SetIfAbsentOrEqualResponseNotStored<br>
+     * * SetIfAbsentOrEqualError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setIfAbsentOrEqualAsync(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = 0): ResponseFuture
+    {
+        return $this->getNextDataClient()->setIfAbsentOrEqual($cacheName, $key, $value, $equal, $ttlSeconds);
+    }
+
+    /**
+     * Associates the given key with the given value if a value for the key is
+     * absent from the cache or if the key is present and equal to the supplied value to check.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param string $equal The value to check against the value in the cache.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return SetIfAbsentOrEqualResponse Represents the result of the setIfAbsentOrEqual operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfAbsentOrEqualResponseStored<br>
+     * * SetIfAbsentOrEqualResponseNotStored<br>
+     * * SetIfAbsentOrEqualError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     */
+    public function setIfAbsentOrEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = 0): SetIfAbsentOrEqualResponse
+    {
+        return $this->setIfAbsentOrEqualAsync($cacheName, $key, $value, $equal, $ttlSeconds)->wait();
+    }
+
+    /**
+     * Associates the given key with the given value if a value for the key is
+     * present in the cache and equal to the supplied value to check.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param string $equal The value to check against the value in the cache.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return ResponseFuture<SetIfEqualResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the setIfEqual operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfEqualResponseStored<br>
+     * * SetIfEqualResponseNotStored<br>
+     * * SetIfEqualError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setIfEqualAsync(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = 0): ResponseFuture
+    {
+        return $this->getNextDataClient()->setIfEqual($cacheName, $key, $value, $equal, $ttlSeconds);
+    }
+
+    /**
+     * Associates the given key with the given value if a value for the key is
+     * present in the cache and equal to the supplied value to check.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param string $equal The value to check against the value in the cache.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return SetIfEqualResponse Represents the result of the setIfEqual operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfEqualResponseStored<br>
+     * * SetIfEqualResponseNotStored<br>
+     * * SetIfEqualError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     */
+    public function setIfEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = 0): SetIfEqualResponse
+    {
+        return $this->setIfEqualAsync($cacheName, $key, $value, $equal, $ttlSeconds)->wait();
+    }
+
+    /**
+     * Associates the given key with the given value if a value for the key is
+     * absent from the cache or is present and not equal to the supplied value to check.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param string $equal The value to check against the value in the cache.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return ResponseFuture<SetIfNotEqualResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();
+     * }</code>
+     * The response represents the result of the setIfNotEqual operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfNotEqualResponseStored<br>
+     * * SetIfNotEqualResponseNotStored<br>
+     * * SetIfNotEqualError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setIfNotEqualAsync(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = 0): ResponseFuture
+    {
+        return $this->getNextDataClient()->setIfNotEqual($cacheName, $key, $value, $equal, $ttlSeconds);
+    }
+
+    /**
+     * Associates the given key with the given value if a value for the key is
+     * absent from the cache or is present and not equal to the supplied value to check.
+     *
+     * @param string $cacheName Name of the cache to store the key and value in
+     * @param string $key The key to set.
+     * @param string $value The value to be stored.
+     * @param string $equal The value to check against the value in the cache.
+     * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *   Defaults to client TTL. If specified must be strictly positive.
+     * @return SetIfNotEqualResponse Represents the result of the setIfNotEqual operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetIfNotEqualResponseStored<br>
+     * * SetIfNotEqualResponseNotStored<br>
+     * * SetIfNotEqualError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
+     * } elseif ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error response<br>
+     * }</code>
+     */
+    public function setIfNotEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = 0): SetIfNotEqualResponse
+    {
+        return $this->setIfNotEqualAsync($cacheName, $key, $value, $equal, $ttlSeconds)->wait();
+    }
+
+    /**
      * Associates the given key with the given value. If a value for the key is
      * already present it is not replaced with the new value.
      *
@@ -318,10 +731,10 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfNotExistsResponseNotStored<br>
      * * SetIfNotExistsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asStored()) {<br>
-     * &nbsp;&nbsp;$value = $hit->valueString();<br>
-     * } elseif ($error = $response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was already set in the cache<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
      * } elseif ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error response<br>
      * }</code>
@@ -349,10 +762,10 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfNotExistsResponseNotStored<br>
      * * SetIfNotExistsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asStored()) {<br>
-     * &nbsp;&nbsp;$value = $hit->valueString();<br>
-     * } elseif ($error = $response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was already set in the cache<br>
+     * <code>if ($response->asStored()) {<br>
+     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * } elseif ($response->asNotStored()) {<br>
+     * &nbsp;&nbsp;// key was not set in the cache<br>
      * } elseif ($error = $response->asError()) {<br>
      * &nbsp;&nbsp;// handle error response<br>
      * }</code>
@@ -1257,7 +1670,7 @@ class CacheClient implements LoggerAwareInterface
     /**
      * Sets the cache value stored for a given key.
      *
-     * @param string $cacheName Name of the cache to set 
+     * @param string $cacheName Name of the cache to set
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.the values in.
      * @param array $items The keys and values to set.
