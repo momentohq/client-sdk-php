@@ -689,8 +689,8 @@ class GetError extends GetResponse
  * <code>
  * if ($response->asStored()) {
  *     // handle successfully stored field as appropriate
- * } elseif ($response->asMiss())
- *     // handle not stored field due to existing value as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
  * } elseif ($error = $response->asError())
  *     // handle error as appropriate
  * }
@@ -766,8 +766,8 @@ class SetIfPresentError extends SetIfPresentResponse
  * <code>
  * if ($response->asStored()) {
  *     // handle successfully stored field as appropriate
- * } elseif ($response->asMiss())
- *     // handle not stored field due to existing value as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
  * } elseif ($error = $response->asError())
  *     // handle error as appropriate
  * }
@@ -843,8 +843,8 @@ class SetIfPresentAndNotEqualError extends SetIfPresentAndNotEqualResponse
  * <code>
  * if ($response->asStored()) {
  *     // handle successfully stored field as appropriate
- * } elseif ($response->asMiss())
- *     // handle not stored field due to existing value as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
  * } elseif ($error = $response->asError())
  *     // handle error as appropriate
  * }
@@ -920,8 +920,8 @@ class SetIfAbsentError extends SetIfAbsentResponse
  * <code>
  * if ($response->asStored()) {
  *     // handle successfully stored field as appropriate
- * } elseif ($response->asMiss())
- *     // handle not stored field due to existing value as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
  * } elseif ($error = $response->asError())
  *     // handle error as appropriate
  * }
@@ -997,8 +997,8 @@ class SetIfAbsentOrEqualError extends SetIfAbsentOrEqualResponse
  * <code>
  * if ($response->asStored()) {
  *     // handle successfully stored field as appropriate
- * } elseif ($response->asMiss())
- *     // handle not stored field due to existing value as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
  * } elseif ($error = $response->asError())
  *     // handle error as appropriate
  * }
@@ -1074,8 +1074,8 @@ class SetIfEqualError extends SetIfEqualResponse
  * <code>
  * if ($response->asStored()) {
  *     // handle successfully stored field as appropriate
- * } elseif ($response->asMiss())
- *     // handle not stored field due to existing value as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
  * } elseif ($error = $response->asError())
  *     // handle error as appropriate
  * }
@@ -1151,8 +1151,8 @@ class SetIfNotEqualError extends SetIfNotEqualResponse
  * <code>
  * if ($response->asStored()) {
  *     // handle successfully stored field as appropriate
- * } elseif ($response->asMiss())
- *     // handle not stored field due to existing value as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
  * } elseif ($error = $response->asError())
  *     // handle error as appropriate
  * }

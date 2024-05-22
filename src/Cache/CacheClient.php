@@ -137,9 +137,11 @@ class CacheClient implements LoggerAwareInterface
      * * CreateCacheSuccess<br>
      * * CreateCacheError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition<br>
+     * }
+     * </code>
      */
     public function createCache(string $cacheName): CreateCacheResponse
     {
@@ -155,9 +157,11 @@ class CacheClient implements LoggerAwareInterface
      * * ListCachesSuccess<br>
      * * ListCachesError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function listCaches(?string $nextToken = null): ListCachesResponse
     {
@@ -173,9 +177,11 @@ class CacheClient implements LoggerAwareInterface
      * * DeleteCacheSuccess<br>
      * * DeleteCacheError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function deleteCache(string $cacheName): DeleteCacheResponse
     {
@@ -191,9 +197,11 @@ class CacheClient implements LoggerAwareInterface
      * * FlushCacheSuccess<br>
      * * FlushCacheError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     *  if ($error = $response->asError()) {
+     *    // handle error condition
+     *  }
+     *  </code>
      */
     public function flushCache(string $cacheName): FlushCacheResponse
     {
@@ -209,17 +217,18 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetResponse> A waitable future which will provide
-     * the result of the set operation upon a blocking call to wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * the result of the set operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
      * * SetSuccess<br>
      * * SetError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -242,9 +251,11 @@ class CacheClient implements LoggerAwareInterface
      * * SetSuccess<br>
      * * SetError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function set(string $cacheName, string $key, string $value, $ttlSeconds = 0): SetResponse
     {
@@ -257,9 +268,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache to perform the lookup in.
      * @param string $key The key to look up.
      * @return ResponseFuture<GetResponse> A waitable future which will provide
-     * the result of the set operation upon a blocking call to wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * the result of the set operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the get operation and stores the
      * retrieved value. This result is resolved to a type-safe object of one of
      * the following types:<br>
@@ -267,11 +277,13 @@ class CacheClient implements LoggerAwareInterface
      * * GetMiss<br>
      * * GetError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$value = $hit->valueString();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $value = $hit->valueString();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -292,11 +304,13 @@ class CacheClient implements LoggerAwareInterface
      * * GetMiss<br>
      * * GetError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$value = $hit->valueString();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $value = $hit->valueString();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      */
     public function get(string $cacheName, string $key): GetResponse
     {
@@ -315,8 +329,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<SetIfPresentResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfPresent operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
@@ -324,13 +337,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfPresentResponseNotStored<br>
      * * SetIfPresentError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -356,13 +371,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfPresentResponseNotStored<br>
      * * SetIfPresentError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      */
     public function setIfPresent(string $cacheName, string $key, string $value, $ttlSeconds = 0): SetIfPresentResponse
     {
@@ -383,8 +400,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<SetIfPresentAndNotEqualResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfPresentAndNotEqual operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
@@ -392,13 +408,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfPresentAndNotEqualResponseNotStored<br>
      * * SetIfPresentAndNotEqualError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not already set in the cache or was present and not equal to the value to check<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -427,13 +445,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfPresentAndNotEqualResponseNotStored<br>
      * * SetIfPresentAndNotEqualError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not already set in the cache or was present and not equal to the value to check<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      */
     public function setIfPresentAndNotEqual(string $cacheName, string $key, string $value, string $notEqual, $ttlSeconds = 0): SetIfPresentAndNotEqualResponse
     {
@@ -452,8 +472,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<SetIfAbsentResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfAbsent operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
@@ -461,13 +480,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfAbsentResponseNotStored<br>
      * * SetIfAbsentError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was already set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -493,13 +514,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfAbsentResponseNotStored<br>
      * * SetIfAbsentError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      */
     public function setIfAbsent(string $cacheName, string $key, string $value, $ttlSeconds = 0): SetIfAbsentResponse
     {
@@ -519,8 +542,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<SetIfAbsentOrEqualResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfAbsentOrEqual operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
@@ -528,13 +550,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfAbsentOrEqualResponseNotStored<br>
      * * SetIfAbsentOrEqualError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -561,13 +585,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfAbsentOrEqualResponseNotStored<br>
      * * SetIfAbsentOrEqualError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      */
     public function setIfAbsentOrEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = 0): SetIfAbsentOrEqualResponse
     {
@@ -587,8 +613,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<SetIfEqualResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfEqual operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
@@ -596,13 +621,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfEqualResponseNotStored<br>
      * * SetIfEqualError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -629,13 +656,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfEqualResponseNotStored<br>
      * * SetIfEqualError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      */
     public function setIfEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = 0): SetIfEqualResponse
     {
@@ -655,8 +684,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<SetIfNotEqualResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfNotEqual operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
@@ -664,13 +692,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfNotEqualResponseNotStored<br>
      * * SetIfNotEqualError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -697,13 +727,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfNotEqualResponseNotStored<br>
      * * SetIfNotEqualError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      */
     public function setIfNotEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = 0): SetIfNotEqualResponse
     {
@@ -722,8 +754,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<SetIfNotExistsResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfNotExists operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
@@ -731,13 +762,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfNotExistsResponseNotStored<br>
      * * SetIfNotExistsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
-     * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($response->asStored()) {
+     *   // key has been set to value in the cache
+     * } elseif ($response->asNotStored()) {
+     *   // key was not set in the cache
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -762,13 +795,15 @@ class CacheClient implements LoggerAwareInterface
      * * SetIfNotExistsResponseNotStored<br>
      * * SetIfNotExistsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($response->asStored()) {<br>
-     * &nbsp;&nbsp;// key has been set to value in the cache<br>
+     * <code>
+     * if ($response->asStored()) {<br>
+     *   // key has been set to value in the cache<br>
      * } elseif ($response->asNotStored()) {<br>
-     * &nbsp;&nbsp;// key was not set in the cache<br>
+     *   // key was not set in the cache<br>
      * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     *   // handle error response<br>
+     * }
+     * </code>
      */
     public function setIfNotExists(string $cacheName, string $key, string $value, $ttlSeconds = 0): SetIfNotExistsResponse
     {
@@ -781,17 +816,18 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache from which to remove the key
      * @param string $key The key to remove
      * @return ResponseFuture<DeleteResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * provide the result of the set operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the delete operation. This result
      * is resolved to a type-safe object of one of the following types:<br>
      * * DeleteSuccess<br>
      * * DeleteError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition<br>
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -811,9 +847,11 @@ class CacheClient implements LoggerAwareInterface
      * * DeleteSuccess<br>
      * * DeleteError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function delete(string $cacheName, string $key): DeleteResponse
     {
@@ -826,23 +864,24 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache in which to look for keys
      * @param array $keys List of keys to check
      * @return ResponseFuture<KeysExistResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * provide the result of the set operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the keys exist operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
      * * KeysExistSuccess<br>
      * * KeysExistError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * } elseif ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;// get a list of booleans representing the existence of the key at that index<br>
-     * &nbsp;&nbsp;$asList = $success->exists();<br>
-     * &nbsp;&nbsp;// get a dict with the key names as keys and boolean values<br>
-     * &nbsp;&nbsp;$asDict = $success->existsDictionary();<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * } elseif ($success = $response->asSuccess()) {
+     *   // get a list of booleans representing the existence of the key at that index
+     *   $asList = $success->exists();
+     *   // get a dict with the key names as keys and boolean values
+     *   $asDict = $success->existsDictionary();
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -862,14 +901,16 @@ class CacheClient implements LoggerAwareInterface
      * * KeysExistSuccess<br>
      * * KeysExistError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * } elseif ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;// get a list of booleans representing the existence of the key at that index<br>
-     * &nbsp;&nbsp;$asList = $success->exists();<br>
-     * &nbsp;&nbsp;// get a dict with the key names as keys and boolean values<br>
-     * &nbsp;&nbsp;$asDict = $success->existsDictionary();<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * } elseif ($success = $response->asSuccess()) {
+     *   // get a list of booleans representing the existence of the key at that index
+     *   $asList = $success->exists();
+     *   // get a dict with the key names as keys and boolean values
+     *   $asDict = $success->existsDictionary();
+     * }
+     * </code>
      */
     public function keysExist(string $cacheName, array $keys): KeysExistResponse
     {
@@ -882,20 +923,21 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache in which to look for the key
      * @param string $key The key to check
      * @return ResponseFuture<KeyExistsResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * provide the result of the set operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the keys exist operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
      * * KeyExistsSuccess<br>
      * * KeyExistsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * } elseif ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$keyIsInCache = $success->exists();<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * } elseif ($success = $response->asSuccess()) {
+     *   $keyIsInCache = $success->exists();
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -915,11 +957,13 @@ class CacheClient implements LoggerAwareInterface
      * * KeyExistsSuccess<br>
      * * KeyExistsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * } elseif ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$keyIsInCache = $success->exists();<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * } elseif ($success = $response->asSuccess()) {
+     *   $keyIsInCache = $success->exists();
+     * }
+     * </code>
      */
     public function keyExists(string $cacheName, string $key): KeyExistsResponse
     {
@@ -935,20 +979,21 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<IncrementResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * provide the result of the set operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the keys exist operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
      * * IncrementSuccess<br>
      * * IncrementError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * } elseif ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$keyIsInCache = $success->exists();<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * } elseif ($success = $response->asSuccess()) {
+     *   $keyIsInCache = $success->exists();
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -973,10 +1018,11 @@ class CacheClient implements LoggerAwareInterface
      * * IncrementSuccess<br>
      * * IncrementError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * } elseif ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$keyIsInCache = $success->exists();<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * } elseif ($success = $response->asSuccess()) {
+     *   $keyIsInCache = $success->exists();
      * }</code>
      */
     public function increment(
@@ -997,11 +1043,13 @@ class CacheClient implements LoggerAwareInterface
      * * ListFetchMiss<br>
      * * ListFetchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$theList = $hit->valuesArray();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $theList = $hit->valuesArray();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function listFetch(string $cacheName, string $listName): ListFetchResponse
     {
@@ -1021,11 +1069,13 @@ class CacheClient implements LoggerAwareInterface
      * * ListPushFrontSuccess<br>
      * * ListPushFrontError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$listLength = $success->listLength();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $listLength = $success->listLength();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function listPushFront(
         string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, ?CollectionTtl $ttl = null
@@ -1047,11 +1097,13 @@ class CacheClient implements LoggerAwareInterface
      * * ListPushBackSuccess<br>
      * * ListPushBackError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$listLength = $success->listLength();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $listLength = $success->listLength();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function listPushBack(
         string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, ?CollectionTtl $ttl = null
@@ -1071,11 +1123,13 @@ class CacheClient implements LoggerAwareInterface
      * * ListPopFrontMiss<br>
      * * ListPushFrontError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$poppedValue = $hit->valueString();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $poppedValue = $hit->valueString();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function listPopFront(string $cacheName, string $listName): ListPopFrontResponse
     {
@@ -1093,11 +1147,13 @@ class CacheClient implements LoggerAwareInterface
      * * ListPopBackMiss<br>
      * * ListPushBackError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$poppedValue = $hit->valueString();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $poppedValue = $hit->valueString();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function listPopBack(string $cacheName, string $listName): ListPopBackResponse
     {
@@ -1115,9 +1171,11 @@ class CacheClient implements LoggerAwareInterface
      * * ListRemoveValueSuccess<br>
      * * ListRemoveValueError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function listRemoveValue(string $cacheName, string $listName, string $value): ListRemoveValueResponse
     {
@@ -1134,11 +1192,13 @@ class CacheClient implements LoggerAwareInterface
      * * ListLengthSuccess<br>
      * * ListLengthError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$theLength = $success->length();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $theLength = $success->length();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function listLength(string $cacheName, string $listName): ListLengthResponse
     {
@@ -1158,9 +1218,11 @@ class CacheClient implements LoggerAwareInterface
      * * DictionarySetFieldSuccess<br>
      * * DictionarySetFieldError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function dictionarySetField(string $cacheName, string $dictionaryName, string $field, string $value, ?CollectionTtl $ttl = null): DictionarySetFieldResponse
     {
@@ -1179,11 +1241,13 @@ class CacheClient implements LoggerAwareInterface
      * * DictionaryGetFieldMiss<br>
      * * DictionaryGetFieldError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$theValue = $hit->valueString();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $theValue = $hit->valueString();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function dictionaryGetField(string $cacheName, string $dictionaryName, string $field): DictionaryGetFieldResponse
     {
@@ -1201,11 +1265,13 @@ class CacheClient implements LoggerAwareInterface
      * * DictionaryFetchMiss<br>
      * * DictionaryFetchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$theValue = $hit->valuesDictionary();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $theValue = $hit->valuesDictionary();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function dictionaryFetch(string $cacheName, string $dictionaryName): DictionaryFetchResponse
     {
@@ -1224,9 +1290,11 @@ class CacheClient implements LoggerAwareInterface
      * * DictionarySetFieldsSuccess<br>
      * * DictionarySetFieldsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function dictionarySetFields(string $cacheName, string $dictionaryName, array $elements, ?CollectionTtl $ttl = null): DictionarySetFieldsResponse
     {
@@ -1245,19 +1313,21 @@ class CacheClient implements LoggerAwareInterface
      * * DictionaryGetFieldsMiss<br>
      * * DictionaryGetFieldsError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;// get a list of responses corresponding to the list of requested values<br>
-     * &nbsp;&nbsp;// each item in the list is an instance of one of the following:<br>
-     * &nbsp;&nbsp;// - DictionaryGetFieldHit<br>
-     * &nbsp;&nbsp;// - DictionaryGetFieldMiss<br>
-     * &nbsp;&nbsp;// - DictionaryGetFieldError<br>
-     * &nbsp;&nbsp;$responseTypes = $hit->responses();
-     * &nbsp;&nbsp;// get a dictionary of responses mapping requested field name keys to their values<br>
-     * &nbsp;&nbsp;// fields that were not found in the cache dictionary are omitted<br>
-     * &nbsp;&nbsp;$valuesDict = $hit->valuesDictionary();
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   // get a list of responses corresponding to the list of requested values
+     *   // each item in the list is an instance of one of the following:
+     *   // - DictionaryGetFieldHit
+     *   // - DictionaryGetFieldMiss
+     *   // - DictionaryGetFieldError
+     *   $responseTypes = $hit->responses();
+     *   // get a dictionary of responses mapping requested field name keys to their values
+     *   // fields that were not found in the cache dictionary are omitted
+     *   $valuesDict = $hit->valuesDictionary();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function dictionaryGetFields(string $cacheName, string $dictionaryName, array $fields): DictionaryGetFieldsResponse
     {
@@ -1280,11 +1350,13 @@ class CacheClient implements LoggerAwareInterface
      * * DictionaryIncrementSuccess<br>
      * * DictionaryIncrementError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$newValue = $success->valueInt();
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $newValue = $success->valueInt();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function dictionaryIncrement(
         string $cacheName, string $dictionaryName, string $field, int $amount = 1, ?CollectionTtl $ttl = null
@@ -1341,16 +1413,17 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<SetAddElementResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set add element operation.
      * This result is resolved to a type-safe object of one of the following
      * types:<br>
      * * SetAddElementSuccess<br>
      * * SetAddElementError<br>
-     * if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -1390,16 +1463,17 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<SetAddElementsResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set add elements operation.
      * This result is resolved to a type-safe object of one of the following
      * types:<br>
      * * SetAddElementsSuccess<br>
      * * SetAddElementsError<br>
-     * if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -1435,9 +1509,8 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $setName The set to fetch.
      * @return ResponseFuture<SetFetchResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * provide the result of the set operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set fetch operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
@@ -1445,11 +1518,13 @@ class CacheClient implements LoggerAwareInterface
      * * SetFetchMiss<br>
      * * SetFetchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$theSet = $response->valueArray();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $theSet = $response->valueArray();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -1470,11 +1545,13 @@ class CacheClient implements LoggerAwareInterface
      * * SetFetchMiss<br>
      * * SetFetchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($hit = $response->asHit()) {<br>
-     * &nbsp;&nbsp;$theSet = $response->valueArray();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $theSet = $response->valueArray();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function setFetch(string $cacheName, string $setName): SetFetchResponse
     {
@@ -1487,19 +1564,20 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $setName The name of the set whose length should be returned.
      * @return ResponseFuture<SetLengthResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * provide the result of the set operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set length operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * SetLengthSuccess<br>
      * * SetLengthError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$length = success->length();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $length = success->length();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -1519,11 +1597,13 @@ class CacheClient implements LoggerAwareInterface
      * * SetLengthSuccess<br>
      * * SetLengthError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$length = success->length();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $length = success->length();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      */
     public function setLength(string $cacheName, string $setName): SetLengthResponse
     {
@@ -1539,16 +1619,17 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<SetRemoveElementResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set remove element operation.
      * This result is resolved to a type-safe object of one of the following
      * types:<br>
      * * SetRemoveElementSuccess<br>
      * * SetRemoveElementError<br>
-     * if ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error condition<br>
-     * }</code>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -1590,21 +1671,22 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache to perform the lookup in.
      * @param array $keys The keys to look up.
      * @return ResponseFuture<GetBatchResponse> A waitable future which will provide
-     * the result of the get operations upon a blocking call to wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * the result of the get operations upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the get operation and stores the
      * retrieved value. This result is resolved to a type-safe object of one of
      * the following types:<br>
      * * GetBatchSuccess<br>
      * * GetBatchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$results = $success->results();<br>
-     * &nbsp;&nbsp;$values = $success->values();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $results = $success->results();
+     *   $values = $success->values();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -1624,12 +1706,14 @@ class CacheClient implements LoggerAwareInterface
      * * GetBatchSuccess<br>
      * * GetBatchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$results = $success->results();<br>
-     * &nbsp;&nbsp;$values = $success->values();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $results = $success->results();
+     *   $values = $success->values();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      */
     public function getBatch(string $cacheName, array $keys): GetBatchResponse
     {
@@ -1644,20 +1728,21 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetBatchResponse> A waitable future which will provide
-     * the result of the set operations upon a blocking call to wait.
-     * <code>$response = $responseFuture->wait();
-     * }</code>
+     * the result of the set operations upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the get operation and stores the
      * retrieved value. This result is resolved to a type-safe object of one of
      * the following types:<br>
      * * SetBatchSuccess<br>
      * * SetBatchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($success = $response->asSuccess()) {<br>
-     * &nbsp;&nbsp;$results = $success->results();<br>
-     * } elseif ($error = $response->asError()) {<br>
-     * &nbsp;&nbsp;// handle error response<br>
-     * }</code>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $results = $success->results();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      * If inspection of the response is not required, one need not call wait as
      * we implicitly wait for completion of the request on destruction of the
      * response future.
@@ -1679,11 +1764,13 @@ class CacheClient implements LoggerAwareInterface
      * * SetBatchSuccess<br>
      * * SetBatchError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>if ($success = $response->asSuccess()) {<br>
-     *  &nbsp;&nbsp;$results = $success->results();<br>
-     *  } elseif ($error = $response->asError()) {<br>
-     *  &nbsp;&nbsp;// handle error response<br>
-     *  }</code>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $results = $success->results();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error response
+     * }
+     * </code>
      */
     public function setBatch(string $cacheName, array $items, $ttlSeconds = 0): SetBatchResponse
     {

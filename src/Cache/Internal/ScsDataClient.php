@@ -36,7 +36,7 @@ use Common\Absent;
 use Common\AbsentOrEqual;
 use Common\Equal;
 use Common\NotEqual;
-use \Common\Present;
+use Common\Present;
 use Common\PresentAndNotEqual;
 use Exception;
 use Grpc\UnaryCall;
@@ -219,6 +219,8 @@ class ScsDataClient implements LoggerAwareInterface
 
     /**
      * @param int|float|null $ttl
+     * @return int
+     * @throws \Momento\Cache\Errors\InvalidArgumentError
      */
     private function ttlToMillis($ttl = null): int
     {
@@ -334,8 +336,8 @@ class ScsDataClient implements LoggerAwareInterface
      * @param string $cacheName
      * @param string $key
      * @param string $value
-     * @param $ttlSeconds
-     * @return ResponseFuture
+     * @param int|float|null $ttlSeconds
+     * @return ResponseFuture<SetIfPresentResponse>
      */
     public function setIfPresent(string $cacheName, string $key, string $value, $ttlSeconds = null): ResponseFuture
     {
@@ -347,7 +349,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setIfPresentRequest->setCacheKey($key);
             $setIfPresentRequest->setCacheBody($value);
             $setIfPresentRequest->setTtlMilliseconds($ttlMillis);
-            $setIfPresentRequest->setPresent(new Present(null));
+            $setIfPresentRequest->setPresent(new Present());
             $call = $this->grpcManager->client->SetIf(
                 $setIfPresentRequest,
                 ["cache" => [$cacheName]],
@@ -384,8 +386,8 @@ class ScsDataClient implements LoggerAwareInterface
      * @param string $key
      * @param string $value
      * @param string $notEqual
-     * @param $ttlSeconds
-     * @return ResponseFuture
+     * @param int|float|null $ttlSeconds
+     * @return ResponseFuture<SetIfPresentAndNotEqualResponse>
      */
     public function setIfPresentAndNotEqual(string $cacheName, string $key, string $value, string $notEqual, $ttlSeconds = null): ResponseFuture
     {
@@ -430,6 +432,13 @@ class ScsDataClient implements LoggerAwareInterface
 
     }
 
+    /**
+     * @param string $cacheName
+     * @param string $key
+     * @param string $value
+     * @param int|float|null $ttlSeconds
+     * @return ResponseFuture<SetIfAbsentResponse>
+     */
     public function setIfAbsent(string $cacheName, string $key, string $value, $ttlSeconds = null): ResponseFuture
     {
         try {
@@ -471,6 +480,14 @@ class ScsDataClient implements LoggerAwareInterface
         );
     }
 
+    /**
+     * @param string $cacheName
+     * @param string $key
+     * @param string $value
+     * @param string $equal
+     * @param int|float|null $ttlSeconds
+     * @return ResponseFuture<SetIfAbsentOrEqualResponse>
+     */
     public function setIfAbsentOrEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = null): ResponseFuture
     {
         try {
@@ -513,6 +530,14 @@ class ScsDataClient implements LoggerAwareInterface
         );
     }
 
+    /**
+     * @param string $cacheName
+     * @param string $key
+     * @param string $value
+     * @param string $equal
+     * @param int|float|null $ttlSeconds
+     * @return ResponseFuture<SetIfEqualResponse>
+     */
     public function setIfEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = null): ResponseFuture
     {
         try {
@@ -555,6 +580,14 @@ class ScsDataClient implements LoggerAwareInterface
         );
     }
 
+    /**
+     * @param string $cacheName
+     * @param string $key
+     * @param string $value
+     * @param string $equal
+     * @param int|float|null $ttlSeconds
+     * @return ResponseFuture<SetIfNotEqualResponse>
+     */
     public function setIfNotEqual(string $cacheName, string $key, string $value, string $equal, $ttlSeconds = null): ResponseFuture
     {
         try {
@@ -598,8 +631,10 @@ class ScsDataClient implements LoggerAwareInterface
     }
 
     /**
+     * @param string $cacheName
+     * @param string $key
+     * @param string $value
      * @param int|float|null $ttlSeconds
-     *
      * @return ResponseFuture<SetIfNotExistsResponse>
      */
     public function setIfNotExists(string $cacheName, string $key, string $value, $ttlSeconds = null): ResponseFuture
