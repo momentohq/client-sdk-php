@@ -1,17 +1,14 @@
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
-
-# Welcome to client-sdk-php contributing guide :wave:
+# Welcome to the PHP SDK Contributing Guide :wave:
 
 Thank you for taking your time to contribute to our PHP SDK!
-<br/>
+
 This guide will provide you information to start your own development and testing.
-<br/>
+
 Happy coding :dancer:
-<br/>
 
 ## Requirements
 
-Check out our SDK [requirements](https://github.com/momentohq/client-sdk-php#requirements)!
+Check out our PHP SDK documentation for [requirements](https://docs.momentohq.com/sdks/php#requirements)!
 
 ## Build Docker Image
 
@@ -25,6 +22,5 @@ You will likely need to run this only once:
 
 ```bash
 export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
-export TEST_CACHE_NAME=<YOUR_CACHE_NAME>
 ./dev-run-integration-tests.sh
 ```
