@@ -23,7 +23,12 @@
             "Cache_client\\": "types/Cache_client/",
             "Control_client\\": "types/Control_client/",
             "Auth\\": "types/Auth/",
-            "GPBMetadata\\": "types/GPBMetadata"
+            "GPBMetadata\\": "types/GPBMetadata/",
+            "Common\\": "types/Common/",
+            "Leaderboard\\": "types/Leaderboard/",
+            "Permission_messages\\": "types/Permission_messages/",
+            "Token\\": "types/Token/",
+            "Webhook\\": "types/Webhook/"
         },
         "files": [
             "src/Utilities/_DataValidation.php"
