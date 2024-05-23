@@ -26,9 +26,9 @@ class _ByIndex extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Cache_client\_Unbounded $unbounded_start
+     *     @type \Common\_Unbounded $unbounded_start
      *     @type int $inclusive_start_index
-     *     @type \Cache_client\_Unbounded $unbounded_end
+     *     @type \Common\_Unbounded $unbounded_end
      *     @type int $exclusive_end_index
      * }
      */
@@ -38,8 +38,8 @@ class _ByIndex extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_start = 1;</code>
-     * @return \Cache_client\_Unbounded|null
+     * Generated from protobuf field <code>.common._Unbounded unbounded_start = 1;</code>
+     * @return \Common\_Unbounded|null
      */
     public function getUnboundedStart()
     {
@@ -52,13 +52,13 @@ class _ByIndex extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_start = 1;</code>
-     * @param \Cache_client\_Unbounded $var
+     * Generated from protobuf field <code>.common._Unbounded unbounded_start = 1;</code>
+     * @param \Common\_Unbounded $var
      * @return $this
      */
     public function setUnboundedStart($var)
     {
-        GPBUtil::checkMessage($var, \Cache_client\_Unbounded::class);
+        GPBUtil::checkMessage($var, \Common\_Unbounded::class);
         $this->writeOneof(1, $var);
 
         return $this;
@@ -92,8 +92,8 @@ class _ByIndex extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_end = 3;</code>
-     * @return \Cache_client\_Unbounded|null
+     * Generated from protobuf field <code>.common._Unbounded unbounded_end = 3;</code>
+     * @return \Common\_Unbounded|null
      */
     public function getUnboundedEnd()
     {
@@ -106,13 +106,13 @@ class _ByIndex extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_end = 3;</code>
-     * @param \Cache_client\_Unbounded $var
+     * Generated from protobuf field <code>.common._Unbounded unbounded_end = 3;</code>
+     * @param \Common\_Unbounded $var
      * @return $this
      */
     public function setUnboundedEnd($var)
     {
-        GPBUtil::checkMessage($var, \Cache_client\_Unbounded::class);
+        GPBUtil::checkMessage($var, \Common\_Unbounded::class);
         $this->writeOneof(3, $var);
 
         return $this;

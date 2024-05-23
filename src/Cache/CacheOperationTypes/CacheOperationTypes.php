@@ -676,6 +676,468 @@ class GetError extends GetResponse
 }
 
 /**
+ * Parent response type for a set if present request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SetIfPresentStored
+ * * SetIfPresentNotStored
+ * * SetIfPresentError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($response->asStored()) {
+ *     // handle successfully stored field as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetIfPresentResponse extends ResponseBase
+{
+
+    /**
+     * @return SetIfPresentStored|null Returns the subtype for a successfully stored value and null otherwise.
+     */
+    public function asStored(): ?SetIfPresentStored
+    {
+       if ($this->isStored()) {
+           return $this;
+       }
+       return null;
+    }
+
+    /**
+     * @return SetIfPresentStored|null Returns the subtype indicating the value was not stored and null otherwise.
+     */
+    public function asNotStored(): ?SetIfPresentNotStored
+    {
+        if($this->isNotStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfPresentError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SetIfPresentError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+
+}
+
+/**
+ * Indicates that the value was successfully stored.
+ */
+class SetIfPresentStored extends SetIfPresentResponse {}
+
+/**
+ * Indicates that the value was not stored because the specified cache key already exists.
+ */
+class SetIfPresentNotStored extends SetIfPresentResponse {}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetIfPresentError extends SetIfPresentResponse
+{
+    use ErrorBody;
+}
+
+/**
+ * Parent response type for a set if present and not equal request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SetIfPresentAndNotEqualStored
+ * * SetIfPresentAndNotEqualNotStored
+ * * SetIfPresentAndNotEqualError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($response->asStored()) {
+ *     // handle successfully stored field as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetIfPresentAndNotEqualResponse extends ResponseBase
+{
+
+    /**
+     * @return SetIfPresentAndNotEqualStored|null Returns the subtype for a successfully stored value and null otherwise.
+     */
+    public function asStored(): ?SetIfPresentAndNotEqualStored
+    {
+        if ($this->isStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfPresentAndNotEqualStored|null Returns the subtype indicating the value was not stored and null otherwise.
+     */
+    public function asNotStored(): ?SetIfPresentAndNotEqualNotStored
+    {
+        if($this->isNotStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfPresentAndNotEqualError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SetIfPresentAndNotEqualError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+
+}
+
+/**
+ * Indicates that the value was successfully stored.
+ */
+class SetIfPresentAndNotEqualStored extends SetIfPresentAndNotEqualResponse {}
+
+/**
+ * Indicates that the value was not stored because the specified cache key already exists.
+ */
+class SetIfPresentAndNotEqualNotStored extends SetIfPresentAndNotEqualResponse {}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetIfPresentAndNotEqualError extends SetIfPresentAndNotEqualResponse
+{
+    use ErrorBody;
+}
+
+/**
+ * Parent response type for a set if absent request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SetIfAbsentStored
+ * * SetIfAbsentNotStored
+ * * SetIfAbsentError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($response->asStored()) {
+ *     // handle successfully stored field as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetIfAbsentResponse extends ResponseBase
+{
+
+    /**
+     * @return SetIfAbsentStored|null Returns the subtype for a successfully stored value and null otherwise.
+     */
+    public function asStored(): ?SetIfAbsentStored
+    {
+        if ($this->isStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfAbsentStored|null Returns the subtype indicating the value was not stored and null otherwise.
+     */
+    public function asNotStored(): ?SetIfAbsentNotStored
+    {
+        if($this->isNotStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfAbsentError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SetIfAbsentError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+
+}
+
+/**
+ * Indicates that the value was successfully stored.
+ */
+class SetIfAbsentStored extends SetIfAbsentResponse {}
+
+/**
+ * Indicates that the value was not stored because the specified cache key already exists.
+ */
+class SetIfAbsentNotStored extends SetIfAbsentResponse {}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetIfAbsentError extends SetIfAbsentResponse
+{
+    use ErrorBody;
+}
+
+/**
+ * Parent response type for a set if absent or equal request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SetIfAbsentOrEqualStored
+ * * SetIfAbsentOrEqualNotStored
+ * * SetIfAbsentOrEqualError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($response->asStored()) {
+ *     // handle successfully stored field as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetIfAbsentOrEqualResponse extends ResponseBase
+{
+
+    /**
+     * @return SetIfAbsentOrEqualStored|null Returns the subtype for a successfully stored value and null otherwise.
+     */
+    public function asStored(): ?SetIfAbsentOrEqualStored
+    {
+        if ($this->isStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfAbsentOrEqualStored|null Returns the subtype indicating the value was not stored and null otherwise.
+     */
+    public function asNotStored(): ?SetIfAbsentOrEqualNotStored
+    {
+        if($this->isNotStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfAbsentOrEqualError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SetIfAbsentOrEqualError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+
+}
+
+/**
+ * Indicates that the value was successfully stored.
+ */
+class SetIfAbsentOrEqualStored extends SetIfAbsentOrEqualResponse {}
+
+/**
+ * Indicates that the value was not stored because the specified cache key already exists.
+ */
+class SetIfAbsentOrEqualNotStored extends SetIfAbsentOrEqualResponse {}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetIfAbsentOrEqualError extends SetIfAbsentOrEqualResponse
+{
+    use ErrorBody;
+}
+
+/**
+ * Parent response type for a set if equal request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SetIfEqualStored
+ * * SetIfEqualNotStored
+ * * SetIfEqualError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($response->asStored()) {
+ *     // handle successfully stored field as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetIfEqualResponse extends ResponseBase
+{
+
+    /**
+     * @return SetIfEqualStored|null Returns the subtype for a successfully stored value and null otherwise.
+     */
+    public function asStored(): ?SetIfEqualStored
+    {
+        if ($this->isStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfEqualStored|null Returns the subtype indicating the value was not stored and null otherwise.
+     */
+    public function asNotStored(): ?SetIfEqualNotStored
+    {
+        if($this->isNotStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfEqualError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SetIfEqualError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+
+}
+
+/**
+ * Indicates that the value was successfully stored.
+ */
+class SetIfEqualStored extends SetIfEqualResponse {}
+
+/**
+ * Indicates that the value was not stored because the specified cache key already exists.
+ */
+class SetIfEqualNotStored extends SetIfEqualResponse {}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetIfEqualError extends SetIfEqualResponse
+{
+    use ErrorBody;
+}
+
+/**
+ * Parent response type for a set if not equal request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SetIfNotEqualStored
+ * * SetIfNotEqualNotStored
+ * * SetIfNotEqualError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($response->asStored()) {
+ *     // handle successfully stored field as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetIfNotEqualResponse extends ResponseBase
+{
+
+    /**
+     * @return SetIfNotEqualStored|null Returns the subtype for a successfully stored value and null otherwise.
+     */
+    public function asStored(): ?SetIfNotEqualStored
+    {
+        if ($this->isStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfNotEqualStored|null Returns the subtype indicating the value was not stored and null otherwise.
+     */
+    public function asNotStored(): ?SetIfNotEqualNotStored
+    {
+        if($this->isNotStored()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetIfNotEqualError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SetIfNotEqualError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+
+}
+
+/**
+ * Indicates that the value was successfully stored.
+ */
+class SetIfNotEqualStored extends SetIfNotEqualResponse {}
+
+/**
+ * Indicates that the value was not stored because the specified cache key already exists.
+ */
+class SetIfNotEqualNotStored extends SetIfNotEqualResponse {}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetIfNotEqualError extends SetIfNotEqualResponse
+{
+    use ErrorBody;
+}
+
+/**
  * Parent response type for a set if not exists request. The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
@@ -689,8 +1151,8 @@ class GetError extends GetResponse
  * <code>
  * if ($response->asStored()) {
  *     // handle successfully stored field as appropriate
- * } elseif ($response->asMiss())
- *     // handle not stored field due to existing value as appropriate
+ * } elseif ($response->asNotStored())
+ *     // handle not stored field as appropriate
  * } elseif ($error = $response->asError())
  *     // handle error as appropriate
  * }

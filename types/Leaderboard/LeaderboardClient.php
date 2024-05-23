@@ -39,7 +39,7 @@ class LeaderboardClient extends \Grpc\BaseStub {
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/leaderboard.Leaderboard/DeleteLeaderboard',
         $argument,
-        ['\Leaderboard\_Empty', 'decode'],
+        ['\Common\_Empty', 'decode'],
         $metadata, $options);
     }
 
@@ -55,7 +55,7 @@ class LeaderboardClient extends \Grpc\BaseStub {
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/leaderboard.Leaderboard/UpsertElements',
         $argument,
-        ['\Leaderboard\_Empty', 'decode'],
+        ['\Common\_Empty', 'decode'],
         $metadata, $options);
     }
 
@@ -70,12 +70,12 @@ class LeaderboardClient extends \Grpc\BaseStub {
       $metadata = [], $options = []) {
         return $this->_simpleRequest('/leaderboard.Leaderboard/RemoveElements',
         $argument,
-        ['\Leaderboard\_Empty', 'decode'],
+        ['\Common\_Empty', 'decode'],
         $metadata, $options);
     }
 
     /**
-     * Returns the length of a leaderboard in terms of ID count. 
+     * Returns the length of a leaderboard in terms of ID count.
      * @param \Leaderboard\_GetLeaderboardLengthRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options

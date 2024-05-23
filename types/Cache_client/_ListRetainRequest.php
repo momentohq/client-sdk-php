@@ -35,9 +35,9 @@ class _ListRetainRequest extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $list_name
-     *     @type \Cache_client\_Unbounded $unbounded_start
+     *     @type \Common\_Unbounded $unbounded_start
      *     @type int $inclusive_start
-     *     @type \Cache_client\_Unbounded $unbounded_end
+     *     @type \Common\_Unbounded $unbounded_end
      *     @type int $exclusive_end
      *     @type int|string $ttl_milliseconds
      *     @type bool $refresh_ttl
@@ -71,8 +71,8 @@ class _ListRetainRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_start = 2;</code>
-     * @return \Cache_client\_Unbounded|null
+     * Generated from protobuf field <code>.common._Unbounded unbounded_start = 2;</code>
+     * @return \Common\_Unbounded|null
      */
     public function getUnboundedStart()
     {
@@ -85,13 +85,13 @@ class _ListRetainRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_start = 2;</code>
-     * @param \Cache_client\_Unbounded $var
+     * Generated from protobuf field <code>.common._Unbounded unbounded_start = 2;</code>
+     * @param \Common\_Unbounded $var
      * @return $this
      */
     public function setUnboundedStart($var)
     {
-        GPBUtil::checkMessage($var, \Cache_client\_Unbounded::class);
+        GPBUtil::checkMessage($var, \Common\_Unbounded::class);
         $this->writeOneof(2, $var);
 
         return $this;
@@ -125,8 +125,8 @@ class _ListRetainRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_end = 4;</code>
-     * @return \Cache_client\_Unbounded|null
+     * Generated from protobuf field <code>.common._Unbounded unbounded_end = 4;</code>
+     * @return \Common\_Unbounded|null
      */
     public function getUnboundedEnd()
     {
@@ -139,13 +139,13 @@ class _ListRetainRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_end = 4;</code>
-     * @param \Cache_client\_Unbounded $var
+     * Generated from protobuf field <code>.common._Unbounded unbounded_end = 4;</code>
+     * @param \Common\_Unbounded $var
      * @return $this
      */
     public function setUnboundedEnd($var)
     {
-        GPBUtil::checkMessage($var, \Cache_client\_Unbounded::class);
+        GPBUtil::checkMessage($var, \Common\_Unbounded::class);
         $this->writeOneof(4, $var);
 
         return $this;

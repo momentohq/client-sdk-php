@@ -35,9 +35,9 @@ class _ByScore extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Cache_client\_Unbounded $unbounded_min
+     *     @type \Common\_Unbounded $unbounded_min
      *     @type \Cache_client\_SortedSetFetchRequest\_ByScore\_Score $min_score
-     *     @type \Cache_client\_Unbounded $unbounded_max
+     *     @type \Common\_Unbounded $unbounded_max
      *     @type \Cache_client\_SortedSetFetchRequest\_ByScore\_Score $max_score
      *     @type int $offset
      *           Offset and count are used to only get a range of the matching elements,
@@ -53,8 +53,8 @@ class _ByScore extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_min = 1;</code>
-     * @return \Cache_client\_Unbounded|null
+     * Generated from protobuf field <code>.common._Unbounded unbounded_min = 1;</code>
+     * @return \Common\_Unbounded|null
      */
     public function getUnboundedMin()
     {
@@ -67,13 +67,13 @@ class _ByScore extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_min = 1;</code>
-     * @param \Cache_client\_Unbounded $var
+     * Generated from protobuf field <code>.common._Unbounded unbounded_min = 1;</code>
+     * @param \Common\_Unbounded $var
      * @return $this
      */
     public function setUnboundedMin($var)
     {
-        GPBUtil::checkMessage($var, \Cache_client\_Unbounded::class);
+        GPBUtil::checkMessage($var, \Common\_Unbounded::class);
         $this->writeOneof(1, $var);
 
         return $this;
@@ -107,8 +107,8 @@ class _ByScore extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_max = 3;</code>
-     * @return \Cache_client\_Unbounded|null
+     * Generated from protobuf field <code>.common._Unbounded unbounded_max = 3;</code>
+     * @return \Common\_Unbounded|null
      */
     public function getUnboundedMax()
     {
@@ -121,13 +121,13 @@ class _ByScore extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.cache_client._Unbounded unbounded_max = 3;</code>
-     * @param \Cache_client\_Unbounded $var
+     * Generated from protobuf field <code>.common._Unbounded unbounded_max = 3;</code>
+     * @param \Common\_Unbounded $var
      * @return $this
      */
     public function setUnboundedMax($var)
     {
-        GPBUtil::checkMessage($var, \Cache_client\_Unbounded::class);
+        GPBUtil::checkMessage($var, \Common\_Unbounded::class);
         $this->writeOneof(3, $var);
 
         return $this;
