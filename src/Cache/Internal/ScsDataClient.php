@@ -631,6 +631,9 @@ class ScsDataClient implements LoggerAwareInterface
     }
 
     /**
+     * SetIfNotExists is deprecated on the service. Here we call the new SetIfAbsent
+     * and return SetIfNotExists responses.
+     * @deprecated Use SetIfAbsent instead
      * @param string $cacheName
      * @param string $key
      * @param string $value
@@ -643,11 +646,12 @@ class ScsDataClient implements LoggerAwareInterface
             validateCacheName($cacheName);
             validateNullOrEmpty($key, "Key");
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
-            $setIfNotExistsRequest = new _SetIfNotExistsRequest();
+            $setIfNotExistsRequest = new _SetIfRequest();
+            $setIfNotExistsRequest->setAbsent(new Absent());
             $setIfNotExistsRequest->setCacheKey($key);
             $setIfNotExistsRequest->setCacheBody($value);
             $setIfNotExistsRequest->setTtlMilliseconds($ttlMillis);
-            $call = $this->grpcManager->client->SetIfNotExists(
+            $call = $this->grpcManager->client->SetIf(
                 $setIfNotExistsRequest,
                 ["cache" => [$cacheName]],
                 ["timeout" => $this->timeout],
