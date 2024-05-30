@@ -746,6 +746,7 @@ class CacheClient implements LoggerAwareInterface
      * Associates the given key with the given value. If a value for the key is
      * already present it is not replaced with the new value.
      *
+     * @deprecated Use setIfAbsentAsync instead
      * @param string $cacheName Name of the cache to store the key and value in
      * @param string $key The key to set.
      * @param string $value The value to be stored.
@@ -784,6 +785,7 @@ class CacheClient implements LoggerAwareInterface
      * Associates the given key with the given value. If a value for the key is
      * already present it is not replaced with the new value.
      *
+     * @deprecated Use setIfAbsent instead
      * @param string $cacheName Name of the cache to store the key and value in
      * @param string $key The key to set.
      * @param string $value The value to be stored.
