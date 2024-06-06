@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Momento\Tests\Cache;
 
-use Cache_client\_GetResponse;
 use Momento\Auth\AuthUtils;
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\CacheOperationTypes\DictionaryGetFieldHit;
@@ -52,6 +51,7 @@ class CacheClientTest extends TestCase
         if ($deleteError = $deleteResponse->asError()) {
             throw $deleteError->innerException();
         }
+        $this->client->close();
     }
 
     private function getBadAuthTokenClient(): CacheClient

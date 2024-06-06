@@ -28,13 +28,15 @@
             "Leaderboard\\": "types/Leaderboard/",
             "Permission_messages\\": "types/Permission_messages/",
             "Token\\": "types/Token/",
-            "Webhook\\": "types/Webhook/"
+            "Webhook\\": "types/Webhook/",
+            "Store\\": "types/Store/"
         },
         "files": [
             "src/Utilities/_DataValidation.php"
         ],
         "classmap": [
             "src/Cache/CacheOperationTypes/CacheOperationTypes.php",
+            "src/Storage/StorageOperationTypes/StorageOperationTypes.php",
             "src/Cache/Errors/Errors.php"
         ]
     },

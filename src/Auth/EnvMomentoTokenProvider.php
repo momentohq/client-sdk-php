@@ -15,6 +15,7 @@ class EnvMomentoTokenProvider extends StringMomentoTokenProvider
         string  $envVariableName,
         ?string $controlEndpoint = null,
         ?string $cacheEndpoint = null,
+        ?string $storageEndpoint = null,
         ?string $trustedControlEndpointCertificateName = null,
         ?string $trustedCacheEndpointCertificateName = null
     )
@@ -23,6 +24,6 @@ class EnvMomentoTokenProvider extends StringMomentoTokenProvider
             throw new InvalidArgumentError("Environment variable $envVariableName is empty or null.");
         }
         $authToken = $_SERVER[$envVariableName];
-        parent::__construct($authToken, $controlEndpoint, $cacheEndpoint, $trustedControlEndpointCertificateName, $trustedCacheEndpointCertificateName);
+        parent::__construct($authToken, $controlEndpoint, $cacheEndpoint, $storageEndpoint, $trustedControlEndpointCertificateName, $trustedCacheEndpointCertificateName);
     }
 }
