@@ -71,7 +71,7 @@ class StorageDataClient implements LoggerAwareInterface
     /**
      * @param string $storeName
      * @param string $key
-     * @param string|int|double $value
+     * @param string|int|float $value
      * @return ResponseFuture<StorageSetResponse>
      */
     public function set(string $storeName, string $key, $value): ResponseFuture
