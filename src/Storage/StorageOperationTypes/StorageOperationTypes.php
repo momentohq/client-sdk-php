@@ -412,6 +412,26 @@ class StorageGetSuccess extends StorageGetResponse
     {
         return $this->value_bytes;
     }
+
+    public function __toString()
+    {
+        $value = null;
+        switch ($this->type) {
+            case StorageValueType::STRING:
+                $value = $this->shortValue($this->value_string);
+                break;
+            case StorageValueType::INTEGER:
+                $value = $this->value_int;
+                break;
+            case StorageValueType::DOUBLE:
+                $value = $this->value_double;
+                break;
+            case StorageValueType::BYTES:
+                $value = $this->shortValue($this->value_bytes);
+                break;
+        }
+        return parent::__toString() . ": type='$this->type'; value='$value'";
+    }
 }
 
 /**
