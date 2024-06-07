@@ -93,9 +93,12 @@ foreach ($VALUES as $key => $value) {
         if ($valueType == StorageValueType::STRING) {
             print("Got string value: " . $response->asSuccess()->tryGetString() . "\n");
         } elseif ($valueType == StorageValueType::INTEGER) {
-            print("Got integer value: " . $response->asSuccess()->tryGetInt() . "\n");
+            print("Got integer value: " . $response->asSuccess()->tryGetInteger() . "\n");
         } elseif ($valueType == StorageValueType::DOUBLE) {
             print("Got double value: " . $response->asSuccess()->tryGetDouble() . "\n");
+        } elseif ($valueType == StorageValueType::BYTES) {
+            // This case is not expected in this example as PHP doesn't have a native byte type
+            print("Got bytes value: " . $response->asSuccess()->tryGetBytes() . "\n");
         }
     } elseif ($response->asError()) {
         $logger->info("Error getting key: " . $response->asError()->message() . "\n");

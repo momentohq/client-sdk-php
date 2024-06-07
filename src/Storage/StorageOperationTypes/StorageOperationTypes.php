@@ -311,6 +311,7 @@ abstract class StorageValueType
     public const STRING = "STRING";
     public const INTEGER = "INTEGER";
     public const DOUBLE = "DOUBLE";
+    public const BYTES = "BYTES";
 }
 
 /**
@@ -363,6 +364,8 @@ class StorageGetSuccess extends StorageGetResponse
 {
     private string $type;
     private ?string $value_string = null;
+    // Used for `get` only at the moment, as PHP doesn't have a `byte` type
+    private ?string $value_bytes = null;
     private ?int $value_int = null;
     private ?float $value_double = null;
 
@@ -379,6 +382,9 @@ class StorageGetSuccess extends StorageGetResponse
         } elseif ($value->hasDoubleValue()) {
             $this->type = StorageValueType::DOUBLE;
             $this->value_double = $value->getDoubleValue();
+        } elseif ($value->hasBytesValue()) {
+            $this->type = StorageValueType::BYTES;
+            $this->value_bytes = $value->getBytesValue();
         }
     }
 
@@ -400,6 +406,11 @@ class StorageGetSuccess extends StorageGetResponse
     public function tryGetDouble(): ?float
     {
         return $this->value_double;
+    }
+
+    public function tryGetBytes(): ?string
+    {
+        return $this->value_bytes;
     }
 }
 
