@@ -303,6 +303,9 @@ class StorageSetError extends StorageSetResponse
     use ErrorBody;
 }
 
+/**
+ * Represents the data type of a stored value.
+ */
 abstract class StorageValueType
 {
     public const STRING = "STRING";
