@@ -5,6 +5,8 @@ namespace Momento\Storage;
 
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
+use Momento\Cache\Errors\InvalidArgumentError;
+use Momento\Cache\Internal\IdleStorageDataClientWrapper;
 use Momento\Cache\Internal\ScsControlClient;
 use Momento\Config\IStorageConfiguration;
 use Momento\Logging\ILoggerFactory;
@@ -27,7 +29,12 @@ class PreviewStorageClient implements LoggerAwareInterface
     protected ILoggerFactory $loggerFactory;
     protected LoggerInterface $logger;
     private ScsControlClient $controlClient;
-    private StorageDataClient $dataClient;
+
+    /**
+     * @var StorageDataClient[]
+     */
+    private array $dataClients;
+    private int $nextDataClientIndex = 0;
 
     /**
      * @param IStorageConfiguration $configuration Storage configuration to use for transport.
@@ -39,7 +46,27 @@ class PreviewStorageClient implements LoggerAwareInterface
         $this->loggerFactory = $configuration->getLoggerFactory();
         $this->setLogger($this->loggerFactory->getLogger(get_class($this)));
         $this->controlClient = new ScsControlClient($this->loggerFactory, $credentialProvider);
-        $this->dataClient = new StorageDataClient($configuration, $credentialProvider);
+        $dataClientFactory = new \stdClass();
+        $dataClientFactory->callback = function() use ($configuration, $credentialProvider) {
+            return new StorageDataClient($configuration, $credentialProvider);
+        };
+        $this->dataClients = [];
+
+        $numGrpcChannels = $configuration->getTransportStrategy()->getGrpcConfig()->getNumGrpcChannels();
+        $forceNewChannels = $configuration->getTransportStrategy()->getGrpcConfig()->getForceNewChannel();
+        if (($numGrpcChannels > 1) && (! $forceNewChannels)) {
+            throw new InvalidArgumentError("When setting NumGrpcChannels > 1, you must also set ForceNewChannel to true, or else the gRPC library will re-use the same channel.");
+        }
+        for ($i = 0; $i < $numGrpcChannels; $i++) {
+            $this->dataClients[] = new IdleStorageDataClientWrapper($dataClientFactory, $this->configuration);
+        }
+    }
+
+    private function getNextDataClient(): StorageDataClient
+    {
+        $client = $this->dataClients[$this->nextDataClientIndex]->getClient();
+        $this->nextDataClientIndex = ($this->nextDataClientIndex + 1) % count($this->dataClients);
+        return $client;
     }
 
     /**
@@ -49,7 +76,9 @@ class PreviewStorageClient implements LoggerAwareInterface
     public function close(): void
     {
         $this->controlClient->close();
-        $this->dataClient->close();
+        foreach ($this->dataClients as $dataClient) {
+            $dataClient->close();
+        }
     }
 
     /**
@@ -148,7 +177,7 @@ class PreviewStorageClient implements LoggerAwareInterface
      */
     public function setAsync(string $storeName, string $key, $value): ResponseFuture
     {
-        return $this->dataClient->set($storeName, $key, $value);
+        return $this->getNextDataClient()->set($storeName, $key, $value);
     }
 
     /**
@@ -208,7 +237,7 @@ class PreviewStorageClient implements LoggerAwareInterface
      */
     public function getAsync(string $storeName, string $key): ResponseFuture
     {
-        return $this->dataClient->get($storeName, $key);
+        return $this->getNextDataClient()->get($storeName, $key);
     }
 
     /**
@@ -266,7 +295,7 @@ class PreviewStorageClient implements LoggerAwareInterface
      */
     public function deleteAsync(string $storeName, string $key): ResponseFuture
     {
-        return $this->dataClient->delete($storeName, $key);
+        return $this->getNextDataClient()->delete($storeName, $key);
     }
 
     /**
