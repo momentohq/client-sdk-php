@@ -9,9 +9,9 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Generated from protobuf message <code>store._StoreSetRequest</code>
+ * Generated from protobuf message <code>store._StorePutRequest</code>
  */
-class _StoreSetRequest extends \Google\Protobuf\Internal\Message
+class _StorePutRequest extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>string key = 1;</code>

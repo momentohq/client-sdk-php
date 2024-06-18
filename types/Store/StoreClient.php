@@ -31,16 +31,16 @@ class StoreClient extends \Grpc\BaseStub {
     }
 
     /**
-     * @param \Store\_StoreSetRequest $argument input argument
+     * @param \Store\_StorePutRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
      * @return \Grpc\UnaryCall
      */
-    public function Set(\Store\_StoreSetRequest $argument,
+    public function Put(\Store\_StorePutRequest $argument,
       $metadata = [], $options = []) {
-        return $this->_simpleRequest('/store.Store/Set',
+        return $this->_simpleRequest('/store.Store/Put',
         $argument,
-        ['\Store\_StoreSetResponse', 'decode'],
+        ['\Store\_StorePutResponse', 'decode'],
         $metadata, $options);
     }
 
