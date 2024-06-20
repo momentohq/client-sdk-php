@@ -10,8 +10,8 @@ use Momento\Cache\Errors\StoreNotFoundError;
 use Momento\Config\IStorageConfiguration;
 use Momento\Config\Configurations;
 use Momento\Config\StorageConfiguration;
-use Momento\Config\Transport\StaticGrpcConfiguration;
-use Momento\Config\Transport\StaticTransportStrategy;
+use Momento\Config\Transport\StaticStorageGrpcConfiguration;
+use Momento\Config\Transport\StaticStorageTransportStrategy;
 use Momento\Logging\NullLoggerFactory;
 use Momento\Storage\PreviewStorageClient;
 use Momento\Storage\StorageOperationTypes\StorageValueType;
@@ -61,8 +61,8 @@ class StorageClientTest extends TestCase
     private function getConfigurationWithDeadline(int $deadline): StorageConfiguration
     {
         $loggerFactory = new NullLoggerFactory();
-        $grpcConfig = new StaticGrpcConfiguration($deadline);
-        $transportStrategy = new StaticTransportStrategy($grpcConfig, $loggerFactory);
+        $grpcConfig = new StaticStorageGrpcConfiguration($deadline);
+        $transportStrategy = new StaticStorageTransportStrategy($grpcConfig, $loggerFactory);
         return new StorageConfiguration($loggerFactory, $transportStrategy);
     }
 

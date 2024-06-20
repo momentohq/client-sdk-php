@@ -5,7 +5,7 @@ namespace Momento\Config\Configurations;
 
 use Momento\Config\Configuration;
 use Momento\Config\Transport\StaticGrpcConfiguration;
-use Momento\Config\Transport\StaticTransportStrategy;
+use Momento\Config\Transport\StaticStorageTransportStrategy;
 use Momento\Logging\ILoggerFactory;
 use Momento\Logging\NullLoggerFactory;
 
@@ -39,7 +39,7 @@ class InRegion extends Configuration
     {
         $loggerFactory = $loggerFactory ?? new NullLoggerFactory();
         $grpcConfig = new StaticGrpcConfiguration(1100);
-        $transportStrategy = new StaticTransportStrategy($grpcConfig, $loggerFactory, self::$maxIdleMillis);
+        $transportStrategy = new StaticStorageTransportStrategy($grpcConfig, $loggerFactory, self::$maxIdleMillis);
         return new self($loggerFactory, $transportStrategy);
     }
 }

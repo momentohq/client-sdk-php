@@ -5,7 +5,7 @@ namespace Momento\Config\Configurations;
 
 use Momento\Config\Configuration;
 use Momento\Config\Transport\StaticGrpcConfiguration;
-use Momento\Config\Transport\StaticTransportStrategy;
+use Momento\Config\Transport\StaticStorageTransportStrategy;
 use Momento\Logging\ILoggerFactory;
 use Momento\Logging\NullLoggerFactory;
 
@@ -37,7 +37,7 @@ class Laptop extends Configuration
     {
         $loggerFactory = $loggerFactory ?? new NullLoggerFactory();
         $grpcConfig = new StaticGrpcConfiguration(5000);
-        $transportStrategy = new StaticTransportStrategy($grpcConfig, $loggerFactory, self::$maxIdleMillis);
+        $transportStrategy = new StaticStorageTransportStrategy($grpcConfig, $loggerFactory, self::$maxIdleMillis);
         return new Laptop($loggerFactory, $transportStrategy);
     }
 }

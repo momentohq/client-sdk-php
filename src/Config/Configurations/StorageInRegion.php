@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Momento\Config\Configurations;
 
 use Momento\Config\StorageConfiguration;
-use Momento\Config\Transport\StaticGrpcConfiguration;
-use Momento\Config\Transport\StaticTransportStrategy;
+use Momento\Config\Transport\StaticStorageGrpcConfiguration;
+use Momento\Config\Transport\StaticStorageTransportStrategy;
 use Momento\Logging\ILoggerFactory;
 use Momento\Logging\NullLoggerFactory;
 
@@ -41,8 +41,8 @@ class StorageInRegion extends StorageConfiguration
     private static function v1(?ILoggerFactory $loggerFactory = null): StorageInRegion
     {
         $loggerFactory = $loggerFactory ?? new NullLoggerFactory();
-        $grpcConfig = new StaticGrpcConfiguration(1100);
-        $transportStrategy = new StaticTransportStrategy($grpcConfig, $loggerFactory, self::$maxIdleMillis);
+        $grpcConfig = new StaticStorageGrpcConfiguration(1100);
+        $transportStrategy = new StaticStorageTransportStrategy($grpcConfig, $loggerFactory, self::$maxIdleMillis);
         return new self($loggerFactory, $transportStrategy);
     }
 }
