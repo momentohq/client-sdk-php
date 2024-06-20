@@ -152,13 +152,13 @@ class StorageClientTest extends TestCase
         $key = uniqid();
         $response = $this->client->get($storeName, $key);
         $this->assertNotNull($response->asError());
-        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
-        $response = $this->client->put($storeName, $key, "hello, world!");
+        $this->assertEquals(MomentoErrorCode::STORE_NOT_FOUND_ERROR, $response->asError()->errorCode());
+        $response = $this->client->putString($storeName, $key, "hello, world!");
         $this->assertNotNull($response->asError());
-        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
+        $this->assertEquals(MomentoErrorCode::STORE_NOT_FOUND_ERROR, $response->asError()->errorCode());
         $response = $this->client->delete($storeName, $key);
         $this->assertNotNull($response->asError());
-        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
+        $this->assertEquals(MomentoErrorCode::STORE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
     public function testMissingStoreName()
@@ -166,7 +166,7 @@ class StorageClientTest extends TestCase
         $storeName = "";
         $key = uniqid();
         $value = "hello, world!";
-        $response = $this->client->put($storeName, $key, $value);
+        $response = $this->client->putString($storeName, $key, $value);
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
         $response = $this->client->get($storeName, $key);
@@ -182,7 +182,7 @@ class StorageClientTest extends TestCase
         $storeName = $this->TEST_STORE_NAME;
         $key = "";
         $value = "hello, world!";
-        $response = $this->client->put($storeName, $key, $value);
+        $response = $this->client->putString($storeName, $key, $value);
         $this->assertNotNull($response->asError());
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
         $response = $this->client->get($storeName, $key);
@@ -199,10 +199,10 @@ class StorageClientTest extends TestCase
         $key = 42;
         $value = "hello, world!";
         $this->expectException(TypeError::class);
-        $response = $this->client->put($storeName, $key, $value);
+        $response = $this->client->putString($storeName, $key, $value);
         // quick test for null value
         $this->expectException(TypeError::class);
-        $response = $this->client->put($storeName, "aRealKey", null);
+        $response = $this->client->putString($storeName, "aRealKey", null);
         $this->expectException(TypeError::class);
         $response = $this->client->get($storeName, $key);
         $this->expectException(TypeError::class);
@@ -238,7 +238,7 @@ class StorageClientTest extends TestCase
     }
 
     // Get, Set, Delete tests
-    public function testSetGetDeleteStringExplicit()
+    public function testSetGetDeleteString()
     {
         $storeName = $this->TEST_STORE_NAME;
         $key = uniqid();
@@ -249,18 +249,7 @@ class StorageClientTest extends TestCase
         $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::STRING);
     }
 
-    public function testSetGetDeleteStringImplicit()
-    {
-        $storeName = $this->TEST_STORE_NAME;
-        $key = uniqid();
-        $value = "hello, world!";
-        $response = $this->client->put($storeName, $key, $value);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::STRING);
-    }
-
-    public function testSetGetDeleteBytesExplicit()
+    public function testSetGetDeleteBytes()
     {
         $storeName = $this->TEST_STORE_NAME;
         $key = uniqid();
@@ -271,20 +260,7 @@ class StorageClientTest extends TestCase
         $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::BYTES);
     }
 
-    public function testSetGetDeleteBytesImplicit()
-    {
-        $storeName = $this->TEST_STORE_NAME;
-        $key = uniqid();
-        $value = "hello, world!";
-        $response = $this->client->put($storeName, $key, $value);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        // PHP doesn't have and can't detect a "bytes" type, so the implicit case here will assume
-        // that the value is a string and store it as such.
-        $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::STRING);
-    }
-
-    public function testSetGetDeleteIntegerExplicit()
+    public function testSetGetDeleteInteger()
     {
         $storeName = $this->TEST_STORE_NAME;
         $key = uniqid();
@@ -295,34 +271,12 @@ class StorageClientTest extends TestCase
         $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::INTEGER);
     }
 
-    public function testSetGetDeleteIntegerImplicit()
-    {
-        $storeName = $this->TEST_STORE_NAME;
-        $key = uniqid();
-        $value = 42;
-        $response = $this->client->put($storeName, $key, $value);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::INTEGER);
-    }
-
-    public function testSetGetDeleteDoubleExplicit()
+    public function testSetGetDeleteDouble()
     {
         $storeName = $this->TEST_STORE_NAME;
         $key = uniqid();
         $value = 3.14;
         $response = $this->client->putDouble($storeName, $key, $value);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::DOUBLE);
-    }
-
-    public function testSetGetDeleteDoubleImplicit()
-    {
-        $storeName = $this->TEST_STORE_NAME;
-        $key = uniqid();
-        $value = 3.14;
-        $response = $this->client->put($storeName, $key, $value);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::DOUBLE);

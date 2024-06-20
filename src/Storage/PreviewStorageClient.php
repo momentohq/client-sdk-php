@@ -156,60 +156,6 @@ class PreviewStorageClient implements LoggerAwareInterface
     }
 
     /**
-     * Put the value in the store. The value's type is inferred from the PHP type.
-     * WARNING: because PHP does not have a native bytes type, this method cannot be used
-     * to store bytes data. Use putBytes instead to store PHP strings as bytes.
-     *
-     * @param string $storeName Name of the store in which to put the value.
-     * @param string $key The key to put.
-     * @param int|float|string $value The value to be stored.
-     * @return ResponseFuture<StoragePutResponse> A waitable future which will provide
-     * the result of the put operation upon a blocking call to wait:<br />
-     * <code>$response = $responseFuture->wait();</code><br />
-     * The response represents the result of the put operation. This result is
-     * resolved to a type-safe object of one of the following types:<br>
-     * * StorageSetSuccess<br>
-     * * StorageSetError<br>
-     * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>
-     * if ($error = $response->asError()) {
-     *   // handle error condition
-     * }
-     * </code>
-     * If inspection of the response is not required, one need not call wait as
-     * we implicitly wait for completion of the request on destruction of the
-     * response future.
-     */
-    public function putAsync(string $storeName, string $key, $value): ResponseFuture
-    {
-        return $this->getNextDataClient()->put($storeName, $key, $value);
-    }
-
-    /**
-     * Put the value in the store. The value's type is inferred from the PHP type.
-     * WARNING: because PHP does not have a native bytes type, this method cannot be used
-     * to store bytes data. Use putBytes instead to store PHP strings as bytes.
-     *
-     * @param string $storeName Name of the store in which to put the value.
-     * @param string $key The key to put.
-     * @param int|float|string $value The value to be stored.
-     * @return StoragePutResponse Represents the result of the put operation. This result is
-     * resolved to a type-safe object of one of the following types:<br>
-     * * StoragePutSuccess<br>
-     * * StoragePutError<br>
-     * Pattern matching can be to operate on the appropriate subtype:<br>
-     * <code>
-     * if ($error = $response->asError()) {
-     *   // handle error condition
-     * }
-     * </code>
-     */
-    public function put(string $storeName, string $key, $value): StoragePutResponse
-    {
-        return $this->putAsync($storeName, $key, $value)->wait();
-    }
-
-    /**
      * Put the string value in the store.
      *
      * @param string $storeName Name of the store in which to put the value.
