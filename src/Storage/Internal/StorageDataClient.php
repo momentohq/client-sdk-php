@@ -16,15 +16,16 @@ use Momento\Storage\StorageOperationTypes\StorageDeleteSuccess;
 use Momento\Storage\StorageOperationTypes\StorageGetResponse;
 use Momento\Storage\StorageOperationTypes\StorageGetError;
 use Momento\Storage\StorageOperationTypes\StorageGetSuccess;
-use Momento\Storage\StorageOperationTypes\StorageSetResponse;
-use Momento\Storage\StorageOperationTypes\StorageSetError;
-use Momento\Storage\StorageOperationTypes\StorageSetSuccess;
+use Momento\Storage\StorageOperationTypes\StoragePutResponse;
+use Momento\Storage\StorageOperationTypes\StoragePutError;
+use Momento\Storage\StorageOperationTypes\StoragePutSuccess;
+use Momento\Storage\StorageOperationTypes\StorageValueType;
 use Momento\Utilities\_ErrorConverter;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Store\_StoreDeleteRequest;
 use Store\_StoreGetRequest;
-use Store\_StoreSetRequest;
+use Store\_StorePutRequest;
 use Store\_StoreValue;
 use function Momento\Utilities\validateNullOrEmpty;
 use function Momento\Utilities\validateOperationTimeout;
@@ -71,52 +72,121 @@ class StorageDataClient implements LoggerAwareInterface
     /**
      * @param string $storeName
      * @param string $key
-     * @param string|int|float $value
-     * @return ResponseFuture<StorageSetResponse>
+     * @param string $value
+     * @return ResponseFuture<StoragePutResponse>
      */
-    public function set(string $storeName, string $key, $value): ResponseFuture
+    public function putString(string $storeName, string $key, string $value): ResponseFuture
+    {
+        return $this->_put($storeName, $key, $value, StorageValueType::STRING);
+    }
+
+    /**
+     * @param string $storeName
+     * @param string $key
+     * @param int $value
+     * @return ResponseFuture<StoragePutResponse>
+     */
+    public function putInteger(string $storeName, string $key, int $value): ResponseFuture
+    {
+        return $this->_put($storeName, $key, $value, StorageValueType::INTEGER);
+    }
+
+    /**
+     * @param string $storeName
+     * @param string $key
+     * @param float $value
+     * @return ResponseFuture<StoragePutResponse>
+     */
+    public function putDouble(string $storeName, string $key, float $value): ResponseFuture
+    {
+        return $this->_put($storeName, $key, $value, StorageValueType::DOUBLE);
+    }
+
+    /**
+     * @param string $storeName
+     * @param string $key
+     * @param string $value
+     * @return ResponseFuture<StoragePutResponse>
+     */
+    public function putBytes(string $storeName, string $key, string $value): ResponseFuture
+    {
+        return $this->_put($storeName, $key, $value, StorageValueType::BYTES);
+    }
+
+    /**
+     * @param string $storeName
+     * @param string $key
+     * @param int|float|string $value
+     * @return ResponseFuture<StoragePutResponse>
+     */
+    public function put(string $storeName, string $key, $value): ResponseFuture
+    {
+        if (is_int($value)) {
+            return $this->putInteger($storeName, $key, $value);
+        } elseif (is_float($value)) {
+            return $this->putDouble($storeName, $key, $value);
+        } elseif (is_string($value)) {
+            return $this->putString($storeName, $key, $value);
+        } else {
+            throw new \InvalidArgumentException("Value must be a string, int, or double");
+        }
+    }
+
+    /**
+     * @param string $storeName
+     * @param string $key
+     * @param string|int|float $value
+     * @param string $type
+     * @return ResponseFuture<StoragePutResponse>
+     */
+    private function _put(string $storeName, string $key, $value, string $type): ResponseFuture
     {
         try {
             validateStoreName($storeName);
             validateNullOrEmpty($key, "Key");
             $storeValue = new _StoreValue();
-            if (is_int($value)) {
+            if ($type == StorageValueType::INTEGER) {
                 $storeValue->setIntegerValue($value);
-            } elseif (is_double($value)) {
+            } elseif ($type == StorageValueType::DOUBLE) {
                 $storeValue->setDoubleValue($value);
-            } elseif (is_string($value)) {
+            } elseif ($type == StorageValueType::STRING) {
                 $storeValue->setStringValue($value);
-            } else {
-                throw new \InvalidArgumentException("Value must be a string, int, or double");
+            } elseif ($type == StorageValueType::BYTES) {
+                $storeValue->setBytesValue($value);
             }
-            $setRequest = new _StoreSetRequest();
-            $setRequest->setKey($key);
-            $setRequest->setValue($storeValue);
-            $call = $this->grpcManager->client->Set(
-                $setRequest,
+            $putRequest = new _StorePutRequest();
+            $putRequest->setKey($key);
+            $putRequest->setValue($storeValue);
+            $call = $this->grpcManager->client->Put(
+                $putRequest,
                 ["store" => [$storeName]],
                 ['timeout' => $this->timeout]
             );
         } catch (SdkError $e) {
-            return ResponseFuture::createResolved(new StorageSetError($e));
+            return ResponseFuture::createResolved(new StoragePutError($e));
         } catch (Exception $e) {
-            return ResponseFuture::createResolved(new StorageSetError(new UnknownError($e->getMessage(), 0, $e)));
+            return ResponseFuture::createResolved(new StoragePutError(new UnknownError($e->getMessage(), 0, $e)));
         }
 
         return ResponseFuture::createPending(
-            function () use ($call): StorageSetResponse {
+            function () use ($call): StoragePutResponse {
                 try {
                     $this->processCall($call);
                 } catch (SdkError $e) {
-                    return new StorageSetError($e);
+                    return new StoragePutError($e);
                 } catch (Exception $e) {
-                    return new StorageSetError(new UnknownError($e->getMessage(), 0, $e));
+                    return new StoragePutError(new UnknownError($e->getMessage(), 0, $e));
                 }
-                return new StorageSetSuccess();
+                return new StoragePutSuccess();
             }
         );
     }
 
+    /**
+     * @param string $storeName
+     * @param string $key
+     * @return ResponseFuture<StorageGetResponse>
+     */
     public function get(string $storeName, string $key): ResponseFuture
     {
         try {
@@ -149,6 +219,11 @@ class StorageDataClient implements LoggerAwareInterface
         );
     }
 
+    /**
+     * @param string $storeName
+     * @param string $key
+     * @return ResponseFuture<StorageDeleteResponse>
+     */
     public function delete(string $storeName, string $key): ResponseFuture
     {
         try {

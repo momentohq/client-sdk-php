@@ -30,7 +30,7 @@ class IdleStorageDataClientWrapper implements LoggerAwareInterface {
         $this->logger = $logger;
     }
 
-    public function getClient(): ScsDataClient {
+    public function getClient(): StorageDataClient {
         if ($this->maxIdleMillis === null) {
             return $this->client;
         }

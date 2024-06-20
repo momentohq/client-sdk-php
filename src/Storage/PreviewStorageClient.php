@@ -16,12 +16,14 @@ use Momento\Storage\StorageOperationTypes\DeleteStoreResponse;
 use Momento\Storage\StorageOperationTypes\ListStoresResponse;
 use Momento\Storage\StorageOperationTypes\StorageDeleteResponse;
 use Momento\Storage\StorageOperationTypes\StorageGetResponse;
-use Momento\Storage\StorageOperationTypes\StorageSetResponse;
+use Momento\Storage\StorageOperationTypes\StoragePutResponse;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Client to perform operations against the Momento storage service.
+ * Preview client to perform operations against the Momento storage service.
+ * WARNING: the API for this client is not yet stable and may change without notice.
+ * Please contact Momento if you would like to try this preview.
  */
 class PreviewStorageClient implements LoggerAwareInterface
 {
@@ -39,6 +41,7 @@ class PreviewStorageClient implements LoggerAwareInterface
     /**
      * @param IStorageConfiguration $configuration Storage configuration to use for transport.
      * @param ICredentialProvider $credentialProvider Momento authentication provider.
+     * @throws InvalidArgumentError If the configuration is invalid.
      */
     public function __construct(IStorageConfiguration $configuration, ICredentialProvider $credentialProvider)
     {
@@ -153,15 +156,17 @@ class PreviewStorageClient implements LoggerAwareInterface
     }
 
     /**
-     * Set the value in the store.
+     * Put the value in the store. The value's type is inferred from the PHP type.
+     * WARNING: because PHP does not have a native bytes type, this method cannot be used
+     * to store bytes data. Use putBytes instead to store PHP strings as bytes.
      *
-     * @param string $storeName Name of the store in which to set the value.
-     * @param string $key The key to set.
-     * @param string|int|float $value The value to be stored.
-     * @return ResponseFuture<StorageSetResponse> A waitable future which will provide
-     * the result of the set operation upon a blocking call to wait:<br />
+     * @param string $storeName Name of the store in which to put the value.
+     * @param string $key The key to put.
+     * @param int|float|string $value The value to be stored.
+     * @return ResponseFuture<StoragePutResponse> A waitable future which will provide
+     * the result of the put operation upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
-     * The response represents the result of the set operation. This result is
+     * The response represents the result of the put operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
      * * StorageSetSuccess<br>
      * * StorageSetError<br>
@@ -175,21 +180,23 @@ class PreviewStorageClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function setAsync(string $storeName, string $key, $value): ResponseFuture
+    public function putAsync(string $storeName, string $key, $value): ResponseFuture
     {
-        return $this->getNextDataClient()->set($storeName, $key, $value);
+        return $this->getNextDataClient()->put($storeName, $key, $value);
     }
 
     /**
-     * Set the value in the store.
+     * Put the value in the store. The value's type is inferred from the PHP type.
+     * WARNING: because PHP does not have a native bytes type, this method cannot be used
+     * to store bytes data. Use putBytes instead to store PHP strings as bytes.
      *
-     * @param string $storeName Name of the store in which to set the value.
-     * @param string $key The key to set.
-     * @param string|int|float $value The value to be stored.
-     * @return StorageSetResponse Represents the result of the set operation. This result is
+     * @param string $storeName Name of the store in which to put the value.
+     * @param string $key The key to put.
+     * @param int|float|string $value The value to be stored.
+     * @return StoragePutResponse Represents the result of the put operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
-     * * StorageSetSuccess<br>
-     * * StorageSetError<br>
+     * * StoragePutSuccess<br>
+     * * StoragePutError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>
      * if ($error = $response->asError()) {
@@ -197,9 +204,209 @@ class PreviewStorageClient implements LoggerAwareInterface
      * }
      * </code>
      */
-    public function set(string $storeName, string $key, $value): StorageSetResponse
+    public function put(string $storeName, string $key, $value): StoragePutResponse
     {
-        return $this->setAsync($storeName, $key, $value)->wait();
+        return $this->putAsync($storeName, $key, $value)->wait();
+    }
+
+    /**
+     * Put the string value in the store.
+     *
+     * @param string $storeName Name of the store in which to put the value.
+     * @param string $key The key to put.
+     * @param string $value The value to be stored.
+     * @return ResponseFuture<StoragePutResponse> A waitable future which will provide
+     * the result of the put operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the put operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * StoragePutSuccess<br>
+     * * StoragePutError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function putStringAsync(string $storeName, string $key, string $value): ResponseFuture
+    {
+        return $this->getNextDataClient()->putString($storeName, $key, $value);
+    }
+
+    /**
+     * Put the string value in the store.
+     *
+     * @param string $storeName Name of the store in which to put the value.
+     * @param string $key The key to put.
+     * @param string $value The value to be stored.
+     * @return StoragePutResponse Represents the result of the put operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * StoragePutSuccess<br>
+     * * StoragePutError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     */
+    public function putString(string $storeName, string $key, string $value): StoragePutResponse
+    {
+        return $this->putStringAsync($storeName, $key, $value)->wait();
+    }
+
+    /**
+     * Put the bytes value in the store.
+     *
+     * @param string $storeName Name of the store in which to put the value.
+     * @param string $key The key to put.
+     * @param string $value The value to be stored.
+     * @return ResponseFuture<StoragePutResponse> A waitable future which will provide
+     * the result of the put operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the put operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * StoragePutSuccess<br>
+     * * StoragePutError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function putBytesAsync(string $storeName, string $key, string $value): ResponseFuture
+    {
+        return $this->getNextDataClient()->putBytes($storeName, $key, $value);
+    }
+
+    /**
+     * Put the bytes value in the store.
+     *
+     * @param string $storeName Name of the store in which to put the value.
+     * @param string $key The key to put.
+     * @param string $value The value to be stored.
+     * @return StoragePutResponse Represents the result of the put operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * StoragePutSuccess<br>
+     * * StoragePutError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     */
+    public function putBytes(string $storeName, string $key, string $value): StoragePutResponse
+    {
+        return $this->putBytesAsync($storeName, $key, $value)->wait();
+    }
+
+    /**
+     * Put the integer value in the store.
+     *
+     * @param string $storeName Name of the store in which to put the value.
+     * @param string $key The key to put.
+     * @param int $value The value to be stored.
+     * @return ResponseFuture<StoragePutResponse> A waitable future which will provide
+     * the result of the put operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the put operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * StoragePutSuccess<br>
+     * * StoragePutError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function putIntegerAsync(string $storeName, string $key, int $value): ResponseFuture
+    {
+        return $this->getNextDataClient()->putInteger($storeName, $key, $value);
+    }
+
+    /**
+     * Put the integer value in the store.
+     *
+     * @param string $storeName Name of the store in which to put the value.
+     * @param string $key The key to put.
+     * @param int $value The value to be stored.
+     * @return StoragePutResponse Represents the result of the put operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * StoragePutSuccess<br>
+     * * StoragePutError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     */
+    public function putInteger(string $storeName, string $key, int $value): StoragePutResponse
+    {
+        return $this->putIntegerAsync($storeName, $key, $value)->wait();
+    }
+
+    /**
+     * Put the bytes value in the store.
+     *
+     * @param string $storeName Name of the store in which to put the value.
+     * @param string $key The key to put.
+     * @param float $value The value to be stored.
+     * @return ResponseFuture<StoragePutResponse> A waitable future which will provide
+     * the result of the put operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the put operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * StoragePutSuccess<br>
+     * * StoragePutError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function putDoubleAsync(string $storeName, string $key, float $value): ResponseFuture
+    {
+        return $this->getNextDataClient()->putDouble($storeName, $key, $value);
+    }
+
+    /**
+     * Put the bytes value in the store.
+     *
+     * @param string $storeName Name of the store in which to put the value.
+     * @param string $key The key to put.
+     * @param float $value The value to be stored.
+     * @return StoragePutResponse Represents the result of the put operation. This result is
+     * resolved to a type-safe object of one of the following types:<br>
+     * * StoragePutSuccess<br>
+     * * StoragePutError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     */
+    public function putDouble(string $storeName, string $key, float $value): StoragePutResponse
+    {
+        return $this->putDoubleAsync($storeName, $key, $value)->wait();
     }
 
     /**
@@ -208,7 +415,7 @@ class PreviewStorageClient implements LoggerAwareInterface
      * @param string $storeName Name of the store to perform the lookup in.
      * @param string $key The key to look up.
      * @return ResponseFuture<StorageGetResponse> A waitable future which will provide
-     * the result of the set operation upon a blocking call to wait:<br />
+     * the result of the get operation upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the get operation and stores the
      * retrieved value. This result is resolved to a type-safe object of one of

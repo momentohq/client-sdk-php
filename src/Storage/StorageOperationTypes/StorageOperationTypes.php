@@ -246,12 +246,12 @@ class ListStoresError extends ListStoresResponse
 }
 
 /**
- * Parent response type for a storage set request. The
+ * Parent response type for a storage put request. The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * StorageSetSuccess
- * * StorageSetError
+ * * StoragePutSuccess
+ * * StoragePutError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
@@ -263,12 +263,12 @@ class ListStoresError extends ListStoresResponse
  * }
  * </code>
  */
-abstract class StorageSetResponse extends ResponseBase
+abstract class StoragePutResponse extends ResponseBase
 {
     /**
-     * @return StorageSetSuccess|null  Returns the success subtype if the request was successful and null otherwise.
+     * @return StoragePutSuccess|null  Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): ?StorageSetSuccess
+    public function asSuccess(): ?StoragePutSuccess
     {
         if ($this->isSuccess()) {
             return $this;
@@ -277,9 +277,9 @@ abstract class StorageSetResponse extends ResponseBase
     }
 
     /**
-     * @return StorageSetError|null Returns the error subtype if the request returned an error and null otherwise.
+     * @return StoragePutError|null Returns the error subtype if the request returned an error and null otherwise.
      */
-    public function asError(): ?StorageSetError
+    public function asError(): ?StoragePutError
     {
         if ($this->isError()) {
             return $this;
@@ -291,14 +291,14 @@ abstract class StorageSetResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class StorageSetSuccess extends StorageSetResponse
+class StoragePutSuccess extends StoragePutResponse
 {
 }
 
 /**
  * Contains information about an error returned from the request.
  */
-class StorageSetError extends StorageSetResponse
+class StoragePutError extends StoragePutResponse
 {
     use ErrorBody;
 }
@@ -326,14 +326,31 @@ abstract class StorageValueType
  * For example:
  * <code>
  * if ($success = $response->asSuccess()) {
- *     // handle success if needed
+ *     if ($success->type() == StorageValueType::STRING) {
+ *       // other storage types are INTEGER, BYTES, and DOUBLE
+ *       print("Got string value: " . $success->valueString() . "\n");
+ *     }
  * } elseif ($error = $response->asError())
  *     // handle error as appropriate
+ * }
+ * // If you know you are getting a particular type, you can use the following shorthand:
+ * try {
+ *   print("Got string value: " . $response->value() . "\n");
+ * } catch (SdkError $e) {
+ *   // the request was unsuccessful, and the response is an error
+ *   print("Error getting value: " . $response->asError()->message() . "\n");
  * }
  * </code>
  */
 abstract class StorageGetResponse extends ResponseBase
 {
+    protected ?string $type = null;
+    protected ?string $value_string = null;
+    // Used for `get` only at the moment, as PHP doesn't have a `byte` type
+    protected ?string $value_bytes = null;
+    protected ?int $value_int = null;
+    protected ?float $value_double = null;
+
     /**
      * @return StorageGetSuccess|null  Returns the success subtype if the request was successful and null otherwise.
      */
@@ -355,6 +372,49 @@ abstract class StorageGetResponse extends ResponseBase
         }
         return null;
     }
+
+    public function type(): string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @return float|int|string
+     */
+    public function value()
+    {
+        switch ($this->type) {
+            case StorageValueType::STRING:
+                return $this->value_string;
+            case StorageValueType::INTEGER:
+                return $this->value_int;
+            case StorageValueType::DOUBLE:
+                return $this->value_double;
+            case StorageValueType::BYTES:
+                return $this->value_bytes;
+        }
+    }
+
+    public function valueString(): ?string
+    {
+        return $this->value_string;
+    }
+
+    public function valueInteger(): ?int
+    {
+        return $this->value_int;
+    }
+
+    public function valueDouble(): ?float
+    {
+        return $this->value_double;
+    }
+
+    public function valueBytes(): ?string
+    {
+        return $this->value_bytes;
+    }
+
 }
 
 /**
@@ -362,13 +422,6 @@ abstract class StorageGetResponse extends ResponseBase
  */
 class StorageGetSuccess extends StorageGetResponse
 {
-    private string $type;
-    private ?string $value_string = null;
-    // Used for `get` only at the moment, as PHP doesn't have a `byte` type
-    private ?string $value_bytes = null;
-    private ?int $value_int = null;
-    private ?float $value_double = null;
-
     public function __construct(_StoreGetResponse $grpcResponse)
     {
         parent::__construct();
@@ -388,31 +441,6 @@ class StorageGetSuccess extends StorageGetResponse
         }
     }
 
-    public function type(): string
-    {
-        return $this->type;
-    }
-
-    public function tryGetString(): ?string
-    {
-        return $this->value_string;
-    }
-
-    public function tryGetInteger(): ?int
-    {
-        return $this->value_int;
-    }
-
-    public function tryGetDouble(): ?float
-    {
-        return $this->value_double;
-    }
-
-    public function tryGetBytes(): ?string
-    {
-        return $this->value_bytes;
-    }
-
     public function __toString()
     {
         $value = null;
@@ -430,7 +458,7 @@ class StorageGetSuccess extends StorageGetResponse
                 $value = $this->shortValue($this->value_bytes);
                 break;
         }
-        return parent::__toString() . ": type='$this->type'; value='$value'";
+        return parent::__toString() . ": $value";
     }
 }
 
@@ -440,6 +468,36 @@ class StorageGetSuccess extends StorageGetResponse
 class StorageGetError extends StorageGetResponse
 {
     use ErrorBody;
+
+    public function type(): string
+    {
+        throw $this->innerException();
+    }
+
+    public function value()
+    {
+        throw $this->innerException();
+    }
+
+    public function valueString(): ?string
+    {
+        throw $this->innerException();
+    }
+
+    public function valueInteger(): ?int
+    {
+        throw $this->innerException();
+    }
+
+    public function valueDouble(): ?float
+    {
+        throw $this->innerException();
+    }
+
+    public function valueBytes(): ?string
+    {
+        throw $this->innerException();
+    }
 }
 
 /**
