@@ -379,7 +379,7 @@ abstract class StorageGetResponse extends ResponseBase
         return null;
     }
 
-    public function found(): bool
+    public function found(): ?bool
     {
         return $this->found;
     }
@@ -486,14 +486,14 @@ class StorageGetError extends StorageGetResponse
 {
     use ErrorBody;
 
-    public function type(): string
+    public function type(): ?string
     {
-        throw $this->innerException();
+        return null;
     }
 
-    public function found(): bool
+    public function found(): ?bool
     {
-        throw $this->innerException();
+        return null;
     }
 
     public function value()
