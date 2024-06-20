@@ -326,16 +326,22 @@ abstract class StorageValueType
  * For example:
  * <code>
  * if ($success = $response->asSuccess()) {
- *     if ($success->type() == StorageValueType::STRING) {
+ *     if (!$success->found()) {
+ *       print("Value not found in the store\n");
+ *     } elseif ($success->type() == StorageValueType::STRING) {
  *       // other storage types are INTEGER, BYTES, and DOUBLE
  *       print("Got string value: " . $success->valueString() . "\n");
  *     }
  * } elseif ($error = $response->asError())
  *     // handle error as appropriate
  * }
- * // If you know you are getting a particular type, you can use the following shorthand:
+ * // If you know you are getting a particular type, you can use the following shorthand
+ * // to avoid the type checking for the response and the value. If the response was an error,
+ * // an exception will be thrown when any of the response data is requested:
  * try {
- *   print("Got string value: " . $response->value() . "\n");
+ *   if ($response->found()) {
+ *     print("Got string value: " . $response->value() . "\n");
+ *   }
  * } catch (SdkError $e) {
  *   // the request was unsuccessful, and the response is an error
  *   print("Error getting value: " . $response->asError()->message() . "\n");
@@ -344,9 +350,9 @@ abstract class StorageValueType
  */
 abstract class StorageGetResponse extends ResponseBase
 {
+    protected bool $found = true;
     protected ?string $type = null;
     protected ?string $value_string = null;
-    // Used for `get` only at the moment, as PHP doesn't have a `byte` type
     protected ?string $value_bytes = null;
     protected ?int $value_int = null;
     protected ?float $value_double = null;
@@ -373,13 +379,18 @@ abstract class StorageGetResponse extends ResponseBase
         return null;
     }
 
-    public function type(): string
+    public function found(): bool
+    {
+        return $this->found;
+    }
+
+    public function type(): ?string
     {
         return $this->type;
     }
 
     /**
-     * @return float|int|string
+     * @return float|int|string|null
      */
     public function value()
     {
@@ -392,6 +403,8 @@ abstract class StorageGetResponse extends ResponseBase
                 return $this->value_double;
             case StorageValueType::BYTES:
                 return $this->value_bytes;
+            default:
+                return null;
         }
     }
 
@@ -422,9 +435,13 @@ abstract class StorageGetResponse extends ResponseBase
  */
 class StorageGetSuccess extends StorageGetResponse
 {
-    public function __construct(_StoreGetResponse $grpcResponse)
+    public function __construct(?_StoreGetResponse $grpcResponse=null)
     {
         parent::__construct();
+        if (!$grpcResponse) {
+            $this->found = false;
+            return;
+        }
         $value = $grpcResponse->getValue();
         if ($value->hasStringValue()) {
             $this->type = StorageValueType::STRING;
@@ -470,6 +487,11 @@ class StorageGetError extends StorageGetResponse
     use ErrorBody;
 
     public function type(): string
+    {
+        throw $this->innerException();
+    }
+
+    public function found(): bool
     {
         throw $this->innerException();
     }

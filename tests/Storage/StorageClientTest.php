@@ -6,6 +6,7 @@ namespace Momento\Tests\Storage;
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\Errors\NotFoundError;
+use Momento\Cache\Errors\StoreNotFoundError;
 use Momento\Config\IStorageConfiguration;
 use Momento\Config\Configurations;
 use Momento\Config\StorageConfiguration;
@@ -364,13 +365,41 @@ class StorageClientTest extends TestCase
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
+        // verify the behavior of a get request for a missing key
+        $response = $this->client->get($storeName, $key);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertFalse($response->found());
+        $this->assertNull($response->type());
+        $this->assertNull($response->value());
+        $this->assertNull($response->valueBytes());
+        $this->assertNull($response->valueDouble());
+        $this->assertNull($response->valueInteger());
+        $this->assertNull($response->valueString());
+    }
+
+    // Error response attribute test
+    public function testGetError()
+    {
+        $storeName = uniqid();
+        $key = uniqid();
         $response = $this->client->get($storeName, $key);
         $this->assertNotNull($response->asError());
-        // TODO: This will be changing such that an element not found will not
-        //  be surfaced as an error. Instead, it will be a "miss", with some TBD way to
-        //  signify the difference between a miss and a user asking for the wrong data type.
-        $this->expectException(NotFoundError::class);
-        print($response->value());
+        $this->assertEquals(MomentoErrorCode::STORE_NOT_FOUND_ERROR, $response->asError()->errorCode());
+        $this->expectException(StoreNotFoundError::class);
+        $response->value();
+        $this->expectException(StoreNotFoundError::class);
+        $response->type();
+        $this->expectException(StoreNotFoundError::class);
+        $response->found();
+        $this->expectException(StoreNotFoundError::class);
+        $response->valueInteger();
+        $this->expectException(StoreNotFoundError::class);
+        $response->valueString();
+        $this->expectException(StoreNotFoundError::class);
+        $response->valueDouble();
+        $this->expectException(StoreNotFoundError::class);
+        $response->valueBytes();
     }
 
 }

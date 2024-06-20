@@ -19,8 +19,21 @@ abstract class MomentoErrorCode
     public const ALREADY_EXISTS_ERROR = "ALREADY_EXISTS_ERROR";
     /**
      * Cache with specified name doesn't exist
+     * @deprecated Use CacheNotFoundError instead
      */
     public const NOT_FOUND_ERROR = "NOT_FOUND_ERROR";
+    /**
+     * Cache with specified name doesn't exist
+     */
+    public const CACHE_NOT_FOUND_ERROR = "NOT_FOUND_ERROR";
+    /**
+     * Store with specified name doesn't exist
+     */
+    public const STORE_NOT_FOUND_ERROR = "STORE_NOT_FOUND_ERROR";
+    /**
+     * Item with specified name doesn't exist
+     */
+    public const ITEM_NOT_FOUND_ERROR = "ITEM_NOT_FOUND_ERROR";
     /**
      * An unexpected error occurred while trying to fulfill the request
      */
@@ -216,11 +229,39 @@ class LimitExceededError extends SdkError
 
 /**
  * Cache with specified name doesn't exist
+ * @deprecated Use CacheNotFoundError instead
  */
 class NotFoundError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::NOT_FOUND_ERROR;
     public string $messageWrapper = 'A cache with the specified name does not exist.  To resolve this error, make sure you have created the cache before attempting to use it';
+}
+
+/**
+ * Cache with specified name doesn't exist
+ */
+class CacheNotFoundError extends SdkError
+{
+    public string $errorCode = MomentoErrorCode::CACHE_NOT_FOUND_ERROR;
+    public string $messageWrapper = 'A cache with the specified name does not exist.  To resolve this error, make sure you have created the cache before attempting to use it';
+}
+
+/**
+ * Store with specified name doesn't exist
+ */
+class StoreNotFoundError extends SdkError
+{
+    public string $errorCode = MomentoErrorCode::STORE_NOT_FOUND_ERROR;
+    public string $messageWrapper = 'A store with the specified name does not exist.  To resolve this error, make sure you have created the store before attempting to use it';
+}
+
+/**
+ * Item with specified name doesn't exist
+ */
+class ItemNotFoundError extends SdkError
+{
+    public string $errorCode = MomentoErrorCode::ITEM_NOT_FOUND_ERROR;
+    public string $messageWrapper = 'An item with the specified name does not exist.  To resolve this error, make sure you have created the item before attempting to use it';
 }
 
 /**

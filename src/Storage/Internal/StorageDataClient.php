@@ -7,7 +7,9 @@ use Exception;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
+use Momento\Cache\Errors\ItemNotFoundError;
 use Momento\Cache\Errors\SdkError;
+use Momento\Cache\Errors\StoreNotFoundError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Config\IStorageConfiguration;
 use Momento\Storage\StorageOperationTypes\StorageDeleteResponse;
@@ -116,25 +118,6 @@ class StorageDataClient implements LoggerAwareInterface
     /**
      * @param string $storeName
      * @param string $key
-     * @param int|float|string $value
-     * @return ResponseFuture<StoragePutResponse>
-     */
-    public function put(string $storeName, string $key, $value): ResponseFuture
-    {
-        if (is_int($value)) {
-            return $this->putInteger($storeName, $key, $value);
-        } elseif (is_float($value)) {
-            return $this->putDouble($storeName, $key, $value);
-        } elseif (is_string($value)) {
-            return $this->putString($storeName, $key, $value);
-        } else {
-            throw new \InvalidArgumentException("Value must be a string, int, or double");
-        }
-    }
-
-    /**
-     * @param string $storeName
-     * @param string $key
      * @param string|int|float $value
      * @param string $type
      * @return ResponseFuture<StoragePutResponse>
@@ -209,6 +192,8 @@ class StorageDataClient implements LoggerAwareInterface
             function () use ($call): StorageGetResponse {
                 try {
                     $response = $this->processCall($call);
+                } catch (ItemNotFoundError $e) {
+                    return new StorageGetSuccess();
                 } catch (SdkError $e) {
                     return new StorageGetError($e);
                 } catch (Exception $e) {
