@@ -45,15 +45,19 @@ class _ErrorConverter
         Grpc\STATUS_DATA_LOSS => InternalServerError::class
     ];
 
-    public static function convert(int $status, string $details, ?array $metadata = null): SdkError
+    public static function convert($grpcStatus, ?array $metadata = null): SdkError
     {
+        $status = $grpcStatus->code;
+        $details = $grpcStatus->details;
         if (array_key_exists($status, self::$rpcToError)) {
             // If the status code is STATUS_NOT_FOUND, we need to check the details to determine if it was a
             // cache, store, or item that was not found.
             if ($status === Grpc\STATUS_NOT_FOUND) {
-                if (strpos($details, "Store") !== false) {
+                if (!array_key_exists("err", $grpcStatus->metadata)) {
+                    $class = CacheNotFoundError::class;
+                } elseif ($grpcStatus->metadata["err"][0] == "store_not_found") {
                     $class = StoreNotFoundError::class;
-                } elseif (strpos($details, "Element") !== false) {
+                } elseif ($grpcStatus->metadata["err"][0] == "element_not_found") {
                     $class = ItemNotFoundError::class;
                 } else {
                     $class = CacheNotFoundError::class;
@@ -62,6 +66,8 @@ class _ErrorConverter
                 $class = self::$rpcToError[$status];
             }
             return new $class($details, $status, null, $metadata);
+        } else {
+            print("nope");
         }
 
         return new UnknownError(

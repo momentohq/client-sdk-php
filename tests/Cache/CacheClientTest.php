@@ -491,7 +491,7 @@ class CacheClientTest extends TestCase
         $cacheName = uniqid();
         $response = $this->client->setIfPresent($cacheName, "key", "value");
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
-        $this->assertEquals(MomentoErrorCode::NOT_FOUND_ERROR, $response->asError()->errorCode());
+        $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
     public function testSetIfPresentWithNullCacheName_ThrowsException()

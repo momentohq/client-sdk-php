@@ -66,7 +66,7 @@ class StorageDataClient implements LoggerAwareInterface
         [$response, $status] = $call->wait();
         if ($status->code !== 0) {
             $this->logger->debug("Storage client error: {$status->details}");
-            throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
+            throw _ErrorConverter::convert($status, $call->getMetadata());
         }
         return $response;
     }
