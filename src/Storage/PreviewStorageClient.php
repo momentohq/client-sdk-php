@@ -99,10 +99,11 @@ class PreviewStorageClient implements LoggerAwareInterface
      * Creates a store if it doesn't exist.
      * @param string $storeName Name of the store to create
      * @return CreateStoreResponse Represents the result of the create store operation. This result is
-     *  resolved to a type-safe object of one of the following types:<br>
-     *  * CreateStoreSuccess<br>
-     *  * CreateStoreError<br>
-     *  Pattern matching can be to operate on the appropriate subtype:<br>
+     *  resolved to a type-safe object of one of the following types:
+     *  * CreateStoreSuccess
+     *  * CreateStoreAlreadyExists
+     *  * CreateStoreError
+     *  Pattern matching can be to operate on the appropriate subtype:
      *  <code>
      *  if ($error = $response->asError()) {
      *    // handle error condition<br>
@@ -306,7 +307,7 @@ class PreviewStorageClient implements LoggerAwareInterface
     }
 
     /**
-     * Put the bytes value in the store.
+     * Put the double value in the store.
      *
      * @param string $storeName Name of the store in which to put the value.
      * @param string $key The key to put.
@@ -334,7 +335,7 @@ class PreviewStorageClient implements LoggerAwareInterface
     }
 
     /**
-     * Put the bytes value in the store.
+     * Put the double value in the store.
      *
      * @param string $storeName Name of the store in which to put the value.
      * @param string $key The key to put.
