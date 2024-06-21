@@ -5,7 +5,7 @@ namespace Momento\Config\Transport;
 
 use Momento\Logging\ILoggerFactory;
 
-class StaticTransportStrategy implements ITransportStrategy
+class StaticStorageTransportStrategy implements ITransportStrategy
 {
     private IGrpcConfiguration $grpcConfig;
     private ?ILoggerFactory $loggerFactory;

@@ -3,25 +3,25 @@ declare(strict_types=1);
 
 namespace Momento\Config\Configurations;
 
-use Momento\Config\Configuration;
-use Momento\Config\Transport\StaticGrpcConfiguration;
+use Momento\Config\StorageConfiguration;
+use Momento\Config\Transport\StaticStorageGrpcConfiguration;
 use Momento\Config\Transport\StaticStorageTransportStrategy;
 use Momento\Logging\ILoggerFactory;
 use Momento\Logging\NullLoggerFactory;
 
 /**
- * Laptop config provides defaults suitable for a medium-to-high-latency dev environment.  Permissive timeouts, retries, and
+ * StorageLaptop config provides defaults suitable for a medium-to-high-latency dev environment.  Permissive timeouts, retries, and
  * relaxed latency and throughput targets.
  */
-class Laptop extends Configuration
+class StorageLaptop extends StorageConfiguration
 {
     /**
      * Provides the latest recommended configuration for a Laptop environment.
      *
      * @param ILoggerFactory|null $loggerFactory
-     * @return Laptop
+     * @return StorageLaptop
      */
-    public static function latest(?ILoggerFactory $loggerFactory = null): Laptop
+    public static function latest(?ILoggerFactory $loggerFactory = null): StorageLaptop
     {
         return self::v1($loggerFactory);
     }
@@ -30,14 +30,16 @@ class Laptop extends Configuration
      * Provides version 1 configuration for a Laptop environment. This configuration is guaranteed not to change in
      * future releases of the SDK.
      *
+     * TODO: this is marked private now to hide it from customers until we're ready for a v1
+     *
      * @param ILoggerFactory|null $loggerFactory
-     * @return Laptop
+     * @return StorageLaptop
      */
-    public static function v1(?ILoggerFactory $loggerFactory = null): Laptop
+    private static function v1(?ILoggerFactory $loggerFactory = null): StorageLaptop
     {
         $loggerFactory = $loggerFactory ?? new NullLoggerFactory();
-        $grpcConfig = new StaticGrpcConfiguration(5000);
+        $grpcConfig = new StaticStorageGrpcConfiguration(5000);
         $transportStrategy = new StaticStorageTransportStrategy($grpcConfig, $loggerFactory, self::$maxIdleMillis);
-        return new Laptop($loggerFactory, $transportStrategy);
+        return new StorageLaptop($loggerFactory, $transportStrategy);
     }
 }
