@@ -26,7 +26,6 @@ use Cache_client\_SetDifferenceRequest;
 use Cache_client\_SetDifferenceRequest\_Subtrahend;
 use Cache_client\_SetDifferenceRequest\_Subtrahend\_Set;
 use Cache_client\_SetFetchRequest;
-use Cache_client\_SetIfNotExistsRequest;
 use Cache_client\_SetIfRequest;
 use Cache_client\_SetLengthRequest;
 use Cache_client\_SetRequest;
@@ -244,7 +243,7 @@ class ScsDataClient implements LoggerAwareInterface
         [$response, $status] = $call->wait();
         if ($status->code !== 0) {
             $this->logger->debug("Data client error: {$status->details}");
-            throw _ErrorConverter::convert($status->code, $status->details, $call->getMetadata());
+            throw _ErrorConverter::convert($status, $call->getMetadata());
         }
         return $response;
     }
@@ -272,7 +271,7 @@ class ScsDataClient implements LoggerAwareInterface
         } catch (SdkError $e) {
             return ResponseFuture::createResolved(new SetError($e));
         } catch (Exception $e) {
-            return ResponseFuture::createResolved(SetError(new UnknownError($e->getMessage(), 0, $e)));
+            return ResponseFuture::createResolved(new SetError(new UnknownError($e->getMessage(), 0, $e)));
         }
 
         return ResponseFuture::createPending(
@@ -282,7 +281,7 @@ class ScsDataClient implements LoggerAwareInterface
                 } catch (SdkError $e) {
                     return new SetError($e);
                 } catch (Exception $e) {
-                    return SetError(new UnknownError($e->getMessage(), 0, $e));
+                    return new SetError(new UnknownError($e->getMessage(), 0, $e));
                 }
 
                 return new SetSuccess();

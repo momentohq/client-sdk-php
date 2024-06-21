@@ -52,6 +52,13 @@ if (!function_exists('validateCacheName')) {
     }
 }
 
+if (!function_exists('validateStoreName')) {
+    function validateStoreName(string $storeName): void
+    {
+        validateNullOrEmpty($storeName, "Store name");
+    }
+}
+
 if (!function_exists('validateKeys')) {
     function validateKeys(array $keys): void
     {
