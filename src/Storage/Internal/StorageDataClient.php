@@ -16,6 +16,8 @@ use Momento\Config\IStorageConfiguration;
 use Momento\Storage\StorageOperationTypes\StorageDeleteResponse;
 use Momento\Storage\StorageOperationTypes\StorageDeleteError;
 use Momento\Storage\StorageOperationTypes\StorageDeleteSuccess;
+use Momento\Storage\StorageOperationTypes\StorageGetFound;
+use Momento\Storage\StorageOperationTypes\StorageGetNotFound;
 use Momento\Storage\StorageOperationTypes\StorageGetResponse;
 use Momento\Storage\StorageOperationTypes\StorageGetError;
 use Momento\Storage\StorageOperationTypes\StorageGetSuccess;
@@ -194,13 +196,13 @@ class StorageDataClient implements LoggerAwareInterface
                 try {
                     $response = $this->processCall($call);
                 } catch (ItemNotFoundError $e) {
-                    return new StorageGetSuccess();
+                    return new StorageGetNotFound();
                 } catch (SdkError $e) {
                     return new StorageGetError($e);
                 } catch (Exception $e) {
                     return new StorageGetError(new UnknownError($e->getMessage(), 0, $e));
                 }
-                return new StorageGetSuccess($response);
+                return new StorageGetFound($response);
             }
         );
     }
