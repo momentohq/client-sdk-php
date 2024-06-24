@@ -5,13 +5,17 @@ namespace Momento\Storage;
 
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
+use Momento\Cache\Errors\CacheNotFoundError;
 use Momento\Cache\Errors\InvalidArgumentError;
+use Momento\Cache\Errors\MomentoErrorCode;
+use Momento\Cache\Errors\StoreNotFoundError;
 use Momento\Cache\Internal\IdleStorageDataClientWrapper;
 use Momento\Cache\Internal\ScsControlClient;
 use Momento\Config\IStorageConfiguration;
 use Momento\Logging\ILoggerFactory;
 use Momento\Storage\Internal\StorageDataClient;
 use Momento\Storage\StorageOperationTypes\CreateStoreResponse;
+use Momento\Storage\StorageOperationTypes\DeleteStoreError;
 use Momento\Storage\StorageOperationTypes\DeleteStoreResponse;
 use Momento\Storage\StorageOperationTypes\ListStoresResponse;
 use Momento\Storage\StorageOperationTypes\StorageDeleteResponse;
@@ -153,7 +157,12 @@ class PreviewStorageClient implements LoggerAwareInterface
      */
     public function deleteStore(string $storeName): DeleteStoreResponse
     {
-        return $this->controlClient->deleteStore($storeName);
+        $response = $this->controlClient->deleteStore($storeName);
+        if ($response->asError() && $response->asError()->errorCode() == MomentoErrorCode::CACHE_NOT_FOUND_ERROR) {
+            $this->logger->info("Store $storeName does not exist.");
+            return new DeleteStoreError(new StoreNotFoundError("Store $storeName does not exist."));
+        }
+        return $response;
     }
 
     /**
