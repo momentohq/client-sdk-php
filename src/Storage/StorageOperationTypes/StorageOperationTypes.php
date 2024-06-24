@@ -350,7 +350,6 @@ abstract class StorageValueType
  */
 abstract class StorageGetResponse extends ResponseBase
 {
-    protected bool $found = true;
     protected ?string $type = null;
     protected ?string $value_string = null;
     protected ?string $value_bytes = null;
@@ -358,11 +357,22 @@ abstract class StorageGetResponse extends ResponseBase
     protected ?float $value_double = null;
 
     /**
-     * @return StorageGetSuccess|null  Returns the success subtype if the request was successful and null otherwise.
+     * @return StorageGetFound|null  Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): ?StorageGetSuccess
+    public function asFound(): ?StorageGetFound
     {
-        if ($this->isSuccess()) {
+        if ($this->isFound()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return StorageGetNotFound|null  Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asNotFound(): ?StorageGetNotFound
+    {
+        if ($this->isNotFound()) {
             return $this;
         }
         return null;
@@ -377,11 +387,6 @@ abstract class StorageGetResponse extends ResponseBase
             return $this;
         }
         return null;
-    }
-
-    public function found(): ?bool
-    {
-        return $this->found;
     }
 
     public function type(): ?string
@@ -433,15 +438,11 @@ abstract class StorageGetResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class StorageGetSuccess extends StorageGetResponse
+class StorageGetFound extends StorageGetResponse
 {
     public function __construct(?_StoreGetResponse $grpcResponse=null)
     {
         parent::__construct();
-        if (!$grpcResponse) {
-            $this->found = false;
-            return;
-        }
         $value = $grpcResponse->getValue();
         if ($value->hasStringValue()) {
             $this->type = StorageValueType::STRING;
@@ -479,6 +480,8 @@ class StorageGetSuccess extends StorageGetResponse
     }
 }
 
+class StorageGetNotFound extends StorageGetResponse {}
+
 /**
  * Contains information about an error returned from the request.
  */
@@ -487,11 +490,6 @@ class StorageGetError extends StorageGetResponse
     use ErrorBody;
 
     public function type(): ?string
-    {
-        return null;
-    }
-
-    public function found(): ?bool
     {
         return null;
     }
