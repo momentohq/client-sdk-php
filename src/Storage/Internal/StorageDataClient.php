@@ -7,6 +7,7 @@ use Exception;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
+use Momento\Cache\Errors\CacheNotFoundError;
 use Momento\Cache\Errors\ItemNotFoundError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\StoreNotFoundError;
