@@ -146,6 +146,14 @@ class StorageClientTest extends TestCase
         $this->client->deleteStore(null);
     }
 
+    public function testDeleteNonexistentStore()
+    {
+        $storeName = uniqid();
+        $response = $this->client->deleteStore($storeName);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::STORE_NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
     public function testStoreNotFound()
     {
         $storeName = uniqid();
