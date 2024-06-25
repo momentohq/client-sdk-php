@@ -5,7 +5,6 @@ namespace Momento\Tests\Storage;
 
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\Errors\MomentoErrorCode;
-use Momento\Cache\Errors\NotFoundError;
 use Momento\Cache\Errors\StoreNotFoundError;
 use Momento\Config\IStorageConfiguration;
 use Momento\Config\Configurations;
@@ -144,6 +143,14 @@ class StorageClientTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->client->deleteStore(null);
+    }
+
+    public function testDeleteNonexistentStore()
+    {
+        $storeName = uniqid();
+        $response = $this->client->deleteStore($storeName);
+        $this->assertNotNull($response->asError());
+        $this->assertEquals(MomentoErrorCode::STORE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
     public function testStoreNotFound()

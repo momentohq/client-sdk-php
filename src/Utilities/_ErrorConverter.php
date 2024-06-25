@@ -57,7 +57,7 @@ class _ErrorConverter
                     $class = CacheNotFoundError::class;
                 } elseif ($grpcStatus->metadata["err"][0] == "store_not_found") {
                     $class = StoreNotFoundError::class;
-                } elseif ($grpcStatus->metadata["err"][0] == "element_not_found") {
+                } elseif ($grpcStatus->metadata["err"][0] == "item_not_found") {
                     $class = ItemNotFoundError::class;
                 } else {
                     $class = CacheNotFoundError::class;
