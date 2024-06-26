@@ -7,10 +7,8 @@ use Exception;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
-use Momento\Cache\Errors\CacheNotFoundError;
 use Momento\Cache\Errors\ItemNotFoundError;
 use Momento\Cache\Errors\SdkError;
-use Momento\Cache\Errors\StoreNotFoundError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Config\IStorageConfiguration;
 use Momento\Storage\StorageOperationTypes\StorageDeleteResponse;
@@ -20,7 +18,6 @@ use Momento\Storage\StorageOperationTypes\StorageGetFound;
 use Momento\Storage\StorageOperationTypes\StorageGetNotFound;
 use Momento\Storage\StorageOperationTypes\StorageGetResponse;
 use Momento\Storage\StorageOperationTypes\StorageGetError;
-use Momento\Storage\StorageOperationTypes\StorageGetSuccess;
 use Momento\Storage\StorageOperationTypes\StoragePutResponse;
 use Momento\Storage\StorageOperationTypes\StoragePutError;
 use Momento\Storage\StorageOperationTypes\StoragePutSuccess;
@@ -91,9 +88,9 @@ class StorageDataClient implements LoggerAwareInterface
      * @param int $value
      * @return ResponseFuture<StoragePutResponse>
      */
-    public function putInteger(string $storeName, string $key, int $value): ResponseFuture
+    public function putInt(string $storeName, string $key, int $value): ResponseFuture
     {
-        return $this->_put($storeName, $key, $value, StorageValueType::INTEGER);
+        return $this->_put($storeName, $key, $value, StorageValueType::INT);
     }
 
     /**
@@ -102,9 +99,9 @@ class StorageDataClient implements LoggerAwareInterface
      * @param float $value
      * @return ResponseFuture<StoragePutResponse>
      */
-    public function putDouble(string $storeName, string $key, float $value): ResponseFuture
+    public function putFloat(string $storeName, string $key, float $value): ResponseFuture
     {
-        return $this->_put($storeName, $key, $value, StorageValueType::DOUBLE);
+        return $this->_put($storeName, $key, $value, StorageValueType::FLOAT);
     }
 
     /**
@@ -131,9 +128,9 @@ class StorageDataClient implements LoggerAwareInterface
             validateStoreName($storeName);
             validateNullOrEmpty($key, "Key");
             $storeValue = new _StoreValue();
-            if ($type == StorageValueType::INTEGER) {
+            if ($type == StorageValueType::INT) {
                 $storeValue->setIntegerValue($value);
-            } elseif ($type == StorageValueType::DOUBLE) {
+            } elseif ($type == StorageValueType::FLOAT) {
                 $storeValue->setDoubleValue($value);
             } elseif ($type == StorageValueType::STRING) {
                 $storeValue->setStringValue($value);

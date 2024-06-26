@@ -309,8 +309,8 @@ class StoragePutError extends StoragePutResponse
 abstract class StorageValueType
 {
     public const STRING = "STRING";
-    public const INTEGER = "INTEGER";
-    public const DOUBLE = "DOUBLE";
+    public const INT = "INT";
+    public const FLOAT = "FLOAT";
     public const BYTES = "BYTES";
 }
 
@@ -329,7 +329,7 @@ abstract class StorageValueType
  *     if (!$success->found()) {
  *       print("Value not found in the store\n");
  *     } elseif ($success->type() == StorageValueType::STRING) {
- *       // other storage types are INTEGER, BYTES, and DOUBLE
+ *       // other storage types are INT, BYTES, and FLOAT
  *       print("Got string value: " . $success->valueString() . "\n");
  *     }
  * } elseif ($error = $response->asError())
@@ -402,9 +402,9 @@ abstract class StorageGetResponse extends ResponseBase
         switch ($this->type) {
             case StorageValueType::STRING:
                 return $this->value_string;
-            case StorageValueType::INTEGER:
+            case StorageValueType::INT:
                 return $this->value_int;
-            case StorageValueType::DOUBLE:
+            case StorageValueType::FLOAT:
                 return $this->value_double;
             case StorageValueType::BYTES:
                 return $this->value_bytes;
@@ -448,10 +448,10 @@ class StorageGetFound extends StorageGetResponse
             $this->type = StorageValueType::STRING;
             $this->value_string = $value->getStringValue();
         } elseif ($value->hasIntegerValue()) {
-            $this->type = StorageValueType::INTEGER;
+            $this->type = StorageValueType::INT;
             $this->value_int = $value->getIntegerValue();
         } elseif ($value->hasDoubleValue()) {
-            $this->type = StorageValueType::DOUBLE;
+            $this->type = StorageValueType::FLOAT;
             $this->value_double = $value->getDoubleValue();
         } elseif ($value->hasBytesValue()) {
             $this->type = StorageValueType::BYTES;
@@ -466,10 +466,10 @@ class StorageGetFound extends StorageGetResponse
             case StorageValueType::STRING:
                 $value = $this->shortValue($this->value_string);
                 break;
-            case StorageValueType::INTEGER:
+            case StorageValueType::INT:
                 $value = $this->value_int;
                 break;
-            case StorageValueType::DOUBLE:
+            case StorageValueType::FLOAT:
                 $value = $this->value_double;
                 break;
             case StorageValueType::BYTES:
