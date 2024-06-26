@@ -21,7 +21,7 @@ class AgentInterceptor extends Interceptor
     {
         if ($this->isFirstRequest) {
             $metadata["agent"] = [$this->agent];
-            $metadata["runtime_version"] = [$this->runtimeVersion];
+            $metadata["runtime-version"] = [$this->runtimeVersion];
             $this->isFirstRequest = false;
         }
         return parent::interceptUnaryUnary($method, $argument, $deserialize, $continuation, $metadata, $options);
