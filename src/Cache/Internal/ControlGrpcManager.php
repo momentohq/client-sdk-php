@@ -28,7 +28,7 @@ class ControlGrpcManager
         $this->channel = new Channel($endpoint, $channelArgs);
         $interceptors = [
             new AuthorizationInterceptor($authProvider->getAuthToken()),
-            new AgentInterceptor(),
+            new AgentInterceptor("cache"),
         ];
         $interceptedChannel = Interceptor::intercept($this->channel, $interceptors);
         $options = [];

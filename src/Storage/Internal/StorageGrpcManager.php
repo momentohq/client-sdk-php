@@ -34,7 +34,7 @@ class StorageGrpcManager
         $this->channel = new Channel($endpoint, $channelArgs);
         $interceptors = [
             new AuthorizationInterceptor($authProvider->getAuthToken()),
-            new AgentInterceptor(),
+            new AgentInterceptor("store"),
         ];
         $interceptedChannel = Interceptor::intercept($this->channel, $interceptors);
 
