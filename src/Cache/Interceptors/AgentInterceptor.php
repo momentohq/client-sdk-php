@@ -13,7 +13,7 @@ class AgentInterceptor extends Interceptor
 
     public function __construct(string $clientType)
     {
-        $this->agent = sprintf("php:%s:0.5.0", $clientType);
+        $this->agent = sprintf("php:%s:1.10.0", $clientType);
         $this->runtimeVersion = PHP_VERSION;
     }
 
