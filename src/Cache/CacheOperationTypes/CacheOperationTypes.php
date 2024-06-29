@@ -227,6 +227,16 @@ abstract class ResponseBase
         return get_class($this) == "{$this->baseType}NotStored";
     }
 
+    protected function isFound(): bool
+    {
+        return get_class($this) == "{$this->baseType}Found";
+    }
+
+    protected function isNotFound(): bool
+    {
+        return get_class($this) == "{$this->baseType}NotFound";
+    }
+
     protected function shortValue(string $value): string
     {
         if (strlen($value) <= $this->valueSubstringLength) {

@@ -6,8 +6,8 @@ namespace Momento\Tests\Storage;
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\Errors\MomentoErrorCode;
 use Momento\Cache\Errors\StoreNotFoundError;
-use Momento\Config\IStorageConfiguration;
 use Momento\Config\Configurations;
+use Momento\Config\IStorageConfiguration;
 use Momento\Config\StorageConfiguration;
 use Momento\Config\Transport\StaticStorageGrpcConfiguration;
 use Momento\Config\Transport\StaticStorageTransportStrategy;
@@ -29,7 +29,7 @@ class StorageClientTest extends TestCase
 
     public function setUp(): void
     {
-        $this->configuration = Configurations\StorageLaptop::latest();
+        $this->configuration = Configurations\Storage\Laptop::latest();
         $this->authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
         $this->client = new PreviewStorageClient($this->configuration, $this->authProvider);
         $this->TEST_STORE_NAME = uniqid("php-storage-integration-tests-");
@@ -272,10 +272,10 @@ class StorageClientTest extends TestCase
         $storeName = $this->TEST_STORE_NAME;
         $key = uniqid();
         $value = 42;
-        $response = $this->client->putInteger($storeName, $key, $value);
+        $response = $this->client->putInt($storeName, $key, $value);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::INTEGER);
+        $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::INT);
     }
 
     public function testSetGetDeleteDouble()
@@ -283,18 +283,19 @@ class StorageClientTest extends TestCase
         $storeName = $this->TEST_STORE_NAME;
         $key = uniqid();
         $value = 3.14;
-        $response = $this->client->putDouble($storeName, $key, $value);
+        $response = $this->client->putFloat($storeName, $key, $value);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::DOUBLE);
+        $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::FLOAT);
     }
 
     private function setGetDeleteTestCommon($storeName, $key, $value, string $type)
     {
         $response = $this->client->get($storeName, $key);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $response = $response->asSuccess();
+        $this->assertNull($response->asNotFound());
+        $this->assertNotNull($response->asFound(), "Expected a success but got: $response");
+        $response = $response->asFound();
         $this->assertEquals($response->type(), $type);
         $this->assertEquals(get_class($response) . ": $value", "$response");
 
@@ -304,13 +305,13 @@ class StorageClientTest extends TestCase
             $this->assertEquals($response->valueString(), $value);
         }
 
-        if ($type != StorageValueType::INTEGER) {
+        if ($type != StorageValueType::INT) {
             $this->assertEquals(null, $response->valueInteger());
         } else {
             $this->assertEquals($response->valueInteger(), $value);
         }
 
-        if ($type != StorageValueType::DOUBLE) {
+        if ($type != StorageValueType::FLOAT) {
             $this->assertEquals(null, $response->valueDouble());
         } else {
             $this->assertEquals($response->valueDouble(), $value);
@@ -329,8 +330,8 @@ class StorageClientTest extends TestCase
         // verify the behavior of a get request for a missing key
         $response = $this->client->get($storeName, $key);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertFalse($response->found());
+        $this->assertNull($response->asFound());
+        $this->assertNotNull($response->asNotFound(), "Expected a success but got: $response");
         $this->assertNull($response->type());
         $this->assertNull($response->value());
         $this->assertNull($response->valueBytes());

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Momento\Config\Configurations;
+namespace Momento\Config\Configurations\Storage;
 
 use Momento\Config\StorageConfiguration;
 use Momento\Config\Transport\StaticStorageGrpcConfiguration;
@@ -14,7 +14,7 @@ use Momento\Logging\NullLoggerFactory;
  * in the same region as the Momento service.  It has more aggressive timeouts and retry behavior
  * than the StorageLaptop config.
  */
-class StorageInRegion extends StorageConfiguration
+class InRegion extends StorageConfiguration
 {
     /**
      * Provides the latest recommended configuration for an InRegion environment.
@@ -22,9 +22,9 @@ class StorageInRegion extends StorageConfiguration
      * improvements we identify for default configurations.
      *
      * @param ILoggerFactory|null $loggerFactory
-     * @return StorageInRegion
+     * @return InRegion
      */
-    public static function latest(?ILoggerFactory $loggerFactory = null): StorageInRegion
+    public static function latest(?ILoggerFactory $loggerFactory = null): InRegion
     {
         return self::v1($loggerFactory);
     }
@@ -36,9 +36,9 @@ class StorageInRegion extends StorageConfiguration
      * TODO: this is marked private now to hide it from customers until we're ready for a v1
      *
      * @param ILoggerFactory|null $loggerFactory
-     * @return StorageInRegion
+     * @return InRegion
      */
-    private static function v1(?ILoggerFactory $loggerFactory = null): StorageInRegion
+    private static function v1(?ILoggerFactory $loggerFactory = null): InRegion
     {
         $loggerFactory = $loggerFactory ?? new NullLoggerFactory();
         $grpcConfig = new StaticStorageGrpcConfiguration(1100);

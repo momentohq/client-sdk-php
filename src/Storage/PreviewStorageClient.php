@@ -288,9 +288,9 @@ class PreviewStorageClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function putIntegerAsync(string $storeName, string $key, int $value): ResponseFuture
+    public function putIntAsync(string $storeName, string $key, int $value): ResponseFuture
     {
-        return $this->getNextDataClient()->putInteger($storeName, $key, $value);
+        return $this->getNextDataClient()->putInt($storeName, $key, $value);
     }
 
     /**
@@ -310,13 +310,13 @@ class PreviewStorageClient implements LoggerAwareInterface
      * }
      * </code>
      */
-    public function putInteger(string $storeName, string $key, int $value): StoragePutResponse
+    public function putInt(string $storeName, string $key, int $value): StoragePutResponse
     {
-        return $this->putIntegerAsync($storeName, $key, $value)->wait();
+        return $this->putIntAsync($storeName, $key, $value)->wait();
     }
 
     /**
-     * Put the double value in the store.
+     * Put the float value in the store.
      *
      * @param string $storeName Name of the store in which to put the value.
      * @param string $key The key to put.
@@ -338,13 +338,13 @@ class PreviewStorageClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function putDoubleAsync(string $storeName, string $key, float $value): ResponseFuture
+    public function putFloatAsync(string $storeName, string $key, float $value): ResponseFuture
     {
-        return $this->getNextDataClient()->putDouble($storeName, $key, $value);
+        return $this->getNextDataClient()->putFloat($storeName, $key, $value);
     }
 
     /**
-     * Put the double value in the store.
+     * Put the float value in the store.
      *
      * @param string $storeName Name of the store in which to put the value.
      * @param string $key The key to put.
@@ -360,9 +360,9 @@ class PreviewStorageClient implements LoggerAwareInterface
      * }
      * </code>
      */
-    public function putDouble(string $storeName, string $key, float $value): StoragePutResponse
+    public function putFloat(string $storeName, string $key, float $value): StoragePutResponse
     {
-        return $this->putDoubleAsync($storeName, $key, $value)->wait();
+        return $this->putFloatAsync($storeName, $key, $value)->wait();
     }
 
     /**
@@ -385,9 +385,9 @@ class PreviewStorageClient implements LoggerAwareInterface
      *   $type = $hit->type();
      *   if ($type == StorageValueType::STRING) {
      *      $value = $hit->tryGetString();
-     *   } elseif ($type == StorageValueType::INTEGER) {
+     *   } elseif ($type == StorageValueType::INT) {
      *      $value = $hit->tryGetInteger();
-     *   } elseif ($type == StorageValueType::DOUBLE) {
+     *   } elseif ($type == StorageValueType::FLOAT) {
      *      $value = $hit->tryGetDouble();
      *   }
      * } elseif ($error = $response->asError()) {
