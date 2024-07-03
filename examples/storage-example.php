@@ -103,9 +103,9 @@ foreach ($VALUES as $key => $value) {
         if ($valueType == StorageValueType::STRING) {
             print("Got string value: " . $found->valueString() . "\n");
         } elseif ($valueType == StorageValueType::INT) {
-            print("Got integer value: " . $found->valueInteger() . "\n");
+            print("Got integer value: " . $found->valueInt() . "\n");
         } elseif ($valueType == StorageValueType::FLOAT) {
-            print("Got double value: " . $found->valueDouble() . "\n");
+            print("Got double value: " . $found->valueFloat() . "\n");
         } elseif ($valueType == StorageValueType::BYTES) {
             // This case is not expected in this example as PHP doesn't have a native byte type
             print("Got bytes value: " . $found->valueBytes() . "\n");

@@ -354,7 +354,7 @@ abstract class StorageGetResponse extends ResponseBase
     protected ?string $value_string = null;
     protected ?string $value_bytes = null;
     protected ?int $value_int = null;
-    protected ?float $value_double = null;
+    protected ?float $value_float = null;
 
     /**
      * @return StorageGetFound|null  Returns the success subtype if the request was successful and null otherwise.
@@ -405,7 +405,7 @@ abstract class StorageGetResponse extends ResponseBase
             case StorageValueType::INT:
                 return $this->value_int;
             case StorageValueType::FLOAT:
-                return $this->value_double;
+                return $this->value_float;
             case StorageValueType::BYTES:
                 return $this->value_bytes;
             default:
@@ -418,14 +418,14 @@ abstract class StorageGetResponse extends ResponseBase
         return $this->value_string;
     }
 
-    public function valueInteger(): ?int
+    public function valueInt(): ?int
     {
         return $this->value_int;
     }
 
-    public function valueDouble(): ?float
+    public function valueFloat(): ?float
     {
-        return $this->value_double;
+        return $this->value_float;
     }
 
     public function valueBytes(): ?string
@@ -452,7 +452,7 @@ class StorageGetFound extends StorageGetResponse
             $this->value_int = $value->getIntegerValue();
         } elseif ($value->hasDoubleValue()) {
             $this->type = StorageValueType::FLOAT;
-            $this->value_double = $value->getDoubleValue();
+            $this->value_float = $value->getDoubleValue();
         } elseif ($value->hasBytesValue()) {
             $this->type = StorageValueType::BYTES;
             $this->value_bytes = $value->getBytesValue();
@@ -470,7 +470,7 @@ class StorageGetFound extends StorageGetResponse
                 $value = $this->value_int;
                 break;
             case StorageValueType::FLOAT:
-                $value = $this->value_double;
+                $value = $this->value_float;
                 break;
             case StorageValueType::BYTES:
                 $value = $this->shortValue($this->value_bytes);
@@ -504,12 +504,12 @@ class StorageGetError extends StorageGetResponse
         throw $this->innerException();
     }
 
-    public function valueInteger(): ?int
+    public function valueInt(): ?int
     {
         throw $this->innerException();
     }
 
-    public function valueDouble(): ?float
+    public function valueFloat(): ?float
     {
         throw $this->innerException();
     }

@@ -267,7 +267,7 @@ class StorageClientTest extends TestCase
         $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::BYTES);
     }
 
-    public function testSetGetDeleteInteger()
+    public function testSetGetDeleteInt()
     {
         $storeName = $this->TEST_STORE_NAME;
         $key = uniqid();
@@ -278,7 +278,7 @@ class StorageClientTest extends TestCase
         $this->setGetDeleteTestCommon($storeName, $key, $value, StorageValueType::INT);
     }
 
-    public function testSetGetDeleteDouble()
+    public function testSetGetDeleteFloat()
     {
         $storeName = $this->TEST_STORE_NAME;
         $key = uniqid();
@@ -306,15 +306,15 @@ class StorageClientTest extends TestCase
         }
 
         if ($type != StorageValueType::INT) {
-            $this->assertEquals(null, $response->valueInteger());
+            $this->assertEquals(null, $response->valueInt());
         } else {
-            $this->assertEquals($response->valueInteger(), $value);
+            $this->assertEquals($response->valueInt(), $value);
         }
 
         if ($type != StorageValueType::FLOAT) {
-            $this->assertEquals(null, $response->valueDouble());
+            $this->assertEquals(null, $response->valueFloat());
         } else {
-            $this->assertEquals($response->valueDouble(), $value);
+            $this->assertEquals($response->valueFloat(), $value);
         }
 
         if ($type != StorageValueType::BYTES) {
@@ -335,8 +335,8 @@ class StorageClientTest extends TestCase
         $this->assertNull($response->type());
         $this->assertNull($response->value());
         $this->assertNull($response->valueBytes());
-        $this->assertNull($response->valueDouble());
-        $this->assertNull($response->valueInteger());
+        $this->assertNull($response->valueFloat());
+        $this->assertNull($response->valueInt());
         $this->assertNull($response->valueString());
     }
 
@@ -351,15 +351,11 @@ class StorageClientTest extends TestCase
         $this->expectException(StoreNotFoundError::class);
         $response->value();
         $this->expectException(StoreNotFoundError::class);
-        $response->type();
-        $this->expectException(StoreNotFoundError::class);
-        $response->found();
-        $this->expectException(StoreNotFoundError::class);
-        $response->valueInteger();
+        $response->valueInt();
         $this->expectException(StoreNotFoundError::class);
         $response->valueString();
         $this->expectException(StoreNotFoundError::class);
-        $response->valueDouble();
+        $response->valueFloat();
         $this->expectException(StoreNotFoundError::class);
         $response->valueBytes();
     }
