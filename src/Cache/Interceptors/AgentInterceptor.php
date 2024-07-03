@@ -10,10 +10,12 @@ class AgentInterceptor extends Interceptor
     private bool $isFirstRequest = true;
     private string $agent;
     private string $runtimeVersion;
+    private string $sdkVersion = "1.10.0"; // x-release-please-version
+
 
     public function __construct(string $clientType)
     {
-        $this->agent = sprintf("php:%s:1.10.0", $clientType);
+        $this->agent = sprintf("php:%s:%s", $clientType, $this->sdkVersion);
         $this->runtimeVersion = PHP_VERSION;
     }
 
