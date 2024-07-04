@@ -49,3 +49,19 @@ jobs:
           dev_docs_slug: php
           template_file: ./README.template.md
           output_file: ./README.md
+
+      - uses: google-github-actions/release-please-action@v3
+        name: Release Please
+        id: release
+        with:
+          token: ${{ secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN }}
+          release-type: php
+          package-name: momentohq/client-sdk-php
+          extra-files: |
+            src/Cache/Interceptors/AgentInterceptor.php
+          changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"chore","section":"Miscellaneous","hidden":false}]'
+
+      - name: Publish
+        run: |
+          echo "Published version: ${{ steps.release.outputs.tag_name }}"
+        if: ${{ steps.release.outputs.release_created }}
