@@ -13,8 +13,7 @@ $STORE_NAME = uniqid("php-storage-example-");
 $VALUES = [
     "float" => 123.456,
     "str"=> "StringValue",
-    "int" => 123,
-    "fakeout" => "123"
+    "int" => 123
 ];
 
 // Setup
