@@ -2,7 +2,11 @@
     "name": "momentohq/client-sdk-php",
     "type": "library",
     "description": "PHP SDK for Momento, a serverless cache that automatically scales without any of the operational overhead required by traditional caching solutions.",
-    "keywords": ["cache", "caching", "serverless"],
+    "keywords": [
+        "cache",
+        "caching",
+        "serverless"
+    ],
     "homepage": "https://github.com/momentohq/client-sdk-php",
     "license": "Apache-2.0",
     "authors": [
