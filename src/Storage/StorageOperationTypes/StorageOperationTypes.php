@@ -440,7 +440,7 @@ abstract class StorageGetResponse extends ResponseBase
  */
 class StorageGetFound extends StorageGetResponse
 {
-    public function __construct(?_StoreGetResponse $grpcResponse=null)
+    public function __construct(_StoreGetResponse $grpcResponse)
     {
         parent::__construct();
         $value = $grpcResponse->getValue();
