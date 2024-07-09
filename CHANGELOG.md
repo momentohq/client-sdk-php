@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1](https://github.com/momentohq/client-sdk-php/compare/v1.11.0...v1.11.1) (2024-07-09)
+
+
+### Miscellaneous
+
+* update get responses ([#198](https://github.com/momentohq/client-sdk-php/issues/198)) ([18a185a](https://github.com/momentohq/client-sdk-php/commit/18a185a153422c710c451af0a96f676a57b63dc2))
+
 ## [1.11.0](https://github.com/momentohq/client-sdk-php/compare/v1.10.0...v1.11.0) (2024-07-08)
 
 
