@@ -309,8 +309,8 @@ class StoragePutError extends StoragePutResponse
 abstract class StorageValueType
 {
     public const STRING = "STRING";
-    public const INTEGER = "INTEGER";
-    public const DOUBLE = "DOUBLE";
+    public const INT = "INT";
+    public const FLOAT = "FLOAT";
     public const BYTES = "BYTES";
 }
 
@@ -329,7 +329,7 @@ abstract class StorageValueType
  *     if (!$success->found()) {
  *       print("Value not found in the store\n");
  *     } elseif ($success->type() == StorageValueType::STRING) {
- *       // other storage types are INTEGER, BYTES, and DOUBLE
+ *       // other storage types are INT, BYTES, and FLOAT
  *       print("Got string value: " . $success->valueString() . "\n");
  *     }
  * } elseif ($error = $response->asError())
@@ -350,19 +350,29 @@ abstract class StorageValueType
  */
 abstract class StorageGetResponse extends ResponseBase
 {
-    protected bool $found = true;
     protected ?string $type = null;
     protected ?string $value_string = null;
     protected ?string $value_bytes = null;
     protected ?int $value_int = null;
-    protected ?float $value_double = null;
+    protected ?float $value_float = null;
 
     /**
-     * @return StorageGetSuccess|null  Returns the success subtype if the request was successful and null otherwise.
+     * @return StorageGetFound|null  Returns the success subtype if the request was successful and null otherwise.
      */
-    public function asSuccess(): ?StorageGetSuccess
+    public function asFound(): ?StorageGetFound
     {
-        if ($this->isSuccess()) {
+        if ($this->isFound()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return StorageGetNotFound|null  Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asNotFound(): ?StorageGetNotFound
+    {
+        if ($this->isNotFound()) {
             return $this;
         }
         return null;
@@ -379,11 +389,6 @@ abstract class StorageGetResponse extends ResponseBase
         return null;
     }
 
-    public function found(): ?bool
-    {
-        return $this->found;
-    }
-
     public function type(): ?string
     {
         return $this->type;
@@ -397,10 +402,10 @@ abstract class StorageGetResponse extends ResponseBase
         switch ($this->type) {
             case StorageValueType::STRING:
                 return $this->value_string;
-            case StorageValueType::INTEGER:
+            case StorageValueType::INT:
                 return $this->value_int;
-            case StorageValueType::DOUBLE:
-                return $this->value_double;
+            case StorageValueType::FLOAT:
+                return $this->value_float;
             case StorageValueType::BYTES:
                 return $this->value_bytes;
             default:
@@ -413,14 +418,14 @@ abstract class StorageGetResponse extends ResponseBase
         return $this->value_string;
     }
 
-    public function valueInteger(): ?int
+    public function valueInt(): ?int
     {
         return $this->value_int;
     }
 
-    public function valueDouble(): ?float
+    public function valueFloat(): ?float
     {
-        return $this->value_double;
+        return $this->value_float;
     }
 
     public function valueBytes(): ?string
@@ -433,25 +438,21 @@ abstract class StorageGetResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class StorageGetSuccess extends StorageGetResponse
+class StorageGetFound extends StorageGetResponse
 {
-    public function __construct(?_StoreGetResponse $grpcResponse=null)
+    public function __construct(_StoreGetResponse $grpcResponse)
     {
         parent::__construct();
-        if (!$grpcResponse) {
-            $this->found = false;
-            return;
-        }
         $value = $grpcResponse->getValue();
         if ($value->hasStringValue()) {
             $this->type = StorageValueType::STRING;
             $this->value_string = $value->getStringValue();
         } elseif ($value->hasIntegerValue()) {
-            $this->type = StorageValueType::INTEGER;
+            $this->type = StorageValueType::INT;
             $this->value_int = $value->getIntegerValue();
         } elseif ($value->hasDoubleValue()) {
-            $this->type = StorageValueType::DOUBLE;
-            $this->value_double = $value->getDoubleValue();
+            $this->type = StorageValueType::FLOAT;
+            $this->value_float = $value->getDoubleValue();
         } elseif ($value->hasBytesValue()) {
             $this->type = StorageValueType::BYTES;
             $this->value_bytes = $value->getBytesValue();
@@ -465,11 +466,11 @@ class StorageGetSuccess extends StorageGetResponse
             case StorageValueType::STRING:
                 $value = $this->shortValue($this->value_string);
                 break;
-            case StorageValueType::INTEGER:
+            case StorageValueType::INT:
                 $value = $this->value_int;
                 break;
-            case StorageValueType::DOUBLE:
-                $value = $this->value_double;
+            case StorageValueType::FLOAT:
+                $value = $this->value_float;
                 break;
             case StorageValueType::BYTES:
                 $value = $this->shortValue($this->value_bytes);
@@ -479,6 +480,8 @@ class StorageGetSuccess extends StorageGetResponse
     }
 }
 
+class StorageGetNotFound extends StorageGetResponse {}
+
 /**
  * Contains information about an error returned from the request.
  */
@@ -487,11 +490,6 @@ class StorageGetError extends StorageGetResponse
     use ErrorBody;
 
     public function type(): ?string
-    {
-        return null;
-    }
-
-    public function found(): ?bool
     {
         return null;
     }
@@ -506,12 +504,12 @@ class StorageGetError extends StorageGetResponse
         throw $this->innerException();
     }
 
-    public function valueInteger(): ?int
+    public function valueInt(): ?int
     {
         throw $this->innerException();
     }
 
-    public function valueDouble(): ?float
+    public function valueFloat(): ?float
     {
         throw $this->innerException();
     }
