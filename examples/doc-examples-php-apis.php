@@ -175,7 +175,7 @@ function example_API_Storage_Delete(PreviewStorageClient $storage_client, string
     }
 }
 
-function example_API_DeleteStore(PreviewStorageClient $storage_client, string $store_name)
+function example_API_Storage_DeleteStore(PreviewStorageClient $storage_client, string $store_name)
 {
     $delete_store_response = $storage_client->deleteStore($store_name);
     if ($err = $delete_store_response->asError()) {
@@ -234,7 +234,7 @@ function main() {
         example_API_Storage_Put($storage_client, $store_name);
         example_API_Storage_Get($storage_client, $store_name);
         example_API_Storage_Delete($storage_client, $store_name);
-        example_API_DeleteStore($storage_client, $store_name);
+        example_API_Storage_DeleteStore($storage_client, $store_name);
     } finally {
         teardown($cache_client, $storage_client, $cache_name, $store_name);
     }
