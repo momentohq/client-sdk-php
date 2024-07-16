@@ -21,6 +21,6 @@ You will likely need to run this only once:
 ## Run Integration Test
 
 ```bash
-export TEST_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
+export TEST_AUTH_TOKEN=<YOUR_API_KEY>
 ./dev-run-integration-tests.sh
 ```

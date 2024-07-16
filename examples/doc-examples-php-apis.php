@@ -14,7 +14,7 @@ function example_API_InstantiateCacheClient()
 {
     new CacheClient(
         Laptop::latest(),
-        CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN"),
+        CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY"),
         60
     );
 }
@@ -23,13 +23,13 @@ function example_API_InstantiateStorageClient()
 {
     new PreviewStorageClient(
         StorageLaptop::latest(),
-        CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN"),
+        CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY"),
     );
 }
 
 function example_API_CredentialProviderFromEnvVar()
 {
-    CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
+    CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY");
 }
 
 function example_API_CreateCache(CacheClient $cache_client, string $cache_name)
@@ -57,9 +57,9 @@ function example_API_DeleteCache(CacheClient $cache_client, string $cache_name)
 function example_API_ListCaches(CacheClient $cache_client)
 {
     $list_caches_response = $cache_client->listCaches();
-    if ($caches = $list_caches_response->asSuccess()) {
+    if ($success = $list_caches_response->asSuccess()) {
         print("Found caches:\n");
-        foreach ($caches as $cache) {
+        foreach ($success->caches() as $cache) {
             $cache_name = $cache->name();
             print("- $cache_name\n");
         }
@@ -189,12 +189,12 @@ function setup()
 {
     $cache_client = new CacheClient(
         Laptop::latest(),
-        CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN"),
+        CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY"),
         60
     );
     $storage_client = new PreviewStorageClient(
         StorageLaptop::latest(),
-        CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN"),
+        CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY"),
     );
     $cache_name = uniqid("php-examples-test-cache-");
     $store_name = uniqid("php-examples-test-store-");

@@ -7,7 +7,7 @@ use Momento\Cache\CacheClient;
 use Momento\Config\Configurations\Laptop;
 
 $cacheName = "php-loadgen";
-$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
+$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY");
 $config = Laptop::latest();
 $defaultTtl = 600;
 

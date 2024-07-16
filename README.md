@@ -35,7 +35,7 @@ use Momento\Cache\CacheClient;
 use Momento\Config\Configurations\Laptop;
 
 $client = new CacheClient(
-    Laptop::latest(), CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN"), 60
+    Laptop::latest(), CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY"), 60
 );
 $client->createCache("cache");
 $client->set("cache", "myKey", "myValue");
