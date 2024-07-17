@@ -29,7 +29,7 @@ The Docker way:
 Set required environment variables:
 
 ```bash
-export MOMENTO_AUTH_TOKEN=<YOUR_AUTH_TOKEN>
+export MOMENTO_API_KEY=<YOUR_API_KEY>
 ```
 
 To run the simple set/get example:

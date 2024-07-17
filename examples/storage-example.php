@@ -17,7 +17,7 @@ $VALUES = [
 ];
 
 // Setup
-$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_AUTH_TOKEN");
+$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY");
 $configuration = Laptop::latest(new StderrLoggerFactory());
 $client = new PreviewStorageClient($configuration, $authProvider);
 $logger = $configuration->getLoggerFactory()->getLogger("ex:");

@@ -30,7 +30,7 @@ jobs:
 
       - name: Run examples
         env:
-          MOMENTO_AUTH_TOKEN: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+          MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
         working-directory: ./examples
         run: |
           composer install
@@ -38,6 +38,9 @@ jobs:
           php ./dictionary-example.php
           php ./list-example.php
           php ./set-example.php
+          php ./doc-examples-php-apis.php
+          php ./storage-example.php
+          php ./psr16-example.php
 
       - name: Generate README
         uses: momentohq/standards-and-practices/github-actions/generate-and-commit-oss-readme@gh-actions-v2
