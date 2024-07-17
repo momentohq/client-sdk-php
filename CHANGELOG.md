@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.2](https://github.com/momentohq/client-sdk-php/compare/v1.11.1...v1.11.2) (2024-07-17)
+
+
+### Miscellaneous
+
+* add storage docs snippets ([#205](https://github.com/momentohq/client-sdk-php/issues/205)) ([1458202](https://github.com/momentohq/client-sdk-php/commit/14582029121383e5904673df8b82ce03fe6ef74a))
+
 ## [1.11.1](https://github.com/momentohq/client-sdk-php/compare/v1.11.0...v1.11.1) (2024-07-09)
 
 
