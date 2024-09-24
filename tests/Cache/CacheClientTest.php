@@ -2636,6 +2636,65 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+    public function testSetContainsElementsWithNullCacheName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $setName = uniqid();
+        $elements = [uniqid(), uniqid()];
+        $this->client->setContainsElements(null, $setName, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+    }
+
+    public function testSetContainsElementsWithEmptyCacheName_ThrowsException()
+    {
+        $setName = uniqid();
+        $elements = [uniqid(), uniqid()];
+        $response = $this->client->setContainsElements("", $setName, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetContainsElementsWithNullSetName_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $elements = [uniqid(), uniqid()];
+        $this->client->setContainsElements($this->TEST_CACHE_NAME, null, $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+    }
+
+    public function testSetContainsElementsWithEmptySetName_ThrowsException()
+    {
+        $elements = [uniqid(), uniqid()];
+        $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, "", $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetContainsElementsWithNullElements_ThrowsException()
+    {
+        $this->expectException(TypeError::class);
+        $setName = uniqid();
+        $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, null, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+    }
+
+    public function testSetContainsElementsWithNoElements_ThrowsException()
+    {
+        $setName = uniqid();
+        $elements = [uniqid(), uniqid()];
+        $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, [], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSetContainsElementsWithEmptyElement_ThrowsException()
+    {
+        $setName = uniqid();
+        $elements = [uniqid(), uniqid()];
+        $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, [''], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+
+
     public function testSetFetchWithNullCacheName_ThrowsException()
     {
         $this->expectException(TypeError::class);
@@ -2797,6 +2856,129 @@ class CacheClientTest extends TestCase
         $fetchedElements = $response->asHit()->valuesArray();
         sort($fetchedElements);
         $this->assertEquals($elements, $fetchedElements);
+    }
+
+    public function testSetContainsElements_ExactMatch()
+    {
+        $setName = uniqid();
+        $elements = ["foo", "bar", "baz"];
+
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, ["foo", "bar", "baz"], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, $elements);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $expectedExists = [true, true, true];
+        $expectedExistsDict = [];
+        $expectedExistsDict["foo"] = true;
+        $expectedExistsDict["bar"] = true;
+        $expectedExistsDict["baz"] = true;
+
+        $this->assertEquals($response->asHit()->containsElements(), $expectedExists);
+        $this->assertEquals($response->asHit()->containsElementsDictionary(), $expectedExistsDict);
+    }
+
+    public function testSetContainsElements_SubsetOfExistingSet()
+    {
+        $setName = uniqid();
+        $elements = ["foo", "bar", "baz"];
+
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, ["foo", "bar", "baz", "bam", "beep", "boop"], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, $elements);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $expectedExists = [true, true, true];
+        $expectedExistsDict = [];
+        $expectedExistsDict["foo"] = true;
+        $expectedExistsDict["bar"] = true;
+        $expectedExistsDict["baz"] = true;
+
+        $this->assertEquals($response->asHit()->containsElements(), $expectedExists);
+        $this->assertEquals($response->asHit()->containsElementsDictionary(), $expectedExistsDict);
+    }
+
+
+    public function testSetContainsElements_NotAllElementsInExistingSet()
+    {
+        $setName = uniqid();
+        $elements = ["foo", "bar", "baz"];
+
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, ["bar", "bam", "beep", "boop"], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, $elements);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $expectedExists = [false, true, false];
+        $expectedExistsDict = [];
+        $expectedExistsDict["foo"] = false;
+        $expectedExistsDict["bar"] = true;
+        $expectedExistsDict["baz"] = false;
+
+        $this->assertEquals($response->asHit()->containsElements(), $expectedExists);
+        $this->assertEquals($response->asHit()->containsElementsDictionary(), $expectedExistsDict);
+    }
+
+
+    public function testSetContainsElements_NoMatchingElementsInExistingSet()
+    {
+        $setName = uniqid();
+        $elements = ["foo", "bar", "baz"];
+
+        $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, ["bam", "beep", "boop"], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, $elements);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $expectedExists = [false, false, false];
+        $expectedExistsDict = [];
+        $expectedExistsDict["foo"] = false;
+        $expectedExistsDict["bar"] = false;
+        $expectedExistsDict["baz"] = false;
+
+        $this->assertEquals($response->asHit()->containsElements(), $expectedExists);
+        $this->assertEquals($response->asHit()->containsElementsDictionary(), $expectedExistsDict);
+    }
+
+    public function testSetContainsElements_SetDoesNotExist()
+    {
+        $setName = uniqid();
+        $elements = ["foo", "bar"];
+
+        $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, $elements);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+    }
+
+    public function testSetContainsElements_ExistingSetIsEmpty()
+    {
+        $setName = uniqid();
+        $elements = ["foo", "bar"];
+
+        $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, "baz", CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->setRemoveElement($this->TEST_CACHE_NAME, $setName, "baz");
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        // Empty sets manifest the same as a miss
+        $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, $elements);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
     }
 
 

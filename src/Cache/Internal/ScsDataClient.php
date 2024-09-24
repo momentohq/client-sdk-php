@@ -22,6 +22,7 @@ use Cache_client\_ListPushBackRequest;
 use Cache_client\_ListPushFrontRequest;
 use Cache_client\_ListRemoveRequest;
 use Cache_client\_SetBatchRequest;
+use Cache_client\_SetContainsRequest;
 use Cache_client\_SetDifferenceRequest;
 use Cache_client\_SetDifferenceRequest\_Subtrahend;
 use Cache_client\_SetDifferenceRequest\_Subtrahend\_Set;
@@ -117,6 +118,10 @@ use Momento\Cache\CacheOperationTypes\SetAddElementSuccess;
 use Momento\Cache\CacheOperationTypes\SetAddElementsResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementsError;
 use Momento\Cache\CacheOperationTypes\SetAddElementsSuccess;
+use Momento\Cache\CacheOperationTypes\SetContainsElementsResponse;
+use Momento\Cache\CacheOperationTypes\SetContainsElementsError;
+use Momento\Cache\CacheOperationTypes\SetContainsElementsHit;
+use Momento\Cache\CacheOperationTypes\SetContainsElementsMiss;
 use Momento\Cache\CacheOperationTypes\SetBatchError;
 use Momento\Cache\CacheOperationTypes\SetBatchResponse;
 use Momento\Cache\CacheOperationTypes\SetBatchSuccess;
@@ -1324,6 +1329,48 @@ class ScsDataClient implements LoggerAwareInterface
                     return new SetAddElementsError($e);
                 } catch (Exception $e) {
                     return new SetAddElementsError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    /**
+     * @param list<string> $elements
+     * @return ResponseFuture<SetContainsElementsResponse>
+     */
+    public function setContainsElements(string $cacheName, string $setName, array $elements): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSetName($setName);
+            validateElements($elements);
+            $setContainsElementsRequest = new _SetContainsRequest();
+            $setContainsElementsRequest->setSetName($setName);
+            $setContainsElementsRequest->setElements($elements);
+            $call = $this->grpcManager->client->SetContains(
+                $setContainsElementsRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SetContainsElementsError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SetContainsElementsError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call, $elements): SetContainsElementsResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasFound()) {
+                        return new SetContainsElementsHit($response, $elements);
+                    }
+                    return new SetContainsElementsMiss();
+                } catch (SdkError $e) {
+                    return new SetContainsElementsError($e);
+                } catch (Exception $e) {
+                    return new SetContainsElementsError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );

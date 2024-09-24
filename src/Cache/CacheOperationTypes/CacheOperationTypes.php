@@ -15,6 +15,7 @@ use Cache_client\_ListPopBackResponse;
 use Cache_client\_ListPopFrontResponse;
 use Cache_client\_ListPushBackResponse;
 use Cache_client\_ListPushFrontResponse;
+use Cache_client\_SetContainsResponse;
 use Cache_client\_SetFetchResponse;
 use Cache_client\_SetLengthResponse;
 use Cache_client\_SetResponse;
@@ -2867,6 +2868,119 @@ class SetAddElementsError extends SetAddElementsResponse
 {
     use ErrorBody;
 }
+
+/**
+ * Parent response type for a SetContainsElements request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SetContainsElementsHit
+ * * SetContainsElementsMiss
+ * * SetContainsElementsError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($success = $response->asHit()) {
+ *     // a dictionary containing a key for each `element` in your request; the value is a boolean indicating whether the element is in the set
+ *     return $success->containsElementsDictionary();
+ * } elseif ($response->asMiss())
+ *     // handle miss as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SetContainsElementsResponse extends ResponseBase
+{
+
+    /**
+     * @return SetContainsElementsHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     */
+    public function asHit(): ?SetContainsElementsHit
+    {
+        if ($this->isHit()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetContainsElementsMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     */
+    public function asMiss(): ?SetContainsElementsMiss
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SetContainsElementsError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SetContainsElementsError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Contains the result of a cache hit.
+ */
+class SetContainsElementsHit extends SetContainsElementsResponse
+{
+    private array $values = [];
+    private array $valuesDictionary = [];
+
+    public function __construct(_SetContainsResponse $response, array $elements) {
+        parent::__construct();
+        foreach ($response->getFound()->getContains()->getIterator() as $index=>$value) {
+            $this->values[] = (bool)$value;
+            $this->valuesDictionary[$elements[$index]] = (bool)$value;
+        }
+    }
+
+    /**
+     * @return array List of booleans corresponding to the supplied elements.
+     */
+    public function containsElements() : array {
+        return $this->values;
+    }
+
+    /**
+     * @return array Dictionary mapping supplied elements to booleans indicating whether the key exists in the set.
+     */
+    public function containsElementsDictionary() : array
+    {
+        return $this->valuesDictionary;
+    }
+
+    public function __toString()
+    {
+        $numElements = count($this->values);
+        return parent::__toString() . ": $numElements elements";
+    }
+}
+
+/**
+ * Indicates that the request that generated it was a cache miss.
+ */
+class SetContainsElementsMiss extends SetContainsElementsResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SetContainsElementsError extends SetContainsElementsResponse
+{
+    use ErrorBody;
+}
+
 
 /**
  * Parent response type for a set fetch request. The
