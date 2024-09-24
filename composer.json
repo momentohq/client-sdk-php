@@ -60,7 +60,8 @@
     },
     "require-dev": {
         "composer/composer": "^2.4.1",
-        "phpunit/phpunit": "^9.5.23"
+        "phpunit/phpunit": "^9.5.23",
+        "friendsofphp/php-cs-fixer": "3.64.0"
     },
     "config": {
         "platform": {

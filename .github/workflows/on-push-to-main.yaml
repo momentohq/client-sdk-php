@@ -6,12 +6,12 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN }}
 
@@ -24,6 +24,9 @@ jobs:
 
       - name: Install dependencies
         run: composer install
+
+      - name: Check CS
+        run: php vendor/bin/php-cs-fixer fix --diff --dry-run --show-progress=none
 
       - name: Run tests
         run: php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml

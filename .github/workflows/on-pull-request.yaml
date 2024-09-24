@@ -12,14 +12,14 @@ jobs:
       max-parallel: 1
       fail-fast: true
       matrix:
-        php-version: ["7.4", "8.0", "8.1", "8.2"]
-    runs-on: ubuntu-latest
+        php-version: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+    runs-on: ubuntu-24.04
 
     env:
       MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Verify README generation
         uses: momentohq/standards-and-practices/github-actions/oss-readme-template@gh-actions-v2
@@ -46,6 +46,9 @@ jobs:
 
       - name: Install dependencies
         run: composer install
+
+      - name: Check CS
+        run: php vendor/bin/php-cs-fixer fix --diff --dry-run --show-progress=none
 
       - name: Run tests
         run: php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml
