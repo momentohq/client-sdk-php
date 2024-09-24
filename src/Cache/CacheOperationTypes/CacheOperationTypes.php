@@ -2947,14 +2947,14 @@ class SetContainsElementsHit extends SetContainsElementsResponse
     /**
      * @return array List of booleans corresponding to the supplied elements.
      */
-    public function exists() : array {
+    public function containsElements() : array {
         return $this->values;
     }
 
     /**
      * @return array Dictionary mapping supplied elements to booleans indicating whether the key exists in the set.
      */
-    public function existsDictionary() : array
+    public function containsElementsDictionary() : array
     {
         return $this->valuesDictionary;
     }

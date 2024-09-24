@@ -2877,8 +2877,8 @@ class CacheClientTest extends TestCase
         $expectedExistsDict["bar"] = true;
         $expectedExistsDict["baz"] = true;
 
-        $this->assertEquals($response->asHit()->exists(), $expectedExists);
-        $this->assertEquals($response->asHit()->existsDictionary(), $expectedExistsDict);
+        $this->assertEquals($response->asHit()->containsElements(), $expectedExists);
+        $this->assertEquals($response->asHit()->containsElementsDictionary(), $expectedExistsDict);
     }
 
     public function testSetContainsElements_SubsetOfExistingSet()
@@ -2900,8 +2900,8 @@ class CacheClientTest extends TestCase
         $expectedExistsDict["bar"] = true;
         $expectedExistsDict["baz"] = true;
 
-        $this->assertEquals($response->asHit()->exists(), $expectedExists);
-        $this->assertEquals($response->asHit()->existsDictionary(), $expectedExistsDict);
+        $this->assertEquals($response->asHit()->containsElements(), $expectedExists);
+        $this->assertEquals($response->asHit()->containsElementsDictionary(), $expectedExistsDict);
     }
 
 
@@ -2924,8 +2924,8 @@ class CacheClientTest extends TestCase
         $expectedExistsDict["bar"] = true;
         $expectedExistsDict["baz"] = false;
 
-        $this->assertEquals($response->asHit()->exists(), $expectedExists);
-        $this->assertEquals($response->asHit()->existsDictionary(), $expectedExistsDict);
+        $this->assertEquals($response->asHit()->containsElements(), $expectedExists);
+        $this->assertEquals($response->asHit()->containsElementsDictionary(), $expectedExistsDict);
     }
 
 
@@ -2948,8 +2948,8 @@ class CacheClientTest extends TestCase
         $expectedExistsDict["bar"] = false;
         $expectedExistsDict["baz"] = false;
 
-        $this->assertEquals($response->asHit()->exists(), $expectedExists);
-        $this->assertEquals($response->asHit()->existsDictionary(), $expectedExistsDict);
+        $this->assertEquals($response->asHit()->containsElements(), $expectedExists);
+        $this->assertEquals($response->asHit()->containsElementsDictionary(), $expectedExistsDict);
     }
 
     public function testSetContainsElements_SetDoesNotExist()
