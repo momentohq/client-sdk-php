@@ -2882,7 +2882,7 @@ class SetAddElementsError extends SetAddElementsResponse
  * For example:
  * <code>
  * if ($success = $response->asHit()) {
- *     // a dictionary indicating which elements were found in the set
+ *     // a dictionary containing a key for each `element` in your request; the value is a boolean indicating whether the element is in the set
  *     return $success->containsElementsDictionary();
  * } elseif ($response->asMiss())
  *     // handle miss as appropriate
