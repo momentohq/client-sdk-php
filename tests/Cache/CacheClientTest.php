@@ -36,7 +36,7 @@ class CacheClientTest extends TestCase
     public function setUp(): void
     {
         $this->configuration = Configurations\Laptop::latest();
-        $this->authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
+        $this->authProvider = new EnvMomentoTokenProvider("MOMENTO_API_KEY");
         $this->client = new CacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
         $this->TEST_CACHE_NAME = uniqid('php-integration-tests-');
         // Ensure test cache exists

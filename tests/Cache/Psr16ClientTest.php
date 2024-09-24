@@ -35,7 +35,7 @@ class Psr16ClientTest extends TestCase
         $grpcConfiguration = new StaticGrpcConfiguration(5000);
         $transportStrategy = new StaticTransportStrategy($grpcConfiguration);
         $this->configuration = new Configuration($loggerFactory, $transportStrategy);
-        $this->authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
+        $this->authProvider = new EnvMomentoTokenProvider("MOMENTO_API_KEY");
         $this->client = new Psr16CacheClient(
             $this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS
         );
@@ -108,7 +108,7 @@ class Psr16ClientTest extends TestCase
     {
         $testCacheName = uniqid("php-PSR16-name-test");
         $configuration = Laptop::latest();
-        $authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
+        $authProvider = new EnvMomentoTokenProvider("MOMENTO_API_KEY");
         $client = new CacheClient(
             $configuration, $authProvider, $this->DEFAULT_TTL_SECONDS
         );

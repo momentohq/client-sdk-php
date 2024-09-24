@@ -30,7 +30,7 @@ class StorageClientTest extends TestCase
     public function setUp(): void
     {
         $this->configuration = Configurations\Storage\Laptop::latest();
-        $this->authProvider = new EnvMomentoTokenProvider("TEST_AUTH_TOKEN");
+        $this->authProvider = new EnvMomentoTokenProvider("MOMENTO_API_KEY");
         $this->client = new PreviewStorageClient($this->configuration, $this->authProvider);
         $this->TEST_STORE_NAME = uniqid("php-storage-integration-tests-");
         // Create a store for testing
