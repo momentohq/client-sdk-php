@@ -29,6 +29,7 @@ use Momento\Cache\CacheOperationTypes\ListPushFrontResponse;
 use Momento\Cache\CacheOperationTypes\ListRemoveValueResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementResponse;
 use Momento\Cache\CacheOperationTypes\SetAddElementsResponse;
+use Momento\Cache\CacheOperationTypes\SetContainsElementsResponse;
 use Momento\Cache\CacheOperationTypes\SetBatchResponse;
 use Momento\Cache\CacheOperationTypes\SetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SetIfAbsentOrEqualResponse;
@@ -1461,7 +1462,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $setName The set to add the element to.
      * @param list<string> $elements The elements to add.
-     * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+     * @param CollectionTtl|null $ttl TTL for the set in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
      * @return ResponseFuture<SetAddElementsResponse> A waitable future which
      * will provide the result of the set operation upon a blocking call to
      * wait.
@@ -1491,7 +1492,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $setName The set to add the element to.
      * @param list<string> $elements The elements to add.
-     * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
+     * @param CollectionTtl|null $ttl TTL for the set in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
      * @return SetAddElementsResponse Represents the result of the set add elements operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * SetAddElementsSuccess<br>
@@ -1504,6 +1505,59 @@ class CacheClient implements LoggerAwareInterface
     {
         return $this->setAddElementsAsync($cacheName, $setName, $elements, $ttl)->wait();
     }
+
+
+    /**
+     * Check whether a set includes specified elements.
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $setName The set to look for elements in
+     * @param list<string> $elements The elements to check for.
+     * @return ResponseFuture<SetContainsElementsResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the SetContainsElements operation.
+     * This result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SetContainsElementsHit: the set exists, and the <code>containsElementsDictionary</code> function on this object can be used to inspect which elements exist in the set.<br>
+     * * SetContainsElementsMiss: the set does not exist<br>
+     * * SetContainsElementsError<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function setContainsElementsAsync(string $cacheName, string $setName, array $elements): ResponseFuture
+    {
+        return $this->getNextDataClient()->setContainsElements($cacheName, $setName, $elements);
+    }
+
+    /**
+     * Check whether a set includes specified elements.
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $setName The set to look for elements in.
+     * @param list<string> $elements The elements to check for.
+     * @return SetContainsElementsResponse Represents the result of the set add elements operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SetContainsElementsHit: the set exists, and the <code>containsElements</code> function on this object can be used to inspect which elements exist in the set.<br>
+     * * SetContainsElementsMiss: the set does not exist<br>
+     * * SetContainsElementsError<br>
+     * if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
+    public function setContainsElements(string $cacheName, string $setName, array $elements): SetContainsElementsResponse
+    {
+        return $this->setContainsElementsAsync($cacheName, $setName, $elements)->wait();
+    }
+
+
 
     /**
      * Fetch an entire set from the cache.
