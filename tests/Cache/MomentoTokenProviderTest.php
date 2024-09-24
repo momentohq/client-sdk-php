@@ -19,7 +19,7 @@ class MomentoTokenProviderTest extends TestCase
 {
 
     private string $authToken;
-    const AUTH_TOKEN_NAME = 'TEST_AUTH_TOKEN';
+    const AUTH_TOKEN_NAME = 'MOMENTO_API_KEY';
 
     public function setUp(): void
     {
