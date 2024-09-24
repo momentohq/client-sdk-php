@@ -7,16 +7,8 @@ on:
 
 
 jobs:
-  test:
-    strategy:
-      max-parallel: 1
-      fail-fast: true
-      matrix:
-        php-version: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+  lint:
     runs-on: ubuntu-24.04
-
-    env:
-      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +32,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: '8.0'
           extensions: grpc, protobuf
           tools: composer
 
@@ -49,6 +41,30 @@ jobs:
 
       - name: Check CS
         run: php vendor/bin/php-cs-fixer fix --diff --dry-run --show-progress=none
+
+  test:
+    strategy:
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        php-version: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
+    runs-on: ubuntu-24.04
+
+    env:
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: grpc, protobuf
+          tools: composer
+
+      - name: Install dependencies
+        run: composer install
 
       - name: Run tests
         run: php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml
