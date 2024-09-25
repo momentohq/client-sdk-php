@@ -16,7 +16,7 @@ if (!function_exists('validateTtl')) {
 }
 
 if (!function_exists('isNullOrEmpty')) {
-    function isNullOrEmpty(string $str = null): bool
+    function isNullOrEmpty(?string $str = null): bool
     {
         return (is_null($str) || $str === "");
     }

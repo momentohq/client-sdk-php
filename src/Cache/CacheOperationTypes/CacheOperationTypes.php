@@ -2227,7 +2227,7 @@ class DictionaryGetFieldHit extends DictionaryGetFieldResponse
     private string $value;
     private string $field;
 
-    public function __construct(string $field, _DictionaryGetResponse $response = null, ?string $cacheBody = null)
+    public function __construct(string $field, ?_DictionaryGetResponse $response = null, ?string $cacheBody = null)
     {
         parent::__construct();
         $this->field = $field;
