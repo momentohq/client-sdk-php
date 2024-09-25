@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.12.0](https://github.com/momentohq/client-sdk-php/compare/v1.11.1...v1.12.0) (2024-09-25)
+
+
+### Features
+
+* add SetContainsElements API ([#209](https://github.com/momentohq/client-sdk-php/issues/209)) ([eec6083](https://github.com/momentohq/client-sdk-php/commit/eec6083305d82d45136889e522db5c61d922333d))
+
+
+### Miscellaneous
+
+* add Apache 2.0 license ([#207](https://github.com/momentohq/client-sdk-php/issues/207)) ([6faa79e](https://github.com/momentohq/client-sdk-php/commit/6faa79e6c4eac1ad4c5b9a0fde1068815349d272))
+* add storage docs snippets ([#205](https://github.com/momentohq/client-sdk-php/issues/205)) ([1458202](https://github.com/momentohq/client-sdk-php/commit/14582029121383e5904673df8b82ce03fe6ef74a))
+* rename TEST_AUTH_TOKEN to MOMENTO_API_KEY ([#208](https://github.com/momentohq/client-sdk-php/issues/208)) ([4b63c2f](https://github.com/momentohq/client-sdk-php/commit/4b63c2f19d831e097068a1d918c792a23978314f))
+* Run CI on PHP 8.3 and 8.4, fix PHP 8.4 support, pin actions versions ([#211](https://github.com/momentohq/client-sdk-php/issues/211)) ([22d1dcb](https://github.com/momentohq/client-sdk-php/commit/22d1dcbc5986862f829d7fae8a0dd00a12ad6d74))
+
 ## [1.11.1](https://github.com/momentohq/client-sdk-php/compare/v1.11.0...v1.11.1) (2024-07-09)
 
 
