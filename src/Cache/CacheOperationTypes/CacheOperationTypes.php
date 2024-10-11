@@ -8,6 +8,7 @@ use Cache_client\_DictionaryGetResponse;
 use Cache_client\_DictionaryIncrementResponse;
 use Cache_client\_GetResponse;
 use Cache_client\_IncrementResponse;
+use Cache_client\_ItemGetTtlResponse;
 use Cache_client\_KeysExistResponse;
 use Cache_client\_ListFetchResponse;
 use Cache_client\_ListLengthResponse;
@@ -3325,6 +3326,113 @@ class SetBatchSuccess extends SetBatchResponse
 }
 
 class SetBatchError extends SetBatchResponse
+{
+    use ErrorBody;
+}
+
+
+/**
+ * Parent response type for a item get ttl request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * ItemGetTtlHit
+ * * ItemGetTtlMiss
+ * * itemGetTtlError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($success = $response->asHit()) {
+ *     return $success->remainingTtlMillis();
+ * } elseif ($response->asMiss())
+ *     // handle miss as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class ItemGetTtlResponse extends ResponseBase
+{
+    /**
+     * @return ItemGetTtlHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     */
+    public function asHit(): ?ItemGetTtlHit
+    {
+        if ($this->isHit()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return ItemGetTtlMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     */
+    public function asMiss(): ?ItemGetTtlMiss
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return ItemGetTtlError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?ItemGetTtlError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Contains the result of a cache hit.
+ */
+class ItemGetTtlHit extends ItemGetTtlResponse
+{
+    private int $remainingTtlMillis;
+
+    public function __construct(_ItemGetTtlResponse $response)
+    {
+        parent::__construct();
+        if ($response->getFound()) {
+            $this->remainingTtlMillis = $response->getFound()->getRemainingTtlMillis();
+        }
+    }
+
+    /**
+     * @return int Remaining time-to-live in milliseconds.
+     */
+    public function remainingTtlMillis(): int
+    {
+        return $this->remainingTtlMillis;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": remaining ttl: {$this->remainingTtlMillis}";
+    }
+}
+
+/**
+ * Indicates that the request that generated it was a cache miss.
+ */
+class ItemGetTtlMiss extends ItemGetTtlResponse
+{
+
+    public function remainingTtlMillis()
+    {
+        return null;
+    }
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class ItemGetTtlError extends ItemGetTtlResponse
 {
     use ErrorBody;
 }

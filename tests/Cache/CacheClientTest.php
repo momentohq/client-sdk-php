@@ -3249,4 +3249,39 @@ class CacheClientTest extends TestCase
         $responses = $successResponse->values();
         $this->assertEquals($responses, $expectedValues);
     }
+
+    public function testItemGetTtl() {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key = uniqid();
+        $value = uniqid();
+        $ttl = 60 * 1000;
+
+        $this->client->set($cacheName, $key, $value, $ttl);
+
+        $itemGetTtlResponse = $this->client->itemGetTtl($cacheName, $key);
+        $this->assertNull($itemGetTtlResponse->asError());
+        $this->assertNull($itemGetTtlResponse->asMiss());
+        $this->assertNotNull($itemGetTtlResponse->asHit(), "Expected a hit but got: $itemGetTtlResponse");
+
+        $ttl = $itemGetTtlResponse->asHit()->remainingTtlMillis();
+        $this->assertGreaterThan(0, $ttl);
+    }
+
+    public function testItemGetTtlAsync() {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key = uniqid();
+        $value = uniqid();
+        $ttl = 60 * 1000;
+
+        $this->client->setAsync($cacheName, $key, $value, $ttl)->wait();
+
+        $itemGetTtlResponseFuture = $this->client->itemGetTtlAsync($cacheName, $key);
+        $itemGetTtlResponse = $itemGetTtlResponseFuture->wait();
+        $this->assertNull($itemGetTtlResponse->asError());
+        $this->assertNull($itemGetTtlResponse->asMiss());
+        $this->assertNotNull($itemGetTtlResponse->asHit(), "Expected a hit but got: $itemGetTtlResponse");
+
+        $ttl = $itemGetTtlResponse->asHit()->remainingTtlMillis();
+        $this->assertGreaterThan(0, $ttl);
+    }
 }

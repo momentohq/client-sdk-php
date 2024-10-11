@@ -13,6 +13,7 @@ use Cache_client\_DictionarySetRequest;
 use Cache_client\_GetBatchRequest;
 use Cache_client\_GetRequest;
 use Cache_client\_IncrementRequest;
+use Cache_client\_ItemGetTtlRequest;
 use Cache_client\_KeysExistRequest;
 use Cache_client\_ListFetchRequest;
 use Cache_client\_ListLengthRequest;
@@ -74,6 +75,10 @@ use Momento\Cache\CacheOperationTypes\DictionarySetFieldsSuccess;
 use Momento\Cache\CacheOperationTypes\GetBatchError;
 use Momento\Cache\CacheOperationTypes\GetBatchResponse;
 use Momento\Cache\CacheOperationTypes\GetBatchSuccess;
+use Momento\Cache\CacheOperationTypes\ItemGetTtlError;
+use Momento\Cache\CacheOperationTypes\ItemGetTtlHit;
+use Momento\Cache\CacheOperationTypes\ItemGetTtlMiss;
+use Momento\Cache\CacheOperationTypes\ItemGetTtlResponse;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\GetResponse;
 use Momento\Cache\CacheOperationTypes\GetError;
@@ -1600,6 +1605,43 @@ class ScsDataClient implements LoggerAwareInterface
             }
         );
 
+    }
+
+    public function itemGetTtl(string $cacheName, string $key): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateKeys([$key]);
+            $itemGetTtlRequest = new _ItemGetTtlRequest();
+            $itemGetTtlRequest->setCacheKey($key);
+
+            $call = $this->grpcManager->client->ItemGetTtl(
+                $itemGetTtlRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new ItemGetTtlError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new ItemGetTtlError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): ItemGetTtlResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if (!$response->hasFound()) {
+                        return new ItemGetTtlMiss();
+                    }
+                    return new ItemGetTtlHit($response);
+                } catch (SdkError $e) {
+                    return new ItemGetTtlError($e);
+                } catch (Exception $e) {
+                    return new ItemGetTtlError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
     }
 
     public function close(): void
