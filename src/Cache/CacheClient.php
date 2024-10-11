@@ -15,6 +15,7 @@ use Momento\Cache\CacheOperationTypes\DictionarySetFieldResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\FlushCacheResponse;
 use Momento\Cache\CacheOperationTypes\GetBatchResponse;
+use Momento\Cache\CacheOperationTypes\ItemGetTtlResponse;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\GetResponse;
 use Momento\Cache\CacheOperationTypes\IncrementResponse;
@@ -1831,5 +1832,64 @@ class CacheClient implements LoggerAwareInterface
     public function setBatch(string $cacheName, array $items, $ttlSeconds = 0): SetBatchResponse
     {
         return $this->setBatchAsync($cacheName, $items, $ttlSeconds)->wait();
+    }
+
+
+    /**
+     * Get the Remaining TTL of a cache item.
+     *
+     * @param string $cacheName Name of the cache that contains the item.
+     * @param string $key The key of the item to get the TTL for.
+     * @return ResponseFuture<ItemGetTtlResponse> A waitable future which will provide
+     *  the result of the get item ttl operations upon a blocking call to wait:<br />
+     *  <code>$response = $responseFuture->wait();</code><br />
+     *  The response represents the result of the get operation and stores the
+     *  retrieved value. This result is resolved to a type-safe object of one of
+     *  the following types:<br>
+     *  * ItemGetTtlHit<br>
+     *  * ItemGetTtlMiss<br>
+     * * ItemGetTtlError<br>
+     *  Pattern matching can be to operate on the appropriate subtype:<br>
+     *  <code>
+     *  if ($hit = $response->asHit()) {
+     *    $results = $hit->$remainingTtlMillis();
+     *  } elseif ($miss = $response->asMiss()) {
+     *    // handle error response
+     *  } else {
+     *      // handle error response
+     *  }
+     *  </code>
+     *  If inspection of the response is not required, one need not call wait as
+     *  we implicitly wait for completion of the request on destruction of the
+     *  response future.
+     */
+    public function itemGetTtlAsync(string $cacheName, string $key): ResponseFuture
+    {
+        return $this->getNextDataClient()->itemGetTtl($cacheName, $key);
+    }
+
+    /**
+     * Get the Remaining TTL of a cache item.
+     *
+     * @param string $cacheName Name of the cache that contains the item.
+     * @param string $key The key of the item to get the TTL for.
+     * @return ItemGetTtlResponse Represents the result of the item get TTL operation. This
+     * result is resolved to a type-safe object of one of the following types:<br>
+     * * ItemGetTtlHit<br>
+     * * ItemGetTtlMiss<br>
+     * * ItemGetTtlError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *  $ttl = $hit->$remainingTtlMillis();
+     * } elseif ($miss = $response->asMiss()) {
+     *  // handle miss condition
+     * } elseif ($error = $response->asError()) {
+     *  // handle error condition
+     * }
+     * </code>
+     */
+    public function itemGetTtl(string $cacheName, string $key): ItemGetTtlResponse {
+        return $this->itemGetTtlAsync($cacheName, $key)->wait();
     }
 }
