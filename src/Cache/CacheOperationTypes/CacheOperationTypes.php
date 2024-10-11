@@ -3404,9 +3404,9 @@ class ItemGetTtlHit extends ItemGetTtlResponse
     }
 
     /**
-     * @return int|null Remaining time-to-live in milliseconds.
+     * @return int Remaining time-to-live in milliseconds.
      */
-    public function remainingTtlMillis(): ?int
+    public function remainingTtlMillis(): int
     {
         return $this->remainingTtlMillis;
     }
