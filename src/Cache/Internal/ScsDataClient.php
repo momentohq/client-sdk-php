@@ -32,6 +32,7 @@ use Cache_client\_SetIfRequest;
 use Cache_client\_SetLengthRequest;
 use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
+use Cache_client\_UpdateTtlRequest;
 use Cache_client\ECacheResult;
 use Common\Absent;
 use Common\AbsentOrEqual;
@@ -42,6 +43,11 @@ use Common\PresentAndNotEqual;
 use Exception;
 use Grpc\UnaryCall;
 use Momento\Auth\ICredentialProvider;
+use Momento\Cache\CacheOperationTypes\DecreaseTtlError;
+use Momento\Cache\CacheOperationTypes\DecreaseTtlMiss;
+use Momento\Cache\CacheOperationTypes\DecreaseTtlNotSet;
+use Momento\Cache\CacheOperationTypes\DecreaseTtlResponse;
+use Momento\Cache\CacheOperationTypes\DecreaseTtlSet;
 use Momento\Cache\CacheOperationTypes\DeleteResponse;
 use Momento\Cache\CacheOperationTypes\DeleteError;
 use Momento\Cache\CacheOperationTypes\DeleteSuccess;
@@ -75,6 +81,11 @@ use Momento\Cache\CacheOperationTypes\DictionarySetFieldsSuccess;
 use Momento\Cache\CacheOperationTypes\GetBatchError;
 use Momento\Cache\CacheOperationTypes\GetBatchResponse;
 use Momento\Cache\CacheOperationTypes\GetBatchSuccess;
+use Momento\Cache\CacheOperationTypes\IncreaseTtlError;
+use Momento\Cache\CacheOperationTypes\IncreaseTtlMiss;
+use Momento\Cache\CacheOperationTypes\IncreaseTtlNotSet;
+use Momento\Cache\CacheOperationTypes\IncreaseTtlResponse;
+use Momento\Cache\CacheOperationTypes\IncreaseTtlSet;
 use Momento\Cache\CacheOperationTypes\ItemGetTtlError;
 use Momento\Cache\CacheOperationTypes\ItemGetTtlHit;
 use Momento\Cache\CacheOperationTypes\ItemGetTtlMiss;
@@ -171,6 +182,10 @@ use Momento\Cache\CacheOperationTypes\SetRemoveElementSuccess;
 use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\SetError;
 use Momento\Cache\CacheOperationTypes\SetSuccess;
+use Momento\Cache\CacheOperationTypes\UpdateTtlError;
+use Momento\Cache\CacheOperationTypes\UpdateTtlMiss;
+use Momento\Cache\CacheOperationTypes\UpdateTtlResponse;
+use Momento\Cache\CacheOperationTypes\UpdateTtlSet;
 use Momento\Cache\Errors\InternalServerError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
@@ -1639,6 +1654,124 @@ class ScsDataClient implements LoggerAwareInterface
                     return new ItemGetTtlError($e);
                 } catch (Exception $e) {
                     return new ItemGetTtlError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    public function updateTtl(string $cacheName, string $key, int $ttlMilliseconds): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateKeys([$key]);
+            $updateTtlRequest = new _UpdateTtlRequest();
+            $updateTtlRequest->setCacheKey($key);
+            $updateTtlRequest->setOverwriteToMilliseconds($ttlMilliseconds);
+
+            $call = $this->grpcManager->client->UpdateTtl(
+                $updateTtlRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new UpdateTtlError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new UpdateTtlError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): UpdateTtlResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasMissing()) {
+                        return new UpdateTtlMiss();
+                    }
+                    return new UpdateTtlSet();
+                } catch (SdkError $e) {
+                    return new UpdateTtlError($e);
+                } catch (Exception $e) {
+                    return new UpdateTtlError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    public function increaseTtl(string $cacheName, string $key, int $ttlMilliseconds): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateKeys([$key]);
+            $increaseTtlRequest = new _UpdateTtlRequest();
+            $increaseTtlRequest->setCacheKey($key);
+            $increaseTtlRequest->setIncreaseToMilliseconds($ttlMilliseconds);
+
+            $call = $this->grpcManager->client->UpdateTtl(
+                $increaseTtlRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new IncreaseTtlError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new IncreaseTtlError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): IncreaseTtlResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasMissing()) {
+                        return new IncreaseTtlMiss();
+                    } elseif ($response->hasNotSet()) {
+                        return new IncreaseTtlNotSet();
+                    }
+                    return new IncreaseTtlSet();
+                } catch (SdkError $e) {
+                    return new IncreaseTtlError($e);
+                } catch (Exception $e) {
+                    return new IncreaseTtlError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    public function decreaseTtl(string $cacheName, string $key, int $ttlMilliseconds): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateKeys([$key]);
+            $decreaseTtlRequest = new _UpdateTtlRequest();
+            $decreaseTtlRequest->setCacheKey($key);
+            $decreaseTtlRequest->setDecreaseToMilliseconds($ttlMilliseconds);
+
+            $call = $this->grpcManager->client->UpdateTtl(
+                $decreaseTtlRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new DecreaseTtlError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new DecreaseTtlError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): DecreaseTtlResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasMissing()) {
+                        return new DecreaseTtlMiss();
+                    } elseif ($response->hasNotSet()) {
+                        return new DecreaseTtlNotSet();
+                    }
+                    return new DecreaseTtlSet();
+                } catch (SdkError $e) {
+                    return new DecreaseTtlError($e);
+                } catch (Exception $e) {
+                    return new DecreaseTtlError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );

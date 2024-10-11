@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Momento\Cache;
 
 use Momento\Auth\ICredentialProvider;
+use Momento\Cache\CacheOperationTypes\DecreaseTtlResponse;
 use Momento\Cache\CacheOperationTypes\DeleteResponse;
 use Momento\Cache\CacheOperationTypes\DictionaryFetchResponse;
 use Momento\Cache\CacheOperationTypes\DictionaryGetFieldResponse;
@@ -15,6 +16,7 @@ use Momento\Cache\CacheOperationTypes\DictionarySetFieldResponse;
 use Momento\Cache\CacheOperationTypes\DictionarySetFieldsResponse;
 use Momento\Cache\CacheOperationTypes\FlushCacheResponse;
 use Momento\Cache\CacheOperationTypes\GetBatchResponse;
+use Momento\Cache\CacheOperationTypes\IncreaseTtlResponse;
 use Momento\Cache\CacheOperationTypes\ItemGetTtlResponse;
 use Momento\Cache\CacheOperationTypes\ResponseFuture;
 use Momento\Cache\CacheOperationTypes\GetResponse;
@@ -46,6 +48,7 @@ use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
+use Momento\Cache\CacheOperationTypes\UpdateTtlResponse;
 use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Internal\IdleDataClientWrapper;
 use Momento\Cache\Internal\ScsControlClient;
@@ -1834,7 +1837,6 @@ class CacheClient implements LoggerAwareInterface
         return $this->setBatchAsync($cacheName, $items, $ttlSeconds)->wait();
     }
 
-
     /**
      * Get the Remaining TTL of a cache item.
      *
@@ -1854,9 +1856,9 @@ class CacheClient implements LoggerAwareInterface
      *  if ($hit = $response->asHit()) {
      *    $results = $hit->$remainingTtlMillis();
      *  } elseif ($miss = $response->asMiss()) {
+     *    // handle miss response
+     *  } elseif ($error = $response->asError()) {
      *    // handle error response
-     *  } else {
-     *      // handle error response
      *  }
      *  </code>
      *  If inspection of the response is not required, one need not call wait as
@@ -1885,11 +1887,203 @@ class CacheClient implements LoggerAwareInterface
      * } elseif ($miss = $response->asMiss()) {
      *  // handle miss condition
      * } elseif ($error = $response->asError()) {
-     *  // handle error condition
+     *  // handle error response
      * }
      * </code>
      */
     public function itemGetTtl(string $cacheName, string $key): ItemGetTtlResponse {
         return $this->itemGetTtlAsync($cacheName, $key)->wait();
+    }
+
+    /**
+     * Update the TTL of a cache item.
+     *
+     * @param string $cacheName Name of the cache that contains the item.
+     * @param string $key The key of the item to get the TTL for.
+     * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
+     * @return ResponseFuture<UpdateTtlResponse> A waitable future which will provide
+     *  the result of the update ttl operations upon a blocking call to wait:<br />
+     *  <code>$response = $responseFuture->wait();</code><br />
+     *  The response represents the result of the get operation and stores the
+     *  retrieved value. This result is resolved to a type-safe object of one of
+     *  the following types:<br>
+     *  * UpdateTtlSet<br>
+     *  * UpdateTtlMiss<br>
+     *  * UpdateTtlError<br>
+     *  Pattern matching can be to operate on the appropriate subtype:<br>
+     *  <code>
+     *  if ($set = $response->asSet()) {
+     *    // handle set response
+     *  } elseif ($miss = $response->asMiss()) {
+     *    // handle miss response
+     *  } elseif ($error = $response->asError()) {
+     *    // handle error response
+     *  }
+     *  </code>
+     *  If inspection of the response is not required, one need not call wait as
+     *  we implicitly wait for completion of the request on destruction of the
+     *  response future.
+     */
+    public function updateTtlAsync(string $cacheName, string $key, int $ttlMilliseconds): ResponseFuture
+    {
+        return $this->getNextDataClient()->updateTtl($cacheName, $key, $ttlMilliseconds);
+    }
+
+    /**
+     * Get the Remaining TTL of a cache item.
+     *
+     * @param string $cacheName Name of the cache that contains the item.
+     * @param string $key The key of the item to get the TTL for.
+     * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
+     * @return UpdateTtlResponse Represents the result of the update TTL operation. This
+     * result is resolved to a type-safe object of one of the following types:<br>
+     * * UpdateTtlSet<br>
+     * * UpdateTtlMiss<br>
+     * * UpdateTtlError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($set = $response->asSet()) {
+     *   // handle set response
+     * } elseif ($miss = $response->asMiss()) {
+     *  // handle miss response
+     * } elseif ($error = $response->asError()) {
+     *  // handle error response
+     * }
+     * </code>
+     */
+    public function updateTtl(string $cacheName, string $key, int $ttlMilliseconds): UpdateTtlResponse {
+        return $this->updateTtlAsync($cacheName, $key, $ttlMilliseconds)->wait();
+    }
+
+    /**
+     * Increase the TTL of a cache item.
+     *
+     * @param string $cacheName Name of the cache that contains the item.
+     * @param string $key The key of the item to get the TTL for.
+     * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
+     * @return ResponseFuture<IncreaseTtlResponse> A waitable future which will provide
+     *  the result of the increase ttl operations upon a blocking call to wait:<br />
+     *  <code>$response = $responseFuture->wait();</code><br />
+     *  The response represents the result of the get operation and stores the
+     *  retrieved value. This result is resolved to a type-safe object of one of
+     *  the following types:<br>
+     *  * IncreaseTtlSet<br>
+     *  * IncreaseTtlNotSet<br>
+     *  * IncreaseTtlMiss<br>
+     *  * IncreaseTtlError<br>
+     *  Pattern matching can be to operate on the appropriate subtype:<br>
+     *  <code>
+     *  if ($set = $response->asSet()) {
+     *    // handle set response
+     *  } elseif ($notSet = $response->asNotSet()) {
+     *    // handle not set response
+     *   } elseif ($miss = $response->asMiss()) {
+     *    // handle miss response
+     *  } elseif ($error = $response->asError()) {
+     *    // handle error response
+     *  }
+     *  </code>
+     *  If inspection of the response is not required, one need not call wait as
+     *  we implicitly wait for completion of the request on destruction of the
+     *  response future.
+     */
+    public function increaseTtlAsync(string $cacheName, string $key, int $ttlMilliseconds): ResponseFuture
+    {
+        return $this->getNextDataClient()->increaseTtl($cacheName, $key, $ttlMilliseconds);
+    }
+
+    /**
+     * Increase the TTL of a cache item.
+     *
+     * @param string $cacheName Name of the cache that contains the item.
+     * @param string $key The key of the item to get the TTL for.
+     * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
+     * @return IncreaseTtlResponse Represents the result of the increase TTL operation. This
+     * result is resolved to a type-safe object of one of the following types:<br>
+     * * IncreaseTtlSet<br>
+     * * IncreaseTtlNotSet<br>
+     * * IncreaseTtlMiss<br>
+     * * IncreaseTtlError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($set = $response->asSet()) {
+     *   // handle set response
+     * } elseif ($notSet = $response->asNotSet()) {
+     *   // handle not set response
+     * } elseif ($miss = $response->asMiss()) {
+     *  // handle miss response
+     * } elseif ($error = $response->asError()) {
+     *  // handle error response
+     * }
+     * </code>
+     */
+    public function increaseTtl(string $cacheName, string $key, int $ttlMilliseconds): IncreaseTtlResponse {
+        return $this->increaseTtlAsync($cacheName, $key, $ttlMilliseconds)->wait();
+    }
+
+    /**
+     * Decrease the TTL of a cache item.
+     *
+     * @param string $cacheName Name of the cache that contains the item.
+     * @param string $key The key of the item to get the TTL for.
+     * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
+     * @return ResponseFuture<DecreaseTtlResponse> A waitable future which will provide
+     *  the result of the decrease ttl operations upon a blocking call to wait:<br />
+     *  <code>$response = $responseFuture->wait();</code><br />
+     *  The response represents the result of the get operation and stores the
+     *  retrieved value. This result is resolved to a type-safe object of one of
+     *  the following types:<br>
+     *  * DecreaseTtlSet<br>
+     *  * DecreaseTtlNotSet<br>
+     *  * DecreaseTtlMiss<br>
+     *  * DecreaseTtlError<br>
+     *  Pattern matching can be to operate on the appropriate subtype:<br>
+     *  <code>
+     *  if ($set = $response->asSet()) {
+     *    // handle set response
+     *  } elseif ($notSet = $response->asNotSet()) {
+     *    // handle not set response
+     *   } elseif ($miss = $response->asMiss()) {
+     *    // handle miss response
+     *  } elseif ($error = $response->asError()) {
+     *    // handle error response
+     *  }
+     *  </code>
+     *  If inspection of the response is not required, one need not call wait as
+     *  we implicitly wait for completion of the request on destruction of the
+     *  response future.
+     */
+    public function decreaseTtlAsync(string $cacheName, string $key, int $ttlMilliseconds): ResponseFuture
+    {
+        return $this->getNextDataClient()->decreaseTtl($cacheName, $key, $ttlMilliseconds);
+    }
+
+    /**
+     * Decrease the TTL of a cache item.
+     *
+     * @param string $cacheName Name of the cache that contains the item.
+     * @param string $key The key of the item to get the TTL for.
+     * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
+     * @return DecreaseTtlResponse Represents the result of the decrease TTL operation. This
+     * result is resolved to a type-safe object of one of the following types:<br>
+     * * DecreaseTtlSet<br>
+     * * DecreaseTtlNotSet<br>
+     * * DecreaseTtlMiss<br>
+     * * DecreaseTtlError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($set = $response->asSet()) {
+     *   // handle set response
+     * } elseif ($notSet = $response->asNotSet()) {
+     *   // handle not set response
+     * } elseif ($miss = $response->asMiss()) {
+     *  // handle miss response
+     * } elseif ($error = $response->asError()) {
+     *  // handle error response
+     * }
+     * </code>
+     */
+    public function decreaseTtl(string $cacheName, string $key, int $ttlMilliseconds): DecreaseTtlResponse {
+        return $this->decreaseTtlAsync($cacheName, $key, $ttlMilliseconds)->wait();
     }
 }
