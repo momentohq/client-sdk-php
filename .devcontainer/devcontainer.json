@@ -12,9 +12,10 @@
 	// Configure tool-specific properties.
 
     "customizations" : {
-      "jetbrains" : {
-        "backend" : "IntelliJ",
-      }
+        "jetbrains" : {
+            "backend" : "IntelliJ",
+            "plugins": ["com.jetbrains.php"],
+        }
     },
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
