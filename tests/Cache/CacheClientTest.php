@@ -3094,6 +3094,54 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got $response.");
     }
 
+    public function testSortedSetAddElementSortedSetFetch_HappyPath()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $score = 1.0;
+        $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, $value, $score);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $valuesArray = $response->asHit()->valuesArray();
+        $this->assertArrayHasKey($value, $valuesArray, "Expected value '$value' not found in the array");
+        $this->assertEquals($score, $valuesArray[$value], "The score for value '$value' does not match the expected score.");
+    }
+
+    public function testSortedSetPutAndFetchMultipleElements()
+    {
+        $sortedSetName = uniqid();
+
+        $elements = [
+            uniqid() => 1.0,
+            uniqid() => 2.0,
+            uniqid() => 3.0,
+            uniqid() => 4.0,
+            uniqid() => 5.0,
+        ];
+
+        foreach ($elements as $value => $score) {
+            $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, $value, $score);
+            $this->assertNull($response->asError(), "Error occurred while putting element '$value' with score '$score'");
+            $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        }
+
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $fetchedElements = $response->asHit()->valuesArray();
+
+        foreach ($elements as $value => $score) {
+            $this->assertArrayHasKey($value, $fetchedElements, "Expected value '$value' not found in the fetched array");
+            $this->assertEquals($score, $fetchedElements[$value], "The score for value '$value' does not match the expected score.");
+        }
+    }
+
     public function testGetBatch_HappyPath()
     {
         $cacheName = $this->TEST_CACHE_NAME;

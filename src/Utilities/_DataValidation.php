@@ -169,3 +169,25 @@ if (!function_exists('validatePsr16Key')) {
         }
     }
 }
+
+if (!function_exists('validateSortedSetName')) {
+    function validateSortedSetName(string $sortedSetName): void
+    {
+        validateNullOrEmpty($sortedSetName, "Sorted set name");
+    }
+}
+
+if (!function_exists('validateSortedSetRanks')) {
+    function validateSortedSetRanks(int $startRank, ?int $endRank): void
+    {
+        if (is_null($endRank)) {
+            return;
+        }
+        if ($startRank > 0 && $endRank > 0 && $startRank > $endRank) {
+            throw new InvalidArgumentException("startRank must be less than endRank");
+        }
+        if ($startRank < 0 && $endRank < 0 && $startRank >= $endRank) {
+            throw new InvalidArgumentException("negative start rank must be less than negative end rank");
+        }
+    }
+}

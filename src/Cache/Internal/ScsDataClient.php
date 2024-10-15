@@ -32,8 +32,12 @@ use Cache_client\_SetIfRequest;
 use Cache_client\_SetLengthRequest;
 use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
+use Cache_client\_SortedSetElement;
+use Cache_client\_SortedSetFetchRequest;
+use Cache_client\_SortedSetPutRequest;
 use Cache_client\_UpdateTtlRequest;
 use Cache_client\ECacheResult;
+use Common\_Unbounded;
 use Common\Absent;
 use Common\AbsentOrEqual;
 use Common\Equal;
@@ -182,6 +186,13 @@ use Momento\Cache\CacheOperationTypes\SetRemoveElementSuccess;
 use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\SetError;
 use Momento\Cache\CacheOperationTypes\SetSuccess;
+use Momento\Cache\CacheOperationTypes\SortedSetFetchError;
+use Momento\Cache\CacheOperationTypes\SortedSetFetchHit;
+use Momento\Cache\CacheOperationTypes\SortedSetFetchMiss;
+use Momento\Cache\CacheOperationTypes\SortedSetFetchResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetPutElementError;
+use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetPutElementSuccess;
 use Momento\Cache\CacheOperationTypes\UpdateTtlError;
 use Momento\Cache\CacheOperationTypes\UpdateTtlMiss;
 use Momento\Cache\CacheOperationTypes\UpdateTtlResponse;
@@ -205,6 +216,8 @@ use function Momento\Utilities\validateListName;
 use function Momento\Utilities\validateNullOrEmpty;
 use function Momento\Utilities\validateOperationTimeout;
 use function Momento\Utilities\validateSetName;
+use function Momento\Utilities\validateSortedSetName;
+use function Momento\Utilities\validateSortedSetRanks;
 use function Momento\Utilities\validateTruncateSize;
 use function Momento\Utilities\validateTtl;
 use function Momento\Utilities\validateValueName;
@@ -1508,6 +1521,115 @@ class ScsDataClient implements LoggerAwareInterface
                     return new SetRemoveElementError($e);
                 } catch (Exception $e) {
                     return new SetRemoveElementError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    /**
+     * @return ResponseFuture<SortedSetPutElementResponse>
+     */
+    public function sortedSetPutElement(string $cacheName, string $sortedSetName, string $value, float $score, ?CollectionTtl $ttl = null): ResponseFuture
+    {
+        try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
+            validateCacheName($cacheName);
+            validateSortedSetName($sortedSetName);
+            validateValueName($value);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
+            validateTtl($ttlMillis);
+            $element = new _SortedSetElement([
+                'value' => $value,
+                'score' => $score,
+            ]);
+            $sortedSetPutElementRequest = new _SortedSetPutRequest();
+            $sortedSetPutElementRequest->setSetName($sortedSetName);
+            $sortedSetPutElementRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
+            $sortedSetPutElementRequest->setTtlMilliseconds($ttlMillis);
+            $sortedSetPutElementRequest->setElements([$element]);
+            $call = $this->grpcManager->client->SortedSetPut(
+                $sortedSetPutElementRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SortedSetPutElementError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SortedSetPutElementError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SortedSetPutElementResponse {
+                try {
+                    $this->processCall($call);
+
+                    return new SortedSetPutElementSuccess();
+                } catch (SdkError $e) {
+                    return new SortedSetPutElementError($e);
+                } catch (Exception $e) {
+                    return new SortedSetPutElementError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    /**
+     * @return ResponseFuture<SortedSetFetchResponse>
+     */
+    public function sortedSetFetchByRank(string $cacheName, string $sortedSetName, ?int $startRank = 0, ?int $endRank = null, ?int $order = SORT_ASC): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSortedSetName($sortedSetName);
+            validateSortedSetRanks($startRank, $endRank);
+
+            $sortedSetFetchRequest = new _SortedSetFetchRequest();
+            $sortedSetFetchRequest->setSetName($sortedSetName);
+            $sortedSetFetchRequest->setWithScores(true);
+
+            $byIndex = new _SortedSetFetchRequest\_ByIndex();
+            if ($startRank) {
+                $byIndex->setInclusiveStartIndex($startRank);
+            } else {
+                $byIndex->setUnboundedStart(new _Unbounded());
+            }
+            if ($endRank) {
+                $byIndex->setExclusiveEndIndex($endRank);
+            } else {
+                $byIndex->setUnboundedEnd(new _Unbounded());
+            }
+            $sortedSetFetchRequest->setByIndex($byIndex);
+
+            if (!$order || $order >= SORT_ASC) {
+                $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::ASCENDING);
+            } else {
+                $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::DESCENDING);
+            }
+
+            $call = $this->grpcManager->client->SortedSetFetch(
+                $sortedSetFetchRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SortedSetFetchError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SortedSetFetchError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SortedSetFetchResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasFound()) {
+                        return new SortedSetFetchHit($response);
+                    }
+                    return new SortedSetFetchMiss();
+                } catch (SdkError $e) {
+                    return new SortedSetFetchError($e);
+                } catch (Exception $e) {
+                    return new SortedSetFetchError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );
