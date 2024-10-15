@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.13.0](https://github.com/momentohq/client-sdk-php/compare/v1.12.0...v1.13.0) (2024-10-15)
+
+
+### Features
+
+* add getItemTtl api ([#214](https://github.com/momentohq/client-sdk-php/issues/214)) ([533a460](https://github.com/momentohq/client-sdk-php/commit/533a46075ff97510230ae6a717c4fbc71eac9429))
+* add update ttl apis ([#216](https://github.com/momentohq/client-sdk-php/issues/216)) ([8c2086d](https://github.com/momentohq/client-sdk-php/commit/8c2086d1baf5ef7a6e544cd1b5acf73fc5b1e155))
+
 ## [1.12.0](https://github.com/momentohq/client-sdk-php/compare/v1.11.1...v1.12.0) (2024-09-25)
 
 
