@@ -1896,7 +1896,7 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Update the TTL of a cache item.
+     * Update the TTL of a cache item by overwriting the current TTL with a new value.
      *
      * @param string $cacheName Name of the cache that contains the item.
      * @param string $key The key of the item to update the TTL for.
@@ -1930,7 +1930,7 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Update the TTL of a cache item.
+     * Updates the TTL of a cache item by overwriting the current TTL with a new value.
      *
      * @param string $cacheName Name of the cache that contains the item.
      * @param string $key The key of the item to update the TTL for.
@@ -1956,7 +1956,7 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Increase the TTL of a cache item.
+     * Increases the TTL of a cache item if the new TTL is greater than the current TTL.
      *
      * @param string $cacheName Name of the cache that contains the item.
      * @param string $key The key of the item to increase the TTL for.
@@ -1993,7 +1993,7 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Increase the TTL of a cache item.
+     * Increases the TTL of a cache item if the new TTL is greater than the current TTL.
      *
      * @param string $cacheName Name of the cache that contains the item.
      * @param string $key The key of the item to increase the TTL for.
@@ -2022,7 +2022,7 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Decrease the TTL of a cache item.
+     * Decrease the TTL of a cache item if the new TTL is less than the current TTL.
      *
      * @param string $cacheName Name of the cache that contains the item.
      * @param string $key The key of the item to decrease the TTL for.
@@ -2059,7 +2059,7 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Decrease the TTL of a cache item.
+     * Decrease the TTL of a cache item if the new TTL is less than the current TTL.
      *
      * @param string $cacheName Name of the cache that contains the item.
      * @param string $key The key of the item to decrease the TTL for.
