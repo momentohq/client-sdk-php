@@ -332,7 +332,7 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetIfPresentResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the setIfPresent operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfPresent operation. This
@@ -403,7 +403,7 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetIfPresentAndNotEqualResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the setIfPresentAndNotEqual operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfPresentAndNotEqual operation. This
@@ -475,7 +475,7 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetIfAbsentResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the setIfAbsent operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfAbsent operation. This
@@ -545,7 +545,7 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetIfAbsentOrEqualResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the setIfAbsentOrEqual operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfAbsentOrEqual operation. This
@@ -616,7 +616,7 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetIfEqualResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the setIfEqual operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfEqual operation. This
@@ -687,7 +687,7 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetIfNotEqualResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the setIfNotEqual operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfNotEqual operation. This
@@ -758,7 +758,7 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetIfNotExistsResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the setIfNotExists operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the setIfNotExists operation. This
@@ -823,7 +823,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache from which to remove the key
      * @param string $key The key to remove
      * @return ResponseFuture<DeleteResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait:<br />
+     * provide the result of the delete operation upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the delete operation. This result
      * is resolved to a type-safe object of one of the following types:<br>
@@ -871,7 +871,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache in which to look for keys
      * @param array $keys List of keys to check
      * @return ResponseFuture<KeysExistResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait:<br />
+     * provide the result of the keys exist operation upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the keys exist operation. This
      * result is resolved to a type-safe object of one of the following
@@ -930,9 +930,9 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache in which to look for the key
      * @param string $key The key to check
      * @return ResponseFuture<KeyExistsResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait:<br />
+     * provide the result of the key exists operation upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
-     * The response represents the result of the keys exist operation. This
+     * The response represents the result of the key exists operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
      * * KeyExistsSuccess<br>
@@ -986,9 +986,9 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<IncrementResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait:<br />
+     * provide the result of the increment operation upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
-     * The response represents the result of the keys exist operation. This
+     * The response represents the result of the increment operation. This
      * result is resolved to a type-safe object of one of the following
      * types:<br>
      * * IncrementSuccess<br>
@@ -1020,7 +1020,7 @@ class CacheClient implements LoggerAwareInterface
      * @param int $amount The amount to increment by. May be positive, negative, or zero. Defaults to 1.
      * @param int|float|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
-     * @return IncrementResponse Represents the result of the keys exist operation. This result is
+     * @return IncrementResponse Represents the result of the increment operation. This result is
      * resolved to a type-safe object of one of the following types:<br>
      * * IncrementSuccess<br>
      * * IncrementError<br>
@@ -1242,7 +1242,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the dictionary.
      * @param string $dictionaryName The dictionary to get the field from.
      * @param string $field The field in the dictionary to get.
-     * @return DictionaryGetFieldResponse Represents the result of the get field operation.
+     * @return DictionaryGetFieldResponse Represents the result of the dictionary get field operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * DictionaryGetFieldHit<br>
      * * DictionaryGetFieldMiss<br>
@@ -1266,7 +1266,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the dictionary.
      * @param string $dictionaryName The dictionary to fetch.
-     * @return DictionaryFetchResponse Represents the result of the fetch operation.
+     * @return DictionaryFetchResponse Represents the result of the dictionary fetch operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * DictionaryFetchHit<br>
      * * DictionaryFetchMiss<br>
@@ -1314,7 +1314,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the dictionary.
      * @param string $dictionaryName The dictionary to get the fields from.
      * @param array $fields The fields in the dictionary to lookup.
-     * @return DictionaryGetFieldsResponse Represents the result of the get fields operation.
+     * @return DictionaryGetFieldsResponse Represents the result of the dictionary get fields operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * DictionaryGetFieldsHit<br>
      * * DictionaryGetFieldsMiss<br>
@@ -1418,7 +1418,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $element The element to add.
      * @param CollectionTtl|null $ttl TTL for the dictionary in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
      * @return ResponseFuture<SetAddElementResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the set add element operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set add element operation.
@@ -1468,7 +1468,7 @@ class CacheClient implements LoggerAwareInterface
      * @param list<string> $elements The elements to add.
      * @param CollectionTtl|null $ttl TTL for the set in cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to client TTL.
      * @return ResponseFuture<SetAddElementsResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the set add elements operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set add elements operation.
@@ -1518,7 +1518,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $setName The set to look for elements in
      * @param list<string> $elements The elements to check for.
      * @return ResponseFuture<SetContainsElementsResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the SetContainsElements operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the SetContainsElements operation.
@@ -1547,7 +1547,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $setName The set to look for elements in.
      * @param list<string> $elements The elements to check for.
-     * @return SetContainsElementsResponse Represents the result of the set add elements operation.
+     * @return SetContainsElementsResponse Represents the result of the set contains elements operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * SetContainsElementsHit: the set exists, and the <code>containsElements</code> function on this object can be used to inspect which elements exist in the set.<br>
      * * SetContainsElementsMiss: the set does not exist<br>
@@ -1569,7 +1569,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $setName The set to fetch.
      * @return ResponseFuture<SetFetchResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait:<br />
+     * provide the result of the set fetch operation upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set fetch operation. This
      * result is resolved to a type-safe object of one of the following
@@ -1624,7 +1624,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $setName The name of the set whose length should be returned.
      * @return ResponseFuture<SetLengthResponse> A waitable future which will
-     * provide the result of the set operation upon a blocking call to wait:<br />
+     * provide the result of the set length operation upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set length operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
@@ -1677,7 +1677,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $setName The set from which to remove the element.
      * @param string $element The element to remove.
      * @return ResponseFuture<SetRemoveElementResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the remove element operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the set remove element operation.
@@ -1731,9 +1731,9 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache to perform the lookup in.
      * @param array $keys The keys to look up.
      * @return ResponseFuture<GetBatchResponse> A waitable future which will provide
-     * the result of the get operations upon a blocking call to wait:<br />
+     * the result of the get batch operations upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
-     * The response represents the result of the get operation and stores the
+     * The response represents the result of the get batch operation and stores the
      * retrieved value. This result is resolved to a type-safe object of one of
      * the following types:<br>
      * * GetBatchSuccess<br>
@@ -1757,11 +1757,11 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Gets the cache value stored for a given key.
+     * Gets the cache values stored for given keys.
      *
      * @param string $cacheName Name of the cache to perform the lookup in.
      * @param array $keys The key to look up.
-     * @return GetBatchResponse Represents the result of the get operation and stores the retrieved value. This
+     * @return GetBatchResponse Represents the result of the get batch operation and stores the retrieved value. This
      * result is resolved to a type-safe object of one of the following types:<br>
      * * GetBatchSuccess<br>
      * * GetBatchError<br>
@@ -1788,10 +1788,9 @@ class CacheClient implements LoggerAwareInterface
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.
      * @return ResponseFuture<SetBatchResponse> A waitable future which will provide
-     * the result of the set operations upon a blocking call to wait:<br />
+     * the result of the set batch operations upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
-     * The response represents the result of the get operation and stores the
-     * retrieved value. This result is resolved to a type-safe object of one of
+     * The response represents the result of the set batch operation. This result is resolved to a type-safe object of one of
      * the following types:<br>
      * * SetBatchSuccess<br>
      * * SetBatchError<br>
@@ -1813,13 +1812,13 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Sets the cache value stored for a given key.
+     * Sets the cache values for given keys.
      *
      * @param string $cacheName Name of the cache to set
      * @param int|float $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
      *   Defaults to client TTL. If specified must be strictly positive.the values in.
      * @param array $items The keys and values to set.
-     * @return SetBatchResponse Represents the result of the set operation. This
+     * @return SetBatchResponse Represents the result of the set batch operation. This
      * result is resolved to a type-safe object of one of the following types:<br>
      * * SetBatchSuccess<br>
      * * SetBatchError<br>
@@ -1845,8 +1844,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<ItemGetTtlResponse> A waitable future which will provide
      *  the result of the get item ttl operations upon a blocking call to wait:<br />
      *  <code>$response = $responseFuture->wait();</code><br />
-     *  The response represents the result of the get operation and stores the
-     *  retrieved value. This result is resolved to a type-safe object of one of
+     *  The response represents the result of the get item ttl operation. This result is resolved to a type-safe object of one of
      *  the following types:<br>
      *  * ItemGetTtlHit<br>
      *  * ItemGetTtlMiss<br>
@@ -1904,8 +1902,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<UpdateTtlResponse> A waitable future which will provide
      *  the result of the update ttl operations upon a blocking call to wait:<br />
      *  <code>$response = $responseFuture->wait();</code><br />
-     *  The response represents the result of the get operation and stores the
-     *  retrieved value. This result is resolved to a type-safe object of one of
+     *  The response represents the result of the update ttl operation. This result is resolved to a type-safe object of one of
      *  the following types:<br>
      *  * UpdateTtlSet<br>
      *  * UpdateTtlMiss<br>
@@ -1964,8 +1961,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<IncreaseTtlResponse> A waitable future which will provide
      *  the result of the increase ttl operations upon a blocking call to wait:<br />
      *  <code>$response = $responseFuture->wait();</code><br />
-     *  The response represents the result of the get operation and stores the
-     *  retrieved value. This result is resolved to a type-safe object of one of
+     *  The response represents the result of the increase item ttl operation. This result is resolved to a type-safe object of one of
      *  the following types:<br>
      *  * IncreaseTtlSet<br>
      *  * IncreaseTtlNotSet<br>
@@ -2030,7 +2026,7 @@ class CacheClient implements LoggerAwareInterface
      * @return ResponseFuture<DecreaseTtlResponse> A waitable future which will provide
      *  the result of the decrease ttl operations upon a blocking call to wait:<br />
      *  <code>$response = $responseFuture->wait();</code><br />
-     *  The response represents the result of the get operation and stores the
+     *  The response represents the result of the decrease ttl operation and stores the
      *  retrieved value. This result is resolved to a type-safe object of one of
      *  the following types:<br>
      *  * DecreaseTtlSet<br>
