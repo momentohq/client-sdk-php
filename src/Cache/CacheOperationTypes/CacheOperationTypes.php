@@ -3471,7 +3471,7 @@ class ItemGetTtlError extends ItemGetTtlResponse
 abstract class UpdateTtlResponse extends ResponseBase
 {
     /**
-     * @return UpdateTtlSet|null Returns the set subtype if the request returned an error and null otherwise.
+     * @return UpdateTtlSet|null Returns the set subtype if the request returned a set and null otherwise.
      */
     public function asSet(): ?UpdateTtlSet
     {
@@ -3482,7 +3482,7 @@ abstract class UpdateTtlResponse extends ResponseBase
     }
 
     /**
-     * @return UpdateTtlMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return UpdateTtlMiss|null Returns the miss subtype if the request returned a miss and null otherwise.
      */
     public function asMiss(): ?UpdateTtlMiss
     {
@@ -3553,7 +3553,7 @@ class UpdateTtlError extends UpdateTtlResponse
 abstract class IncreaseTtlResponse extends ResponseBase
 {
     /**
-     * @return IncreaseTtlSet|null Returns the set subtype if the request returned an error and null otherwise.
+     * @return IncreaseTtlSet|null Returns the set subtype if the request returned a set and null otherwise.
      */
     public function asSet(): ?IncreaseTtlSet
     {
@@ -3564,7 +3564,7 @@ abstract class IncreaseTtlResponse extends ResponseBase
     }
 
     /**
-     * @return IncreaseTtlNotSet|null Returns the not set subtype if the request returned an error and null otherwise.
+     * @return IncreaseTtlNotSet|null Returns the not set subtype if the request returned a not set and null otherwise.
      */
     public function asNotSet(): ?IncreaseTtlNotSet
     {
@@ -3575,7 +3575,7 @@ abstract class IncreaseTtlResponse extends ResponseBase
     }
 
     /**
-     * @return IncreaseTtlMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return IncreaseTtlMiss|null Returns the miss subtype if the request returned a miss and null otherwise.
      */
     public function asMiss(): ?IncreaseTtlMiss
     {
@@ -3653,7 +3653,7 @@ class IncreaseTtlError extends IncreaseTtlResponse
 abstract class DecreaseTtlResponse extends ResponseBase
 {
     /**
-     * @return DecreaseTtlSet|null Returns the set subtype if the request returned an error and null otherwise.
+     * @return DecreaseTtlSet|null Returns the set subtype if the request returned a set and null otherwise.
      */
     public function asSet(): ?DecreaseTtlSet
     {
@@ -3664,7 +3664,7 @@ abstract class DecreaseTtlResponse extends ResponseBase
     }
 
     /**
-     * @return DecreaseTtlNotSet|null Returns the not set subtype if the request returned an error and null otherwise.
+     * @return DecreaseTtlNotSet|null Returns the not set subtype if the request returned a not set and null otherwise.
      */
     public function asNotSet(): ?DecreaseTtlNotSet
     {
@@ -3675,7 +3675,7 @@ abstract class DecreaseTtlResponse extends ResponseBase
     }
 
     /**
-     * @return DecreaseTtlMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     * @return DecreaseTtlMiss|null Returns the miss subtype if the request returned a  miss and null otherwise.
      */
     public function asMiss(): ?DecreaseTtlMiss
     {
