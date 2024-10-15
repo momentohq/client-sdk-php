@@ -3254,9 +3254,9 @@ class CacheClientTest extends TestCase
         $cacheName = $this->TEST_CACHE_NAME;
         $key = uniqid();
         $value = uniqid();
-        $ttl = 60 * 1000;
+        $ttlSeconds = 60;
 
-        $this->client->set($cacheName, $key, $value, $ttl);
+        $this->client->set($cacheName, $key, $value, $ttlSeconds);
 
         $itemGetTtlResponse = $this->client->itemGetTtl($cacheName, $key);
         $this->assertNull($itemGetTtlResponse->asError());
@@ -3264,16 +3264,16 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($itemGetTtlResponse->asHit(), "Expected a hit but got: $itemGetTtlResponse");
 
         $ttl = $itemGetTtlResponse->asHit()->remainingTtlMillis();
-        $this->assertGreaterThan(0, $ttl);
+        $this->assertGreaterThan(0, $ttlSeconds);
     }
 
     public function testItemGetTtlAsync() {
         $cacheName = $this->TEST_CACHE_NAME;
         $key = uniqid();
         $value = uniqid();
-        $ttl = 60 * 1000;
+        $ttlSeconds = 60;
 
-        $this->client->setAsync($cacheName, $key, $value, $ttl)->wait();
+        $this->client->setAsync($cacheName, $key, $value, $ttlSeconds)->wait();
 
         $itemGetTtlResponseFuture = $this->client->itemGetTtlAsync($cacheName, $key);
         $itemGetTtlResponse = $itemGetTtlResponseFuture->wait();
@@ -3282,6 +3282,180 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($itemGetTtlResponse->asHit(), "Expected a hit but got: $itemGetTtlResponse");
 
         $ttl = $itemGetTtlResponse->asHit()->remainingTtlMillis();
-        $this->assertGreaterThan(0, $ttl);
+        $this->assertGreaterThan(0, $ttlSeconds);
+    }
+
+    public function testUpdateTtl() {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key = uniqid();
+        $value = uniqid();
+        $ttlSeconds = 10;
+        $newTtlMilliseconds = 60 * 1000;
+
+        $updateTtlResponse = $this->client->updateTtl($cacheName, $key, $newTtlMilliseconds);
+        $this->assertNotNull($updateTtlResponse->asMiss(), "Expected a miss but got: $updateTtlResponse");
+
+        $this->client->set($cacheName, $key, $value, $ttlSeconds);
+
+        $updateTtlResponse = $this->client->updateTtl($cacheName, $key, $newTtlMilliseconds);
+        $this->assertNull($updateTtlResponse->asError());
+        $this->assertNull($updateTtlResponse->asMiss());
+        $this->assertNotNull($updateTtlResponse->asSet(), "Expected a set but got: $updateTtlResponse");
+
+        $itemGetTtlResponse = $this->client->itemGetTtl($cacheName, $key);
+        $remainingTtl = $itemGetTtlResponse->asHit()->remainingTtlMillis();
+        $this->assertGreaterThan($ttlSeconds * 1000, $remainingTtl);
+        $this->assertLessThan($newTtlMilliseconds, $remainingTtl);
+    }
+
+    public function testUpdateTtlAsync() {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key = uniqid();
+        $value = uniqid();
+        $ttlSeconds = 10;
+        $newTtlMilliseconds = 60 * 1000;
+
+        $updateTtlResponseFuture = $this->client->updateTtlAsync($cacheName, $key, $newTtlMilliseconds);
+        $updateTtlResponse = $updateTtlResponseFuture->wait();
+        $this->assertNotNull($updateTtlResponse->asMiss(), "Expected a miss but got: $updateTtlResponse");
+
+        $this->client->set($cacheName, $key, $value, $ttlSeconds);
+
+        $updateTtlResponseFuture = $this->client->updateTtlAsync($cacheName, $key, $newTtlMilliseconds);
+        $updateTtlResponse = $updateTtlResponseFuture->wait();
+        $this->assertNull($updateTtlResponse->asError());
+        $this->assertNull($updateTtlResponse->asMiss());
+        $this->assertNotNull($updateTtlResponse->asSet(), "Expected a set but got: $updateTtlResponse");
+
+        $itemGetTtlResponse = $this->client->itemGetTtl($cacheName, $key);
+        $remainingTtl = $itemGetTtlResponse->asHit()->remainingTtlMillis();
+        $this->assertGreaterThan($ttlSeconds * 1000, $remainingTtl);
+        $this->assertLessThan($newTtlMilliseconds, $remainingTtl);
+    }
+
+    public function testIncreaseTtl() {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key = uniqid();
+        $value = uniqid();
+        $initialTtlSeconds = 10;
+        $increasedTtlMilliseconds = 60 * 1000;
+
+        // increaseTtl -> Miss
+        $increaseTtlResponse = $this->client->increaseTtl($cacheName, $key, $increasedTtlMilliseconds);
+        $this->assertNotNull($increaseTtlResponse->asMiss(), "Expected a miss but got: $increaseTtlResponse");
+
+        $this->client->set($cacheName, $key, $value, $initialTtlSeconds);
+
+        // increaseTtl -> NotSet
+        $tooLowTtlMilliseconds = 5 * 1000;
+        $increaseTtlResponse = $this->client->increaseTtl($cacheName, $key, $tooLowTtlMilliseconds);
+        $this->assertNotNull($increaseTtlResponse->asNotSet(), "Expected a not set but got: $increaseTtlResponse");
+
+        // increaseTtl -> Set
+        $increaseTtlResponse = $this->client->increaseTtl($cacheName, $key, $increasedTtlMilliseconds);
+        $this->assertNull($increaseTtlResponse->asError());
+        $this->assertNull($increaseTtlResponse->asMiss());
+        $this->assertNotNull($increaseTtlResponse->asSet(), "Expected a set but got: $increaseTtlResponse");
+
+        $itemGetTtlResponse = $this->client->itemGetTtl($cacheName, $key);
+        $remainingTtl = $itemGetTtlResponse->asHit()->remainingTtlMillis();
+        $this->assertGreaterThan($initialTtlSeconds * 1000, $remainingTtl);
+        $this->assertLessThan($increasedTtlMilliseconds, $remainingTtl);
+    }
+
+    public function testIncreaseTtlAsync() {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key = uniqid();
+        $value = uniqid();
+        $initialTtlSeconds = 10;
+        $increasedTtlMilliseconds = 60 * 1000;
+
+        // increaseTtl -> Miss
+        $increaseTtlResponseFuture = $this->client->increaseTtlAsync($cacheName, $key, $increasedTtlMilliseconds);
+        $increaseTtlResponse = $increaseTtlResponseFuture->wait();
+        $this->assertNotNull($increaseTtlResponse->asMiss(), "Expected a miss but got: $increaseTtlResponse");
+
+        $this->client->set($cacheName, $key, $value, $initialTtlSeconds);
+
+        // increaseTtl -> NotSet
+        $tooLowTtlMilliseconds = 5 * 1000;
+        $increaseTtlResponseFuture = $this->client->increaseTtlAsync($cacheName, $key, $tooLowTtlMilliseconds);
+        $increaseTtlResponse = $increaseTtlResponseFuture->wait();
+        $this->assertNotNull($increaseTtlResponse->asNotSet(), "Expected a not set but got: $increaseTtlResponse");
+
+        // increaseTtl -> Set
+        $increaseTtlResponseFuture = $this->client->increaseTtlAsync($cacheName, $key, $increasedTtlMilliseconds);
+        $increaseTtlResponse = $increaseTtlResponseFuture->wait();
+        $this->assertNull($increaseTtlResponse->asError());
+        $this->assertNull($increaseTtlResponse->asMiss());
+        $this->assertNotNull($increaseTtlResponse->asSet(), "Expected a set but got: $increaseTtlResponse");
+
+        $itemGetTtlResponse = $this->client->itemGetTtl($cacheName, $key);
+        $remainingTtl = $itemGetTtlResponse->asHit()->remainingTtlMillis();
+        $this->assertGreaterThan($initialTtlSeconds * 1000, $remainingTtl);
+        $this->assertLessThan($increasedTtlMilliseconds, $remainingTtl);
+    }
+
+    public function testDecreaseTtl() {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key = uniqid();
+        $value = uniqid();
+        $initialTtlSeconds = 30;
+        $decreasedTtlMilliseconds = 20 * 1000;
+
+        // decreaseTtl -> Miss
+        $decreaseTtlResponse = $this->client->decreaseTtl($cacheName, $key, $decreasedTtlMilliseconds);
+        $this->assertNotNull($decreaseTtlResponse->asMiss(), "Expected a miss but got: $decreaseTtlResponse");
+
+        $this->client->set($cacheName, $key, $value, $initialTtlSeconds);
+
+        // decreaseTtl -> NotSet
+        $tooHighTtlMilliseconds = 60 * 1000;
+        $decreaseTtlResponse = $this->client->decreaseTtl($cacheName, $key, $tooHighTtlMilliseconds);
+        $this->assertNotNull($decreaseTtlResponse->asNotSet(), "Expected a not set but got: $decreaseTtlResponse");
+
+        // decreaseTtl -> Set
+        $decreaseTtlResponse = $this->client->decreaseTtl($cacheName, $key, $decreasedTtlMilliseconds);
+        $this->assertNull($decreaseTtlResponse->asError());
+        $this->assertNull($decreaseTtlResponse->asMiss());
+        $this->assertNotNull($decreaseTtlResponse->asSet(), "Expected a set but got: $decreaseTtlResponse");
+
+        $itemGetTtlResponse = $this->client->itemGetTtl($cacheName, $key);
+        $remainingTtl = $itemGetTtlResponse->asHit()->remainingTtlMillis();
+        $this->assertGreaterThan(0, $remainingTtl);
+        $this->assertLessThanOrEqual($decreasedTtlMilliseconds, $remainingTtl);
+    }
+
+    public function testDecreaseTtlAsync() {
+        $cacheName = $this->TEST_CACHE_NAME;
+        $key = uniqid();
+        $value = uniqid();
+        $initialTtlSeconds = 30;
+        $decreasedTtlMilliseconds = 20 * 1000;
+
+        // decreaseTtl -> Miss
+        $decreaseTtlResponseFuture = $this->client->decreaseTtlAsync($cacheName, $key, $decreasedTtlMilliseconds);
+        $decreaseTtlResponse = $decreaseTtlResponseFuture->wait();
+        $this->assertNotNull($decreaseTtlResponse->asMiss(), "Expected a miss but got: $decreaseTtlResponse");
+
+        $this->client->set($cacheName, $key, $value, $initialTtlSeconds);
+
+        // decreaseTtl -> NotSet
+        $tooHighTtlMilliseconds = 60 * 1000;
+        $decreaseTtlResponseFuture = $this->client->decreaseTtlAsync($cacheName, $key, $tooHighTtlMilliseconds);
+        $decreaseTtlResponse = $decreaseTtlResponseFuture->wait();
+        $this->assertNotNull($decreaseTtlResponse->asNotSet(), "Expected a not set but got: $decreaseTtlResponse");
+
+        // decreaseTtl -> Set
+        $decreaseTtlResponseFuture = $this->client->decreaseTtlAsync($cacheName, $key, $decreasedTtlMilliseconds);
+        $decreaseTtlResponse = $decreaseTtlResponseFuture->wait();
+        $this->assertNull($decreaseTtlResponse->asError());
+        $this->assertNull($decreaseTtlResponse->asMiss());
+        $this->assertNotNull($decreaseTtlResponse->asSet(), "Expected a set but got: $decreaseTtlResponse");
+
+        $itemGetTtlResponse = $this->client->itemGetTtl($cacheName, $key);
+        $remainingTtl = $itemGetTtlResponse->asHit()->remainingTtlMillis();
+        $this->assertGreaterThan(0, $remainingTtl);
+        $this->assertLessThanOrEqual($decreasedTtlMilliseconds, $remainingTtl);
     }
 }

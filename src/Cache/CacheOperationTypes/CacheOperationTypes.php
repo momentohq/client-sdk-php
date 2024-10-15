@@ -239,6 +239,16 @@ abstract class ResponseBase
         return get_class($this) == "{$this->baseType}NotFound";
     }
 
+    protected function isSet(): bool
+    {
+        return get_class($this) == "{$this->baseType}Set";
+    }
+
+    protected function isNotSet(): bool
+    {
+        return get_class($this) == "{$this->baseType}NotSet";
+    }
+
     protected function shortValue(string $value): string
     {
         if (strlen($value) <= $this->valueSubstringLength) {
@@ -3433,6 +3443,285 @@ class ItemGetTtlMiss extends ItemGetTtlResponse
  * Contains information about an error returned from the request.
  */
 class ItemGetTtlError extends ItemGetTtlResponse
+{
+    use ErrorBody;
+}
+
+/**
+ * Parent response type for a update ttl request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * UpdateTtlSet
+ * * UpdateTtlMiss
+ * * UpdateTtlError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($set = $response->asSet()) {
+ *     // handle set as appropriate
+ * } elseif ($response->asMiss())
+ *     // handle miss as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class UpdateTtlResponse extends ResponseBase
+{
+    /**
+     * @return UpdateTtlSet|null Returns the set subtype if the request returned an error and null otherwise.
+     */
+    public function asSet(): ?UpdateTtlSet
+    {
+        if ($this->isSet()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return UpdateTtlMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     */
+    public function asMiss(): ?UpdateTtlMiss
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return UpdateTtlError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?UpdateTtlError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Contains the result of a cache hit and ttl set.
+ */
+class UpdateTtlSet extends UpdateTtlResponse
+{
+}
+
+/**
+ * Indicates that the request that generated it was a cache miss.
+ */
+class UpdateTtlMiss extends UpdateTtlResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class UpdateTtlError extends UpdateTtlResponse
+{
+    use ErrorBody;
+}
+
+/**
+ * Parent response type for a increase ttl request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * IncreaseTtlSet
+ * * IncreaseTtlNotSet
+ * * IncreaseTtlMiss
+ * * IncreaseTtlError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($set = $response->asSet()) {
+ *     // handle set as appropriate
+ * } elseif ($notSet = $response->asNotSet()) {
+ *    // handle not set as appropriate
+ * } elseif ($response->asMiss())
+ *    // handle miss as appropriate
+ * } elseif ($error = $response->asError())
+ *    // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class IncreaseTtlResponse extends ResponseBase
+{
+    /**
+     * @return IncreaseTtlSet|null Returns the set subtype if the request returned an error and null otherwise.
+     */
+    public function asSet(): ?IncreaseTtlSet
+    {
+        if ($this->isSet()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return IncreaseTtlNotSet|null Returns the not set subtype if the request returned an error and null otherwise.
+     */
+    public function asNotSet(): ?IncreaseTtlNotSet
+    {
+        if ($this->isNotSet()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return IncreaseTtlMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     */
+    public function asMiss(): ?IncreaseTtlMiss
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return IncreaseTtlError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?IncreaseTtlError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Contains the result of a cache hit and ttl increase.
+ */
+class IncreaseTtlSet extends IncreaseTtlResponse
+{
+}
+
+/**
+ * Contains the result of a cache hit but ttl not updated due to a failed condition.
+ */
+class IncreaseTtlNotSet extends IncreaseTtlResponse
+{
+}
+
+/**
+ * Indicates that the request that generated it was a cache miss.
+ */
+class IncreaseTtlMiss extends IncreaseTtlResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class IncreaseTtlError extends IncreaseTtlResponse
+{
+    use ErrorBody;
+}
+
+/**
+ * Parent response type for a decrease ttl request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * DecreaseTtlSet
+ * * DecreaseTtlNotSet
+ * * DecreaseTtlMiss
+ * * DecreaseTtlError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($set = $response->asSet()) {
+ *     // handle set as appropriate
+ * } elseif ($notSet = $response->asNotSet()) {
+ *    // handle not set as appropriate
+ * } elseif ($response->asMiss())
+ *    // handle miss as appropriate
+ * } elseif ($error = $response->asError())
+ *    // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class DecreaseTtlResponse extends ResponseBase
+{
+    /**
+     * @return DecreaseTtlSet|null Returns the set subtype if the request returned an error and null otherwise.
+     */
+    public function asSet(): ?DecreaseTtlSet
+    {
+        if ($this->isSet()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return DecreaseTtlNotSet|null Returns the not set subtype if the request returned an error and null otherwise.
+     */
+    public function asNotSet(): ?DecreaseTtlNotSet
+    {
+        if ($this->isNotSet()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return DecreaseTtlMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     */
+    public function asMiss(): ?DecreaseTtlMiss
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return DecreaseTtlError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?DecreaseTtlError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Contains the result of a cache hit and ttl decrease.
+ */
+class DecreaseTtlSet extends DecreaseTtlResponse
+{
+}
+
+/**
+ * Contains the result of a cache hit but ttl not updated due to a failed condition.
+ */
+class DecreaseTtlNotSet extends DecreaseTtlResponse
+{
+}
+
+/**
+ * Indicates that the request that generated it was a cache miss.
+ */
+class DecreaseTtlMiss extends DecreaseTtlResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class DecreaseTtlError extends DecreaseTtlResponse
 {
     use ErrorBody;
 }
