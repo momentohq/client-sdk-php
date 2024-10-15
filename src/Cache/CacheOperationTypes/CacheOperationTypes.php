@@ -3527,7 +3527,7 @@ class UpdateTtlError extends UpdateTtlResponse
 }
 
 /**
- * Parent response type for a increase update ttl request. The
+ * Parent response type for a increase ttl request. The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
@@ -3627,7 +3627,7 @@ class IncreaseTtlError extends IncreaseTtlResponse
 }
 
 /**
- * Parent response type for a decrease update ttl request. The
+ * Parent response type for a decrease ttl request. The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *

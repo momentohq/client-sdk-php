@@ -1899,7 +1899,7 @@ class CacheClient implements LoggerAwareInterface
      * Update the TTL of a cache item.
      *
      * @param string $cacheName Name of the cache that contains the item.
-     * @param string $key The key of the item to get the TTL for.
+     * @param string $key The key of the item to update the TTL for.
      * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
      * @return ResponseFuture<UpdateTtlResponse> A waitable future which will provide
      *  the result of the update ttl operations upon a blocking call to wait:<br />
@@ -1930,10 +1930,10 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Get the Remaining TTL of a cache item.
+     * Update the TTL of a cache item.
      *
      * @param string $cacheName Name of the cache that contains the item.
-     * @param string $key The key of the item to get the TTL for.
+     * @param string $key The key of the item to update the TTL for.
      * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
      * @return UpdateTtlResponse Represents the result of the update TTL operation. This
      * result is resolved to a type-safe object of one of the following types:<br>
@@ -1959,7 +1959,7 @@ class CacheClient implements LoggerAwareInterface
      * Increase the TTL of a cache item.
      *
      * @param string $cacheName Name of the cache that contains the item.
-     * @param string $key The key of the item to get the TTL for.
+     * @param string $key The key of the item to increase the TTL for.
      * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
      * @return ResponseFuture<IncreaseTtlResponse> A waitable future which will provide
      *  the result of the increase ttl operations upon a blocking call to wait:<br />
@@ -1996,7 +1996,7 @@ class CacheClient implements LoggerAwareInterface
      * Increase the TTL of a cache item.
      *
      * @param string $cacheName Name of the cache that contains the item.
-     * @param string $key The key of the item to get the TTL for.
+     * @param string $key The key of the item to increase the TTL for.
      * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
      * @return IncreaseTtlResponse Represents the result of the increase TTL operation. This
      * result is resolved to a type-safe object of one of the following types:<br>
@@ -2025,7 +2025,7 @@ class CacheClient implements LoggerAwareInterface
      * Decrease the TTL of a cache item.
      *
      * @param string $cacheName Name of the cache that contains the item.
-     * @param string $key The key of the item to get the TTL for.
+     * @param string $key The key of the item to decrease the TTL for.
      * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
      * @return ResponseFuture<DecreaseTtlResponse> A waitable future which will provide
      *  the result of the decrease ttl operations upon a blocking call to wait:<br />
@@ -2062,7 +2062,7 @@ class CacheClient implements LoggerAwareInterface
      * Decrease the TTL of a cache item.
      *
      * @param string $cacheName Name of the cache that contains the item.
-     * @param string $key The key of the item to get the TTL for.
+     * @param string $key The key of the item to decrease the TTL for.
      * @param int $ttlMilliseconds The new TTL for the item in milliseconds.
      * @return DecreaseTtlResponse Represents the result of the decrease TTL operation. This
      * result is resolved to a type-safe object of one of the following types:<br>
