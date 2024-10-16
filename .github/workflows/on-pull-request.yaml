@@ -9,7 +9,10 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-24.04
-
+    env:
+        php-version: 8.0
+        extensions: grpc, protobuf
+        key: ${{ runner.os }}-php-${{ env.php-version }}-extensions-${{ env.extensions }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,11 +32,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
+        with:
+            php-version: ${{ env.php-version }}
+            extensions: ${{ env.extensions }}
+            key: ${{ env.key }}
+
+      - name: Cache extensions
+        uses: actions/cache@v4
+        with:
+            path: ${{ steps.extcache.outputs.dir }}
+            key: ${{ steps.extcache.outputs.key }}
+            restore-keys: ${{ steps.extcache.outputs.key }}
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.0'
-          extensions: grpc, protobuf
+          php-version: ${{ env.php-version }}
+          extensions: ${{ env.extensions }}
           tools: composer
 
       - name: Install dependencies
@@ -52,15 +70,32 @@ jobs:
 
     env:
       MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      extensions: grpc, protobuf
+      key: ${{ runner.os }}-php-${{ matrix.php-version }}-extensions-${{ env.extensions }}
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
+        with:
+            php-version: ${{ matrix.php-version }}
+            extensions: ${{ env.extensions }}
+            key: ${{ env.key }}
+
+      - name: Cache extensions
+        uses: actions/cache@v4
+        with:
+            path: ${{ steps.extcache.outputs.dir }}
+            key: ${{ steps.extcache.outputs.key }}
+            restore-keys: ${{ steps.extcache.outputs.key }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: grpc, protobuf
+          extensions: ${{ env.extensions }}
           tools: composer
 
       - name: Install dependencies
