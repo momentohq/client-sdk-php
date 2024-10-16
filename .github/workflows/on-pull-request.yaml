@@ -34,7 +34,7 @@ jobs:
 
       - name: Set cache key
         id: cache-key
-        run: echo "::set-output name=key::php-${{ env.php-version }}-extensions-grpc, protobuf"
+        run: echo "key=php-${{ env.php-version }}" >> $GITHUB_OUTPUT
 
       - name: Setup cache environment
         id: extcache
@@ -81,7 +81,7 @@ jobs:
 
       - name: Set cache key
         id: cache-key
-        run: echo "::set-output name=key::php-${{ matrix.php-version }}"
+        run: echo "php-${{ matrix.php-version }}" >> $GITHUB_OUTPUT
 
       - name: Setup cache environment
         id: extcache
