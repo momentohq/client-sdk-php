@@ -12,7 +12,7 @@ jobs:
     env:
         php-version: 8.0
         extensions: grpc, protobuf
-        key: ${{ runner.os }}-php-${{ env.php-version }}-extensions-${{ env.extensions }}
+        key: php-${{ env.php-version }}-extensions-${{ env.extensions }}
     steps:
       - uses: actions/checkout@v4
 
@@ -71,7 +71,7 @@ jobs:
     env:
       MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       extensions: grpc, protobuf
-      key: ${{ runner.os }}-php-${{ matrix.php-version }}-extensions-${{ env.extensions }}
+      key: php-${{ matrix.php-version }}-extensions-${{ env.extensions }}
 
     steps:
       - uses: actions/checkout@v4
