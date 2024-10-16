@@ -45,6 +45,8 @@ use Momento\Cache\CacheOperationTypes\SetIfPresentResponse;
 use Momento\Cache\CacheOperationTypes\SetLengthResponse;
 use Momento\Cache\CacheOperationTypes\SetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\SetResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetFetchResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
@@ -1716,6 +1718,127 @@ class CacheClient implements LoggerAwareInterface
     public function setRemoveElement(string $cacheName, string $setName, string $element): SetRemoveElementResponse
     {
         return $this->setRemoveElementAsync($cacheName, $setName, $element)->wait();
+    }
+
+    /**
+     * Add an element to a sorted set. If the element already exists, updates its score.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted set.
+     * @param string $sortedSetName The set to add the element to.
+     * @param string $value The value to add.
+     * @param float $score The score to assign to the value.
+     * @param CollectionTtl|null $ttl TTL for the sorted set in the cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to the client TTL.
+     * @return ResponseFuture<SortedSetPutElementResponse> A waitable future which
+     * will provide the result of the set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the sorted set put element operation.
+     * This result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SortedSetPutElementSuccess<br>
+     * * SortedSetPutElementError<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function sortedSetPutElementAsync(string $cacheName, string $sortedSetName, string $value, float $score, ?CollectionTtl $ttl = null): ResponseFuture
+    {
+        return $this->getNextDataClient()->sortedSetPutElement($cacheName, $sortedSetName, $value, $score, $ttl);
+    }
+
+    /**
+     * Add an element to a sorted set. If the element already exists, updates its score.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted set.
+     * @param string $sortedSetName The set to add the element to.
+     * @param string $value The value to add.
+     * @param float $score The score to assign to the value.
+     * @param CollectionTtl|null $ttl TTL for the sorted set in the cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to the client TTL.
+     * @return SortedSetPutElementResponse Represents the result of the sorted set put element operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SortedSetPutElementSuccess<br>
+     * * SortedSetPutElementError<br>
+     * if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
+    public function sortedSetPutElement(string $cacheName, string $sortedSetName, string $value, float $score, ?CollectionTtl $ttl = null): SortedSetPutElementResponse
+    {
+        return $this->sortedSetPutElementAsync($cacheName, $sortedSetName, $value, $score, $ttl)->wait();
+    }
+
+    /**
+     * Fetch the elements in a sorted set by index (rank).
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $sortedSetName The sorted set to fetch.
+     * @param ?int $startRank The rank of the first element to fetch. Defaults to 0.
+     * This rank is inclusive, i.e. the element at this rank will be fetched.
+     * @param ?int $endRank The rank of the last element to fetch.
+     * This rank is exclusive, i.e. the element at this rank will not be fetched.
+     * Defaults to null, which fetches up until and including the last element.
+     * @param ?int $order The order to fetch the elements in. Defaults to Ascending.
+     * Will be treated as ascending if SORT_ASC or higher is supplied, and descending if SORT_DESC or lower is supplied.
+     * @return ResponseFuture<SortedSetFetchResponse> A waitable future which will
+     * provide the result of the sorted set fetch operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the sorted set fetch operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SortedSetFetchHit<br>
+     * * SortedSetFetchMiss<br>
+     * * SortedSetFetchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $theSet = $response->valueArray();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function sortedSetFetchByRankAsync(string $cacheName, string $sortedSetName, ?int $startRank = 0, ?int $endRank = null, ?int $order = SORT_ASC): ResponseFuture
+    {
+        return $this->getNextDataClient()->sortedSetFetchByRank($cacheName, $sortedSetName, $startRank, $endRank, $order);
+    }
+
+    /**
+     * Fetch the elements in a sorted set by index (rank).
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $sortedSetName The sorted set to fetch.
+     * @param ?int $startRank The rank of the first element to fetch. Defaults to 0.
+     * This rank is inclusive, i.e. the element at this rank will be fetched.
+     * @param ?int $endRank The rank of the last element to fetch.
+     * This rank is exclusive, i.e. the element at this rank will not be fetched.
+     * Defaults to null, which fetches up until and including the last element.
+     * @param ?int $order The order to fetch the elements in. Defaults to Ascending.
+     * Will be treated as ascending if SORT_ASC or higher is supplied, and descending if SORT_DESC or lower is supplied.
+     * @return SortedSetFetchResponse Represents the result of the sorted set fetch operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SortedSetFetchHit<br>
+     * * SortedSetFetchMiss<br>
+     * * SortedSetFetchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $theSet = $response->valueArray();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     */
+    public function sortedSetFetchByRank(string $cacheName, string $sortedSetName, ?int $startRank = 0, ?int $endRank = null, ?int $order = SORT_ASC): SortedSetFetchResponse
+    {
+        return $this->sortedSetFetchByRankAsync($cacheName, $sortedSetName, $startRank, $endRank, $order)->wait();
     }
 
     private function getNextDataClient(): ScsDataClient

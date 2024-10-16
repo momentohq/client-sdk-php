@@ -3094,6 +3094,209 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got $response.");
     }
 
+    public function testSortedSetAddElement_HappyPath()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $score = 1.0;
+        $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, $value, $score);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $valuesArray = $response->asHit()->valuesArray();
+        $this->assertArrayHasKey($value, $valuesArray, "Expected value '$value' not found in the array");
+        $this->assertEquals($score, $valuesArray[$value], "The score for value '$value' does not match the expected score.");
+    }
+
+    public function testSortedSetAddElementWithNonexistantCache_ThrowsException()
+    {
+        $cacheName = uniqid();
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $score = 1.0;
+        $response = $this->client->sortedSetPutElement($cacheName, $sortedSetName, $value, $score);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetAddElementWithNullCacheName_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $score = 1.0;
+        $response = $this->client->sortedSetPutElement((string)null, $sortedSetName, $value, $score);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetAddElementWithEmptyCacheName_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $score = 1.0;
+        $response = $this->client->sortedSetPutElement("", $sortedSetName, $value, $score);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetAddElementWithEmptyValue_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $score = 1.0;
+        $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, (string)null, $score);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetFetchByRank_HappyPath()
+    {
+        $sortedSetName = uniqid();
+
+        $elements = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+            "qux" => 4.0,
+        ];
+
+        // the fetch returns a miss when the set does not yet exist
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+
+        foreach ($elements as $value => $score) {
+            $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, $value, $score);
+            $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        }
+
+        // full array ascending
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $fetchedElements = $response->asHit()->valuesArray();
+        $expectedElements = $elements;
+
+        $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
+
+        // full array descending
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName, null, null, SORT_DESC);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $fetchedElements = $response->asHit()->valuesArray();
+        $expectedElements = array_reverse($elements);
+
+        $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
+
+        // limit by start rank
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName, 1);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $fetchedElements = $response->asHit()->valuesArray();
+        $this->assertCount(3, $fetchedElements, "Expected 3 elements, but got " . count($fetchedElements));
+        $expectedElements = [
+            "bar" => 2.0,
+            "baz" => 3.0,
+            "qux" => 4.0,
+        ];
+
+        $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
+
+        // limit by end rank
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName, null, 3);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $fetchedElements = $response->asHit()->valuesArray();
+        $this->assertCount(3, $fetchedElements, "Expected 3 elements, but got " . count($fetchedElements));
+        $expectedElements = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
+
+        // limit by start and end rank
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName, 1, 3);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $fetchedElements = $response->asHit()->valuesArray();
+        $this->assertCount(2, $fetchedElements, "Expected 2 elements, but got " . count($fetchedElements));
+        $expectedElements = [
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
+
+        // descending with start and end rank
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName, 1, 3, SORT_DESC);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $fetchedElements = $response->asHit()->valuesArray();
+        $this->assertCount(2, $fetchedElements, "Expected 2 elements, but got " . count($fetchedElements));
+        $expectedElements = [
+            "baz" => 3.0,
+            "bar" => 2.0,
+        ];
+
+        $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
+    }
+
+    public function testSortedSetFetchByRankWithNonexistantCache_ThrowsException()
+    {
+        $cacheName = uniqid();
+        $sortedSetName = uniqid();
+        $response = $this->client->sortedSetFetchByRank($cacheName, $sortedSetName);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetFetchByRankWithNullCacheName_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $response = $this->client->sortedSetFetchByRank((string)null, $sortedSetName);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetFetchByRankWithEmptyCacheName_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $response = $this->client->sortedSetFetchByRank("", $sortedSetName);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetFetchByRankWithStartRankGreaterThanEndRank_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $startRank = 100;
+        $endRank = 1;
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName, $startRank, $endRank);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetFetchByRankWithNegativeStartRankLessThanEndRank_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $startRank = -1;
+        $endRank = -100;
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName, $startRank, $endRank);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
     public function testGetBatch_HappyPath()
     {
         $cacheName = $this->TEST_CACHE_NAME;

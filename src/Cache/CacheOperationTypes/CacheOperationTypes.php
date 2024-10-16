@@ -1,4 +1,6 @@
 <?php
+/** @noinspection PhpIncompatibleReturnTypeInspection */
+/** @noinspection PhpMultipleClassesDeclarationsInOneFile */
 declare(strict_types=1);
 
 namespace Momento\Cache\CacheOperationTypes;
@@ -20,6 +22,7 @@ use Cache_client\_SetContainsResponse;
 use Cache_client\_SetFetchResponse;
 use Cache_client\_SetLengthResponse;
 use Cache_client\_SetResponse;
+use Cache_client\_SortedSetFetchResponse;
 use Cache_client\ECacheResult;
 use Closure;
 use Control_client\_ListCachesResponse;
@@ -3233,6 +3236,166 @@ class SetRemoveElementError extends SetRemoveElementResponse
     use ErrorBody;
 }
 
+/**
+ * Parent response type for a sorted set put element request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SortedSetPutElementSuccess
+ * * SortedSetPutElementError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($response->asSuccess()) {
+ *     // handle success as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SortedSetPutElementResponse extends ResponseBase
+{
+    /**
+     * @return SortedSetPutElementSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): ?SortedSetPutElementSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SortedSetPutElementError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SortedSetPutElementError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class SortedSetPutElementSuccess extends SortedSetPutElementResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SortedSetPutElementError extends SortedSetPutElementResponse
+{
+    use ErrorBody;
+}
+
+/**
+ * Parent response type for a sorted set fetch request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SortedSetFetchHit
+ * * SortedSetFetchMiss
+ * * SortedSetFetchError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($success = $response->asHit()) {
+ *     return $success->valuesArray();
+ * } elseif ($response->asMiss())
+ *     // handle miss as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SortedSetFetchResponse extends ResponseBase
+{
+
+    /**
+     * @return SortedSetFetchHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     */
+    public function asHit(): ?SortedSetFetchHit
+    {
+        if ($this->isHit()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SortedSetFetchMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     */
+    public function asMiss(): ?SortedSetFetchMiss
+    {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SortedSetFetchError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SortedSetFetchError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Contains the result of a cache hit.
+ */
+class SortedSetFetchHit extends SortedSetFetchResponse
+{
+    private array $elements;
+
+    public function __construct(_SortedSetFetchResponse $response)
+    {
+        parent::__construct();
+        foreach ($response->getFound()->getValuesWithScores()->getElements() as $element) {
+            $this->elements[$element->getValue()] = $element->getScore();
+        }
+    }
+
+    /**
+     * @return array Values of the requested sorted set.
+     */
+    public function valuesArray(): array
+    {
+        return $this->elements;
+    }
+
+    public function __toString()
+    {
+        $numElements = count($this->elements);
+        return parent::__toString() . ": $numElements elements";
+    }
+}
+
+/**
+ * Indicates that the request that generated it was a cache miss.
+ */
+class SortedSetFetchMiss extends SortedSetFetchResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SortedSetFetchError extends SortedSetFetchResponse
+{
+    use ErrorBody;
+}
 
 abstract class GetBatchResponse extends ResponseBase
 {
