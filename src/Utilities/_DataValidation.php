@@ -178,16 +178,16 @@ if (!function_exists('validateSortedSetName')) {
 }
 
 if (!function_exists('validateSortedSetRanks')) {
-    function validateSortedSetRanks(int $startRank, ?int $endRank): void
+    function validateSortedSetRanks(?int $startRank, ?int $endRank): void
     {
-        if (is_null($endRank)) {
+        if (is_null($startRank) || is_null($endRank)) {
             return;
         }
         if ($startRank > 0 && $endRank > 0 && $startRank > $endRank) {
-            throw new InvalidArgumentException("startRank must be less than endRank");
+            throw new InvalidArgumentError("startRank must be less than endRank");
         }
         if ($startRank < 0 && $endRank < 0 && $startRank >= $endRank) {
-            throw new InvalidArgumentException("negative start rank must be less than negative end rank");
+            throw new InvalidArgumentError("negative start rank must be less than negative end rank");
         }
     }
 }

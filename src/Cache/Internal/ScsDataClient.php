@@ -1600,7 +1600,7 @@ class ScsDataClient implements LoggerAwareInterface
             }
             $sortedSetFetchRequest->setByIndex($byIndex);
 
-            if (!$order || $order >= SORT_ASC) {
+            if (is_null($order) || $order >= SORT_ASC) {
                 $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::ASCENDING);
             } else {
                 $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::DESCENDING);
