@@ -81,7 +81,7 @@ jobs:
 
       - name: Set cache key
         id: cache-key
-        run: echo "php-${{ matrix.php-version }}" >> $GITHUB_OUTPUT
+        run: echo "key=php-${{ matrix.php-version }}" >> $GITHUB_OUTPUT
 
       - name: Setup cache environment
         id: extcache
