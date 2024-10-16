@@ -1856,11 +1856,13 @@ class CacheClient implements LoggerAwareInterface
      * * SortedSetGetScoreError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>
-     *     if ($hit = $response->asHit()) {
-     *        $score = $hit->score();
-     *    } elseif ($error = $response->asError()) {
-     *       // handle error condition
-     *   }
+     * if ($hit = $response->asHit()) {
+     *   $score = $hit->score();
+     * } elseif ($miss = $response->asMiss()) {
+     *   // handle miss response
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
      * </code>
      * If inspection of the response is not required, one need not call wait as we implicitly wait for completion of the request on destruction of the response future.
      */
@@ -1881,11 +1883,13 @@ class CacheClient implements LoggerAwareInterface
      * * SortedSetGetScoreError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>
-     *     if ($hit = $response->asHit()) {
-     *        $score = $hit->score();
-     *    } elseif ($error = $response->asError()) {
-     *       // handle error condition
-     *   }
+     * if ($hit = $response->asHit()) {
+     *   $score = $hit->score();
+     * } elseif ($miss = $response->asMiss()) {
+     *   // handle miss response
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
      * </code>
      */
     public function sortedSetGetScore(string $cacheName, string $sortedSetName, string $value): SortedSetGetScoreResponse
