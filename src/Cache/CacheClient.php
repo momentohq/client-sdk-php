@@ -1842,11 +1842,52 @@ class CacheClient implements LoggerAwareInterface
         return $this->sortedSetFetchByRankAsync($cacheName, $sortedSetName, $startRank, $endRank, $order)->wait();
     }
 
+    /**
+     * Get the score associated with a value in a sorted set.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted set.
+     * @param string $sortedSetName The sorted set to fetch the score from.
+     * @param string $value The value to fetch the score for.
+     * @return ResponseFuture<SortedSetGetScoreResponse> A waitable future which will provide the result of the sorted set get score operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the sorted set get score operation. This result is resolved to a type-safe object of one of the following types:<br>
+     * * SortedSetGetScoreHit<br>
+     * * SortedSetGetScoreMiss<br>
+     * * SortedSetGetScoreError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     *     if ($hit = $response->asHit()) {
+     *        $score = $hit->score();
+     *    } elseif ($error = $response->asError()) {
+     *       // handle error condition
+     *   }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as we implicitly wait for completion of the request on destruction of the response future.
+     */
     public function sortedSetGetScoreAsync(string $cacheName, string $sortedSetName, string $value): ResponseFuture
     {
         return $this->getNextDataClient()->sortedSetGetScore($cacheName, $sortedSetName, $value);
     }
 
+    /**
+     * Get the score associated with a value in a sorted set.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted set.
+     * @param string $sortedSetName The sorted set to fetch the score from.
+     * @param string $value The value to fetch the score for.
+     * @return SortedSetGetScoreResponse Represents the result of the sorted set get score operation. This result is resolved to a type-safe object of one of the following types:<br>
+     * * SortedSetGetScoreHit<br>
+     * * SortedSetGetScoreMiss<br>
+     * * SortedSetGetScoreError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     *     if ($hit = $response->asHit()) {
+     *        $score = $hit->score();
+     *    } elseif ($error = $response->asError()) {
+     *       // handle error condition
+     *   }
+     * </code>
+     */
     public function sortedSetGetScore(string $cacheName, string $sortedSetName, string $value): SortedSetGetScoreResponse
     {
         return $this->sortedSetGetScoreAsync($cacheName, $sortedSetName, $value)->wait();
