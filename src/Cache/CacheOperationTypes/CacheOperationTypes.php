@@ -39,6 +39,10 @@ trait ErrorBody
     public function __construct(SdkError $error)
     {
         parent::__construct();
+        $this->setError($error);
+    }
+
+    public function setError(SdkError $error) {
         $this->innerException = $error;
         $this->message = "{$error->messageWrapper}: {$error->getMessage()}";
         $this->errorCode = $error->errorCode;
@@ -3416,7 +3420,23 @@ class SortedSetFetchError extends SortedSetFetchResponse
  * }
  * </code>
  */
-abstract class SortedSetGetScoreResponse extends ResponseBase {
+class SortedSetGetScoreResponse extends ResponseBase {
+    private string $value;
+
+    protected function __construct(string $value)
+    {
+        parent::__construct();
+        $this->value = $value;
+    }
+
+    /**
+     * @return string Value of the requested element.
+     */
+    public function valueString(): string
+    {
+        return $this->value;
+    }
+
     /**
      * @return SortedSetGetScoreHit|null Returns the hit subtype if the request returned an error and null otherwise.
      */
@@ -3451,9 +3471,9 @@ abstract class SortedSetGetScoreResponse extends ResponseBase {
 class SortedSetGetScoreHit extends SortedSetGetScoreResponse {
     private float $score;
 
-    public function __construct(float $score)
+    public function __construct(string $value, float $score)
     {
-        parent::__construct();
+        parent::__construct($value);
         $this->score = $score;
     }
 
@@ -3472,11 +3492,20 @@ class SortedSetGetScoreHit extends SortedSetGetScoreResponse {
 }
 
 class SortedSetGetScoreMiss extends SortedSetGetScoreResponse {
-
+    public function __construct(string $value)
+    {
+        parent::__construct($value);
+    }
 }
 
 class SortedSetGetScoreError extends SortedSetGetScoreResponse {
     use ErrorBody;
+
+    public function __construct(string $value, SdkError $error)
+    {
+        parent::__construct($value);
+        $this->setError($error);
+    }
 }
 
 abstract class GetBatchResponse extends ResponseBase

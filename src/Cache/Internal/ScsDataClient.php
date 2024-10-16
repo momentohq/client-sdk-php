@@ -1658,34 +1658,34 @@ class ScsDataClient implements LoggerAwareInterface
                 ["timeout" => $this->timeout],
             );
         } catch (SdkError $e) {
-            return ResponseFuture::createResolved(new SortedSetGetScoreError($e));
+            return ResponseFuture::createResolved(new SortedSetGetScoreError($value, $e));
         } catch (Exception $e) {
-            return ResponseFuture::createResolved(new SortedSetGetScoreError(new UnknownError($e->getMessage(), 0, $e)));
+            return ResponseFuture::createResolved(new SortedSetGetScoreError($value, new UnknownError($e->getMessage(), 0, $e)));
         }
 
         return ResponseFuture::createPending(
-            function () use ($call): SortedSetGetScoreResponse {
+            function () use ($call, $value): SortedSetGetScoreResponse {
                 try {
                     $response = $this->processCall($call);
 
                     if ($response->hasFound()) {
                         if ($response->getFound()->getElements()->count() == 0) {
-                            return new SortedSetGetScoreError(new UnknownError("_SortedSetGetScoreResponseResponse contained no data but was found"));
+                            return new SortedSetGetScoreError($value, new UnknownError("_SortedSetGetScoreResponseResponse contained no data but was found"));
                         } else {
                             $element = $response->getFound()->getElements()[0];
                             if ($element->getResult() == ECacheResult::Hit) {
-                                return new SortedSetGetScoreHit($element->getScore());
+                                return new SortedSetGetScoreHit($value, $element->getScore());
                             } else {
-                                return new SortedSetGetScoreMiss();
+                                return new SortedSetGetScoreMiss($value);
                             }
                         }
                     } else {
-                        return new SortedSetGetScoreMiss();
+                        return new SortedSetGetScoreMiss($value);
                     }
                 } catch (SdkError $e) {
-                    return new SortedSetGetScoreError($e);
+                    return new SortedSetGetScoreError($value, $e);
                 } catch (Exception $e) {
-                    return new SortedSetGetScoreError(new UnknownError($e->getMessage(), 0, $e));
+                    return new SortedSetGetScoreError($value, new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );

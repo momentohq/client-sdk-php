@@ -3314,6 +3314,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
         $hit = $response->asHit();
+        $this->assertEquals($value, $hit->valueString(), "The value does not match the expected value.");
         $this->assertEquals($score, $hit->score(), "The score does not match the expected value.");
     }
 
@@ -3338,9 +3339,13 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
 
         // Ensure the element does not exist in the sorted set
-        $response = $this->client->sortedSetGetScore($this->TEST_CACHE_NAME, $sortedSetName, uniqid());
+        $queriedValue = uniqid();
+        $response = $this->client->sortedSetGetScore($this->TEST_CACHE_NAME, $sortedSetName, $queriedValue);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+
+        $miss = $response->asMiss();
+        $this->assertEquals($queriedValue, $miss->valueString(), "The value does not match the expected value.");
     }
 
     public function testSortedSetGetScore_Error()
@@ -3351,7 +3356,10 @@ class CacheClientTest extends TestCase
         // Using an invalid cache name to trigger an error
         $response = $this->client->sortedSetGetScore("", $sortedSetName, $value);
         $this->assertNotNull($response->asError(), "Expected an error but got: $response");
-        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+
+        $error = $response->asError();
+        $this->assertEquals($value, $error->valueString());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $error->errorCode());
     }
 
     public function testSortedSetGetScore_NonexistentCache()
