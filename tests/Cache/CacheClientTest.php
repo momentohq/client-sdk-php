@@ -3297,6 +3297,83 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+    public function testSortedSetGetScore_HappyPath()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $score = 1.0;
+
+        // Add the element to the sorted set
+        $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, $value, $score);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        // Fetch the score for the element
+        $response = $this->client->sortedSetGetScore($this->TEST_CACHE_NAME, $sortedSetName, $value);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $hit = $response->asHit();
+        $this->assertEquals($value, $hit->valueString(), "The value does not match the expected value.");
+        $this->assertEquals($score, $hit->score(), "The score does not match the expected value.");
+    }
+
+    public function testSortedSetGetScore_Miss()
+    {
+        // 1. First test on a non-existent sorted set
+        $sortedSetName = uniqid();
+        $value = uniqid();
+
+        // Ensure the sorted set does not exist
+        $response = $this->client->sortedSetGetScore($this->TEST_CACHE_NAME, $sortedSetName, $value);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+
+        // 2. Second test a sorted set that exists but lacks the element
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $score = 1.0;
+
+        // Add the element to the sorted set
+        $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, $value, $score);
+        $this->assertNull($response->asError());
+
+        // Ensure the element does not exist in the sorted set
+        $queriedValue = uniqid();
+        $response = $this->client->sortedSetGetScore($this->TEST_CACHE_NAME, $sortedSetName, $queriedValue);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+
+        $miss = $response->asMiss();
+        $this->assertEquals($queriedValue, $miss->valueString(), "The value does not match the expected value.");
+    }
+
+    public function testSortedSetGetScore_Error()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+
+        // Using an invalid cache name to trigger an error
+        $response = $this->client->sortedSetGetScore("", $sortedSetName, $value);
+        $this->assertNotNull($response->asError(), "Expected an error but got: $response");
+
+        $error = $response->asError();
+        $this->assertEquals($value, $error->valueString());
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $error->errorCode());
+    }
+
+    public function testSortedSetGetScore_NonexistentCache()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $cacheName = uniqid(); // Non-existent cache
+
+        // Fetch the score for the element in a non-existent cache
+        $response = $this->client->sortedSetGetScore($cacheName, $sortedSetName, $value);
+        $this->assertNotNull($response->asError(), "Expected an error but got: $response");
+        $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
     public function testGetBatch_HappyPath()
     {
         $cacheName = $this->TEST_CACHE_NAME;

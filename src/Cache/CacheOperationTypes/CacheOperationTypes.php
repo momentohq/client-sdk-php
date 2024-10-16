@@ -21,7 +21,6 @@ use Cache_client\_ListPushFrontResponse;
 use Cache_client\_SetContainsResponse;
 use Cache_client\_SetFetchResponse;
 use Cache_client\_SetLengthResponse;
-use Cache_client\_SetResponse;
 use Cache_client\_SortedSetFetchResponse;
 use Cache_client\ECacheResult;
 use Closure;
@@ -40,6 +39,10 @@ trait ErrorBody
     public function __construct(SdkError $error)
     {
         parent::__construct();
+        $this->setError($error);
+    }
+
+    public function setError(SdkError $error) {
         $this->innerException = $error;
         $this->message = "{$error->messageWrapper}: {$error->getMessage()}";
         $this->errorCode = $error->errorCode;
@@ -3395,6 +3398,114 @@ class SortedSetFetchMiss extends SortedSetFetchResponse
 class SortedSetFetchError extends SortedSetFetchResponse
 {
     use ErrorBody;
+}
+
+/**
+ * Parent response type for a sorted get score request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ * * SortedSetGetScoreHit
+ * * SortedSetGetScoreMiss
+ * * SortedSetGetScoreError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($success = $response->asHit()) {
+ *   return $success->score();
+ * } elseif ($response->asMiss())
+ * // handle miss as appropriate
+ * } elseif ($error = $response->asError())
+ * // handle error as appropriate
+ * }
+ * </code>
+ */
+class SortedSetGetScoreResponse extends ResponseBase {
+    private string $value;
+
+    protected function __construct(string $value)
+    {
+        parent::__construct();
+        $this->value = $value;
+    }
+
+    /**
+     * @return string Value of the requested element.
+     */
+    public function valueString(): string
+    {
+        return $this->value;
+    }
+
+    /**
+     * @return SortedSetGetScoreHit|null Returns the hit subtype if the request returned an error and null otherwise.
+     */
+    public function asHit(): ?SortedSetGetScoreHit {
+        if ($this->isHit()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SortedSetGetScoreMiss|null Returns the miss subtype if the request returned an error and null otherwise.
+     */
+    public function asMiss(): ?SortedSetGetScoreMiss {
+        if ($this->isMiss()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SortedSetGetScoreError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SortedSetGetScoreError {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class SortedSetGetScoreHit extends SortedSetGetScoreResponse {
+    private float $score;
+
+    public function __construct(string $value, float $score)
+    {
+        parent::__construct($value);
+        $this->score = $score;
+    }
+
+    /**
+     * @return float The score of the requested element.
+     */
+    public function score(): float
+    {
+        return $this->score;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": " . $this->score;
+    }
+}
+
+class SortedSetGetScoreMiss extends SortedSetGetScoreResponse {
+    public function __construct(string $value)
+    {
+        parent::__construct($value);
+    }
+}
+
+class SortedSetGetScoreError extends SortedSetGetScoreResponse {
+    use ErrorBody;
+
+    public function __construct(string $value, SdkError $error)
+    {
+        parent::__construct($value);
+        $this->setError($error);
+    }
 }
 
 abstract class GetBatchResponse extends ResponseBase

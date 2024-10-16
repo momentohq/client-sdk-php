@@ -34,6 +34,7 @@ use Cache_client\_SetRequest;
 use Cache_client\_SetUnionRequest;
 use Cache_client\_SortedSetElement;
 use Cache_client\_SortedSetFetchRequest;
+use Cache_client\_SortedSetGetScoreRequest;
 use Cache_client\_SortedSetPutRequest;
 use Cache_client\_UpdateTtlRequest;
 use Cache_client\ECacheResult;
@@ -190,6 +191,10 @@ use Momento\Cache\CacheOperationTypes\SortedSetFetchError;
 use Momento\Cache\CacheOperationTypes\SortedSetFetchHit;
 use Momento\Cache\CacheOperationTypes\SortedSetFetchMiss;
 use Momento\Cache\CacheOperationTypes\SortedSetFetchResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetGetScoreHit;
+use Momento\Cache\CacheOperationTypes\SortedSetGetScoreMiss;
+use Momento\Cache\CacheOperationTypes\SortedSetGetScoreError;
+use Momento\Cache\CacheOperationTypes\SortedSetGetScoreResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementError;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementSuccess;
@@ -1630,6 +1635,57 @@ class ScsDataClient implements LoggerAwareInterface
                     return new SortedSetFetchError($e);
                 } catch (Exception $e) {
                     return new SortedSetFetchError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    /**
+     * @return ResponseFuture<SortedSetGetScoreResponse>
+     */
+    public function sortedSetGetScore(string $cacheName, string $sortedSetName, string $value): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSortedSetName($sortedSetName);
+            validateValueName($value);
+            $sortedSetGetScoreRequest = new _SortedSetGetScoreRequest();
+            $sortedSetGetScoreRequest->setSetName($sortedSetName);
+            $sortedSetGetScoreRequest->setValues([$value]);
+            $call = $this->grpcManager->client->SortedSetGetScore(
+                $sortedSetGetScoreRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SortedSetGetScoreError($value, $e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SortedSetGetScoreError($value, new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call, $value): SortedSetGetScoreResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasFound()) {
+                        if ($response->getFound()->getElements()->count() == 0) {
+                            return new SortedSetGetScoreError($value, new UnknownError("_SortedSetGetScoreResponseResponse contained no data but was found"));
+                        } else {
+                            $element = $response->getFound()->getElements()[0];
+                            if ($element->getResult() == ECacheResult::Hit) {
+                                return new SortedSetGetScoreHit($value, $element->getScore());
+                            } else {
+                                return new SortedSetGetScoreMiss($value);
+                            }
+                        }
+                    } else {
+                        return new SortedSetGetScoreMiss($value);
+                    }
+                } catch (SdkError $e) {
+                    return new SortedSetGetScoreError($value, $e);
+                } catch (Exception $e) {
+                    return new SortedSetGetScoreError($value, new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );
