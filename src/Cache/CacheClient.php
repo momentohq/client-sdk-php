@@ -51,6 +51,7 @@ use Momento\Cache\CacheOperationTypes\SortedSetGetScoreResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\UpdateTtlResponse;
 use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Internal\IdleDataClientWrapper;
@@ -1730,7 +1731,7 @@ class CacheClient implements LoggerAwareInterface
      * @param float $score The score to assign to the value.
      * @param CollectionTtl|null $ttl TTL for the sorted set in the cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to the client TTL.
      * @return ResponseFuture<SortedSetPutElementResponse> A waitable future which
-     * will provide the result of the set operation upon a blocking call to
+     * will provide the result of the sorted set put element operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the sorted set put element operation.
@@ -1902,6 +1903,54 @@ class CacheClient implements LoggerAwareInterface
         $client = $this->dataClients[$this->nextDataClientIndex]->getClient();
         $this->nextDataClientIndex = ($this->nextDataClientIndex + 1) % count($this->dataClients);
         return $client;
+    }
+
+    /**
+     * Remove an element to a sorted set.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted set.
+     * @param string $sortedSetName The set to remove the element from.
+     * @param string $value The value to remove.
+     * @return ResponseFuture<SortedSetRemoveElementResponse> A waitable future which
+     * will provide the result of the sorted set remove element operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the sorted set remove element operation.
+     * This result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SortedSetRemoveElementSuccess<br>
+     * * SortedSetRemoveElementError<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function sortedSetRemoveElementAsync(string $cacheName, string $sortedSetName, string $value): ResponseFuture
+    {
+        return $this->getNextDataClient()->sortedSetRemoveElement($cacheName, $sortedSetName, $value);
+    }
+
+    /**
+     * Remove an element to a sorted set.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted set.
+     * @param string $sortedSetName The set to remove the element from.
+     * @param string $value The value to add.
+     * @return SortedSetRemoveElementResponse Represents the result of the sorted set remove element operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SortedSetRemoveElementSuccess<br>
+     * * SortedSetRemoveElementError<br>
+     * if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
+    public function sortedSetRemoveElement(string $cacheName, string $sortedSetName, string $value): SortedSetRemoveElementResponse
+    {
+        return $this->sortedSetRemoveElementAsync($cacheName, $sortedSetName, $value)->wait();
     }
 
     /**

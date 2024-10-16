@@ -36,6 +36,7 @@ use Cache_client\_SortedSetElement;
 use Cache_client\_SortedSetFetchRequest;
 use Cache_client\_SortedSetGetScoreRequest;
 use Cache_client\_SortedSetPutRequest;
+use Cache_client\_SortedSetRemoveRequest;
 use Cache_client\_UpdateTtlRequest;
 use Cache_client\ECacheResult;
 use Common\_Unbounded;
@@ -198,6 +199,9 @@ use Momento\Cache\CacheOperationTypes\SortedSetGetScoreResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementError;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementSuccess;
+use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementError;
+use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementSuccess;
 use Momento\Cache\CacheOperationTypes\UpdateTtlError;
 use Momento\Cache\CacheOperationTypes\UpdateTtlMiss;
 use Momento\Cache\CacheOperationTypes\UpdateTtlResponse;
@@ -1638,6 +1642,47 @@ class ScsDataClient implements LoggerAwareInterface
                 }
             }
         );
+    }
+
+    /**
+     * @return ResponseFuture<SortedSetRemoveElementResponse>
+     */
+    public function sortedSetRemoveElement(string $cacheName, string $sortedSetName, string $value): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSortedSetName($sortedSetName);
+            validateValueName($value);
+            $sortedSetRemoveElementRequest = new _SortedSetRemoveRequest();
+            $sortedSetRemoveElementRequest->setSetName($sortedSetName);
+            $sortedSetRemoveElementRequest->setSome(new _SortedSetRemoveRequest\_Some());
+            $sortedSetRemoveElementRequest->getSome()->setValues([$value]);
+
+            $call = $this->grpcManager->client->SortedSetRemove(
+                $sortedSetRemoveElementRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SortedSetRemoveElementError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SortedSetRemoveElementError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SortedSetRemoveElementResponse {
+                try {
+                    $this->processCall($call);
+
+                    return new SortedSetRemoveElementSuccess();
+                } catch (SdkError $e) {
+                    return new SortedSetRemoveElementError($e);
+                } catch (Exception $e) {
+                    return new SortedSetRemoveElementError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+
     }
 
     /**
