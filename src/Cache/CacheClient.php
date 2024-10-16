@@ -47,6 +47,7 @@ use Momento\Cache\CacheOperationTypes\SetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetGetScoreResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
@@ -1839,6 +1840,16 @@ class CacheClient implements LoggerAwareInterface
     public function sortedSetFetchByRank(string $cacheName, string $sortedSetName, ?int $startRank = 0, ?int $endRank = null, ?int $order = SORT_ASC): SortedSetFetchResponse
     {
         return $this->sortedSetFetchByRankAsync($cacheName, $sortedSetName, $startRank, $endRank, $order)->wait();
+    }
+
+    public function sortedSetGetScoreAsync(string $cacheName, string $sortedSetName, string $value): ResponseFuture
+    {
+        return $this->getNextDataClient()->sortedSetGetScore($cacheName, $sortedSetName, $value);
+    }
+
+    public function sortedSetGetScore(string $cacheName, string $sortedSetName, string $value): SortedSetGetScoreResponse
+    {
+        return $this->sortedSetGetScoreAsync($cacheName, $sortedSetName, $value)->wait();
     }
 
     private function getNextDataClient(): ScsDataClient
