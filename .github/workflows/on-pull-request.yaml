@@ -12,7 +12,7 @@ jobs:
     env:
       php-version: 8.0
       extensions: grpc, protobuf
-      key: php-${{ env.php-version }}-extensions-${{ env.extensions }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -32,13 +32,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set cache key
+        id: cache-key
+        run: echo "::set-output name=key::php-${{ env.php-version }}-extensions-grpc, protobuf"
+
       - name: Setup cache environment
         id: extcache
         uses: shivammathur/cache-extensions@v1
         with:
           php-version: ${{ env.php-version }}
           extensions: ${{ env.extensions }}
-          key: ${{ env.key }}
+          key: ${{ steps.cache-key.outputs.key }}
 
       - name: Cache extensions
         uses: actions/cache@v4
@@ -71,10 +75,13 @@ jobs:
     env:
       MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
       extensions: grpc, protobuf
-      key: php-${{ matrix.php-version }}-extensions-${{ env.extensions }}
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set cache key
+        id: cache-key
+        run: echo "::set-output name=key::php-${{ matrix.php-version }}"
 
       - name: Setup cache environment
         id: extcache
@@ -82,7 +89,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           extensions: ${{ env.extensions }}
-          key: ${{ env.key }}
+          key: ${{ steps.cache-key.outputs.key }}
 
       - name: Cache extensions
         uses: actions/cache@v4
