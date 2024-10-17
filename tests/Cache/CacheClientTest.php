@@ -3112,7 +3112,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($score, $valuesArray[$value], "The score for value '$value' does not match the expected score.");
     }
 
-    public function testSortedSetAddElementWithNonexistantCache_ThrowsException()
+    public function testSortedSetAddElementWithNonexistentCache_ThrowsException()
     {
         $cacheName = uniqid();
         $sortedSetName = uniqid();
@@ -3293,6 +3293,59 @@ class CacheClientTest extends TestCase
         $startRank = -1;
         $endRank = -100;
         $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName, $startRank, $endRank);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetRemoveElement_HappyPath()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $response = $this->client->sortedSetRemoveElement($this->TEST_CACHE_NAME, $sortedSetName, $value);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+    }
+
+    public function testSortedSetRemoveElementWithNonexistentCache_ThrowsException()
+    {
+        $cacheName = uniqid();
+        $sortedSetName = uniqid();
+        $value = uniqid();
+
+        $response = $this->client->sortedSetRemoveElement($cacheName, $sortedSetName, $value);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetRemoveElementWithNullCacheName_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+
+        $response = $this->client->sortedSetRemoveElement((string)null, $sortedSetName, $value);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetRemoveElementWithEmptyCacheName_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+
+        $response = $this->client->sortedSetRemoveElement("", $sortedSetName, $value);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetRemoveElementWithEmptyValue_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+
+        $response = $this->client->sortedSetRemoveElement($this->TEST_CACHE_NAME, $sortedSetName, (string)null);
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
