@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.14.0](https://github.com/momentohq/client-sdk-php/compare/v1.13.0...v1.14.0) (2024-10-17)
+
+
+### Features
+
+* add sorted set put element and fetch by rank ([#218](https://github.com/momentohq/client-sdk-php/issues/218)) ([12d92fe](https://github.com/momentohq/client-sdk-php/commit/12d92fe3ee2671844a27b53578f564c7d938cdbc))
+* add sortedSetGetScore ([#221](https://github.com/momentohq/client-sdk-php/issues/221)) ([0cde7a4](https://github.com/momentohq/client-sdk-php/commit/0cde7a48c6e94c86ff268e3b9625b2bf7c408e04))
+* add sortedSetRemoveElement api ([#222](https://github.com/momentohq/client-sdk-php/issues/222)) ([f1948f2](https://github.com/momentohq/client-sdk-php/commit/f1948f219d274a6a17594045b50b84746ebfe828))
+
+
+### Bug Fixes
+
+* doc strings ([#217](https://github.com/momentohq/client-sdk-php/issues/217)) ([759c9e4](https://github.com/momentohq/client-sdk-php/commit/759c9e4318a2fee1859e095a0c6d3cfb248fcdae))
+
+
+### Miscellaneous
+
+* support devcontainer development ([#220](https://github.com/momentohq/client-sdk-php/issues/220)) ([d0c9a85](https://github.com/momentohq/client-sdk-php/commit/d0c9a85d6369ec761447c4c264a5dd505baadab5))
+
 ## [1.13.0](https://github.com/momentohq/client-sdk-php/compare/v1.12.0...v1.13.0) (2024-10-15)
 
 
