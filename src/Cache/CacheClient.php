@@ -2021,7 +2021,7 @@ class CacheClient implements LoggerAwareInterface
      * will provide the result of the sorted set remove elements operation upon a blocking call to
      * wait.
      * <code>$response = $responseFuture->wait();</code><br />
-     * The response represents the result of the sorted set remove element operation.
+     * The response represents the result of the sorted set remove elements operation.
      * This result is resolved to a type-safe object of one of the following
      * types:<br>
      * * SortedSetRemoveElementsSuccess<br>
@@ -2046,7 +2046,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The set to remove the elements from.
      * @param array $values The values to remove.
-     * @return SortedSetRemoveElementsResponse Represents the result of the sorted set remove element operation.
+     * @return SortedSetRemoveElementsResponse Represents the result of the sorted set remove elements operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * SortedSetRemoveElementsSuccess<br>
      * * SortedSetRemoveElementsError<br>
