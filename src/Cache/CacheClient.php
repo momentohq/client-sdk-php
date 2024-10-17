@@ -1906,7 +1906,7 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Remove an element to a sorted set.
+     * Remove an element from a sorted set.
      *
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The set to remove the element from.
@@ -1935,7 +1935,7 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Remove an element to a sorted set.
+     * Remove an element from a sorted set.
      *
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The set to remove the element from.
