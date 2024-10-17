@@ -198,6 +198,9 @@ use Momento\Cache\CacheOperationTypes\SortedSetGetScoreError;
 use Momento\Cache\CacheOperationTypes\SortedSetGetScoreResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementError;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetPutElementsError;
+use Momento\Cache\CacheOperationTypes\SortedSetPutElementsResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetPutElementsSuccess;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementSuccess;
 use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementError;
 use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementResponse;
@@ -225,6 +228,7 @@ use function Momento\Utilities\validateListName;
 use function Momento\Utilities\validateNullOrEmpty;
 use function Momento\Utilities\validateOperationTimeout;
 use function Momento\Utilities\validateSetName;
+use function Momento\Utilities\validateSortedSetElements;
 use function Momento\Utilities\validateSortedSetName;
 use function Momento\Utilities\validateSortedSetRanks;
 use function Momento\Utilities\validateTruncateSize;
@@ -1577,6 +1581,55 @@ class ScsDataClient implements LoggerAwareInterface
                     return new SortedSetPutElementError($e);
                 } catch (Exception $e) {
                     return new SortedSetPutElementError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    /**
+     * @return ResponseFuture<SortedSetPutElementsResponse>
+     */
+    public function sortedSetPutElements(string $cacheName, string $sortedSetName, array $elements, ?CollectionTtl $ttl = null): ResponseFuture
+    {
+        try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
+            validateCacheName($cacheName);
+            validateSortedSetName($sortedSetName);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
+            validateTtl($ttlMillis);
+            validateSortedSetElements($elements);
+            $sortedSetElements = array_map(function ($value, $score) {
+                return new _SortedSetElement([
+                    'value' => $value,
+                    'score' => $score,
+                ]);
+            }, array_keys($elements), $elements);
+            $sortedSetPutElementRequest = new _SortedSetPutRequest();
+            $sortedSetPutElementRequest->setSetName($sortedSetName);
+            $sortedSetPutElementRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
+            $sortedSetPutElementRequest->setTtlMilliseconds($ttlMillis);
+            $sortedSetPutElementRequest->setElements($sortedSetElements);
+            $call = $this->grpcManager->client->SortedSetPut(
+                $sortedSetPutElementRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SortedSetPutElementsError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SortedSetPutElementsError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SortedSetPutElementsResponse {
+                try {
+                    $this->processCall($call);
+
+                    return new SortedSetPutElementsSuccess();
+                } catch (SdkError $e) {
+                    return new SortedSetPutElementsError($e);
+                } catch (Exception $e) {
+                    return new SortedSetPutElementsError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );

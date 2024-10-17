@@ -3302,6 +3302,64 @@ class SortedSetPutElementError extends SortedSetPutElementResponse
 // placeholder: sortedSetIncrementScoreResponse
 
 /**
+ * Parent response type for a sorted set put elements request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SortedSetPutElementsSuccess
+ * * SortedSetPutElementsError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($response->asSuccess()) {
+ *     // handle success as appropriate
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SortedSetPutElementsResponse extends ResponseBase
+{
+    /**
+     * @return SortedSetPutElementsSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): ?SortedSetPutElementsSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SortedSetPutElementsError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SortedSetPutElementsError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class SortedSetPutElementsSuccess extends SortedSetPutElementsResponse
+{
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SortedSetPutElementsError extends SortedSetPutElementsResponse
+{
+    use ErrorBody;
+}
+
+/**
  * Parent response type for a sorted set fetch request. The
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
