@@ -3094,7 +3094,9 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got $response.");
     }
 
-    public function testSortedSetAddElement_HappyPath()
+    // placeholder: sortedSetLengthByScore
+    
+    public function testSortedSetPutElement_HappyPath()
     {
         $sortedSetName = uniqid();
         $value = uniqid();
@@ -3112,7 +3114,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($score, $valuesArray[$value], "The score for value '$value' does not match the expected score.");
     }
 
-    public function testSortedSetAddElementWithNonexistentCache_ThrowsException()
+    public function testSortedSetPutElementWithNonexistentCache_ThrowsException()
     {
         $cacheName = uniqid();
         $sortedSetName = uniqid();
@@ -3123,7 +3125,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetAddElementWithNullCacheName_ThrowsException()
+    public function testSortedSetPutElementWithNullCacheName_ThrowsException()
     {
         $sortedSetName = uniqid();
         $value = uniqid();
@@ -3133,7 +3135,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetAddElementWithEmptyCacheName_ThrowsException()
+    public function testSortedSetPutElementWithEmptyCacheName_ThrowsException()
     {
         $sortedSetName = uniqid();
         $value = uniqid();
@@ -3143,7 +3145,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetAddElementWithEmptyValue_ThrowsException()
+    public function testSortedSetPutElementWithEmptyValue_ThrowsException()
     {
         $sortedSetName = uniqid();
         $score = 1.0;
@@ -3151,6 +3153,10 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
+
+    // placeholder: sortedSetPutElements
+
+    // placeholder: sortedSetIncrementScore
 
     public function testSortedSetFetchByRank_HappyPath()
     {
@@ -3297,6 +3303,8 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+    // placeholder: sortedSetFetchByScore
+    
     public function testSortedSetRemoveElement_HappyPath()
     {
         // 1. Remove an element from a sorted set that does not exist
@@ -3383,6 +3391,8 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
+
+    // placeholder: sortedSetRemoveElements
 
     public function testSortedSetGetScore_HappyPath()
     {

@@ -3239,6 +3239,8 @@ class SetRemoveElementError extends SetRemoveElementResponse
     use ErrorBody;
 }
 
+// placeholder: sortedSetLengthByScore
+
 /**
  * Parent response type for a sorted set put element request. The
  * response object is resolved to a type-safe object of one of
@@ -3296,6 +3298,8 @@ class SortedSetPutElementError extends SortedSetPutElementResponse
 {
     use ErrorBody;
 }
+
+// placeholder: sortedSetIncrementScoreResponse
 
 /**
  * Parent response type for a sorted set fetch request. The
@@ -3557,6 +3561,8 @@ abstract class SortedSetRemoveElementResponse extends ResponseBase
 class SortedSetRemoveElementSuccess extends SortedSetRemoveElementResponse
 {
 }
+
+// placeholder: sortedSetRemoveElementsResponse
 
 /**
  * Contains information about an error returned from the request.
