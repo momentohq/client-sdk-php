@@ -1674,6 +1674,8 @@ class CacheClient implements LoggerAwareInterface
         return $this->setLengthAsync($cacheName, $setName)->wait();
     }
 
+    // placeholder: sortedSetLengthByScore
+
     /**
      * Remove an element from a set.
      *
@@ -1774,6 +1776,10 @@ class CacheClient implements LoggerAwareInterface
         return $this->sortedSetPutElementAsync($cacheName, $sortedSetName, $value, $score, $ttl)->wait();
     }
 
+    // placeholder: sortedSetPutElements
+
+    // placeholder: sortedSetIncrementScore
+
     /**
      * Fetch the elements in a sorted set by index (rank).
      *
@@ -1842,6 +1848,8 @@ class CacheClient implements LoggerAwareInterface
     {
         return $this->sortedSetFetchByRankAsync($cacheName, $sortedSetName, $startRank, $endRank, $order)->wait();
     }
+
+    // placeholder: sortedSetFetchByScore
 
     /**
      * Get the score associated with a value in a sorted set.
@@ -1952,6 +1960,8 @@ class CacheClient implements LoggerAwareInterface
     {
         return $this->sortedSetRemoveElementAsync($cacheName, $sortedSetName, $value)->wait();
     }
+
+    // placeholder: sortedSetRemoveElements
 
     /**
      * Gets the cache values stored for given keys.
