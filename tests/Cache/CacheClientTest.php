@@ -3245,7 +3245,111 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    // placeholder: sortedSetIncrementScore
+    public function testSortedSetIncrementScore_HappyPath()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+
+        // Increment the score of an element that does not yet exist
+        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, $value, 1.5);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(1.5, $response->asSuccess()->score());
+
+        // Increment the score again
+        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, $value, 3.0);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(4.5, $response->asSuccess()->score());
+
+        // Decrement the score
+        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, $value, -4.0);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(0.5, $response->asSuccess()->score());
+
+        // Fetch the element to ensure the score is correctly updated
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $hit = $response->asHit();
+        $this->assertNotNull($hit, "Expected a hit but got: $response");
+        $this->assertCount(1, $hit->valuesArray());
+        $this->assertArrayHasKey($value, $hit->valuesArray());
+        $this->assertEquals(0.5, $hit->valuesArray()[$value]);
+    }
+
+    public function testSortedSetIncrementScore_WithTtl_RefreshTtl()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+
+        // Increment the score with a specific TTL
+        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, $value, 2.5, CollectionTtl::of(5));
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        // Re-increment score and update TTL to extend it
+        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, $value, 2.5, CollectionTtl::of(10));
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        sleep(6);
+
+        // Fetch the element to ensure the TTL was refreshed and value remains
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $hit = $response->asHit();
+        $this->assertNotNull($hit, "Expected a hit but got: $response");
+        $this->assertEquals(5.0, $hit->valuesArray()[$value]);
+    }
+
+    public function testSortedSetIncrementScore_NoRefreshTtl()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+
+        // Increment the score with a specific TTL but no refresh on updates
+        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, $value, 2.0, CollectionTtl::of(5));
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        // Increment again, but TTL should not refresh
+        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, $value, 1.0, CollectionTtl::of(10)->withNoRefreshTtlOnUpdates());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        sleep(6);
+
+        // After the TTL expires, the element should no longer exist
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+    }
+
+  public function testSortedSetIncrementScore_InvalidArguments()
+    {
+        $sortedSetName = uniqid();
+
+        // Empty value should trigger an error
+        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, "", 1.0);
+        $this->assertNotNull($response->asError(), "Expected an error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+
+        // Empty cache name should trigger an error
+        $response = $this->client->sortedSetIncrementScore("", $sortedSetName, uniqid(), 1.0);
+        $this->assertNotNull($response->asError(), "Expected an error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetIncrementScore_NonexistentCache_ThrowsException()
+    {
+        $cacheName = uniqid();
+        $sortedSetName = uniqid();
+        $value = uniqid();
+
+        // Increment score in a non-existent cache
+        $response = $this->client->sortedSetIncrementScore($cacheName, $sortedSetName, $value, 1.0);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
 
     public function testSortedSetFetchByRank_HappyPath()
     {

@@ -35,6 +35,7 @@ use Cache_client\_SetUnionRequest;
 use Cache_client\_SortedSetElement;
 use Cache_client\_SortedSetFetchRequest;
 use Cache_client\_SortedSetGetScoreRequest;
+use Cache_client\_SortedSetIncrementRequest;
 use Cache_client\_SortedSetPutRequest;
 use Cache_client\_SortedSetRemoveRequest;
 use Cache_client\_UpdateTtlRequest;
@@ -196,6 +197,9 @@ use Momento\Cache\CacheOperationTypes\SortedSetGetScoreHit;
 use Momento\Cache\CacheOperationTypes\SortedSetGetScoreMiss;
 use Momento\Cache\CacheOperationTypes\SortedSetGetScoreError;
 use Momento\Cache\CacheOperationTypes\SortedSetGetScoreResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreError;
+use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreSuccess;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementError;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementsError;
@@ -1634,6 +1638,49 @@ class ScsDataClient implements LoggerAwareInterface
                     return new SortedSetPutElementsError($e);
                 } catch (Exception $e) {
                     return new SortedSetPutElementsError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    public function sortedSetIncrementScore(string $cacheName, string $sortedSetName, string $value, float $amount, ?CollectionTtl $ttl): ResponseFuture
+    {
+        try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
+            validateCacheName($cacheName);
+            validateSortedSetName($sortedSetName);
+            validateValueName($value);
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
+            validateTtl($ttlMillis);
+
+            $sortedSetIncrementScoreRequest = new _SortedSetIncrementRequest();
+            $sortedSetIncrementScoreRequest->setSetName($sortedSetName);
+            $sortedSetIncrementScoreRequest->setValue($value);
+            $sortedSetIncrementScoreRequest->setAmount($amount);
+            $sortedSetIncrementScoreRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
+            $sortedSetIncrementScoreRequest->setTtlMilliseconds($ttlMillis);
+
+            $call = $this->grpcManager->client->SortedSetIncrement(
+                $sortedSetIncrementScoreRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SortedSetIncrementScoreError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SortedSetIncrementScoreError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SortedSetIncrementScoreResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    return new SortedSetIncrementScoreSuccess($response->getScore());
+                } catch (SdkError $e) {
+                    return new SortedSetIncrementScoreError($e);
+                } catch (Exception $e) {
+                    return new SortedSetIncrementScoreError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );

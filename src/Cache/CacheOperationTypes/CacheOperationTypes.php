@@ -3299,7 +3299,83 @@ class SortedSetPutElementError extends SortedSetPutElementResponse
     use ErrorBody;
 }
 
-// placeholder: sortedSetIncrementScoreResponse
+/**
+ * Parent response type for a sorted set increment score request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SortedSetIncrementScoreSuccess
+ * * SortedSetIncrementScoreError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($success = $response->asSuccess()) {
+ *     $newValue = $success->score();
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SortedSetIncrementScoreResponse extends ResponseBase
+{
+    /**
+     * @return SortedSetIncrementScoreSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): ?SortedSetIncrementScoreSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SortedSetIncrementScoreError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SortedSetIncrementScoreError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class SortedSetIncrementScoreSuccess extends SortedSetIncrementScoreResponse
+{
+    private float $score;
+
+    public function __construct(float $score)
+    {
+        parent::__construct();
+        $this->score = $score;
+    }
+
+    /**
+     * @return float New score of the element after successful increment.
+     */
+    public function score(): float
+    {
+        return $this->score;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": " . $this->score;
+    }
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SortedSetIncrementScoreError extends SortedSetIncrementScoreResponse
+{
+    use ErrorBody;
+}
 
 /**
  * Parent response type for a sorted set put elements request. The
