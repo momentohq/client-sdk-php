@@ -51,6 +51,7 @@ use Momento\Cache\CacheOperationTypes\SortedSetGetScoreResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
 use Momento\Cache\CacheOperationTypes\DeleteCacheResponse;
 use Momento\Cache\CacheOperationTypes\ListCachesResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetPutElementsResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementsResponse;
 use Momento\Cache\CacheOperationTypes\UpdateTtlResponse;
@@ -1777,7 +1778,55 @@ class CacheClient implements LoggerAwareInterface
         return $this->sortedSetPutElementAsync($cacheName, $sortedSetName, $value, $score, $ttl)->wait();
     }
 
-    // placeholder: sortedSetPutElements
+    /**
+     * Add multiple elements to a sorted set. If an element already exists, updates its score.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted set.
+     * @param string $sortedSetName The set to add the elements to.
+     * @param array<string, float> $elements The value => score pairs to add.
+     * @param CollectionTtl|null $ttl TTL for the sorted set in the cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to the client TTL.
+     * @return ResponseFuture<SortedSetPutElementsResponse> A waitable future which
+     * will provide the result of the sorted set operation upon a blocking call to
+     * wait.
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the sorted set put elements operation.
+     * This result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SortedSetPutElementsSuccess<br>
+     * * SortedSetPutElementsError<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function sortedSetPutElementsAsync(string $cacheName, string $sortedSetName, array $elements, ?CollectionTtl $ttl = null): ResponseFuture
+    {
+        return $this->getNextDataClient()->sortedSetPutElements($cacheName, $sortedSetName, $elements, $ttl);
+    }
+
+    /**
+     * Add multiple elements to a sorted set. If an element already exists, updates its score.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted set.
+     * @param string $sortedSetName The set to add the elements to.
+     * @param array<string, float> $elements The value => score pairs to add.
+     * @param CollectionTtl|null $ttl TTL for the sorted set in the cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to the client TTL.
+     * @return SortedSetPutElementsResponse Represents the result of the sorted set put elements operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SortedSetPutElementsSuccess<br>
+     * * SortedSetPutElementsError<br>
+     * if ($error = $response->asError()) {<br>
+     * &nbsp;&nbsp;// handle error condition<br>
+     * }</code>
+     */
+    public function sortedSetPutElements(string $cacheName, string $sortedSetName, array $elements, ?CollectionTtl $ttl = null): SortedSetPutElementsResponse
+    {
+        return $this->sortedSetPutElementsAsync($cacheName, $sortedSetName, $elements, $ttl)->wait();
+    }
 
     // placeholder: sortedSetIncrementScore
 

@@ -3154,7 +3154,96 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    // placeholder: sortedSetPutElements
+    public function testSortedSetPutElements_HappyPath()
+    {
+        $sortedSetName = uniqid();
+        $elements = [
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $response = $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName, $elements);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $fetchedElements = $response->asHit()->valuesArray();
+        $expectedElements = $elements;
+
+        $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
+
+        // add more elements to the set
+        $newElements = [
+            "foo" => 1.0,
+            "qux" => 4.0,
+        ];
+
+        $response = $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName, $newElements);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $fetchedElements = $response->asHit()->valuesArray();
+        $expectedElements = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+            "qux" => 4.0,
+        ];;
+
+        $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
+    }
+
+    public function testSortedSetPutElementsWithNonexistentCache_ThrowsException()
+    {
+        $cacheName = uniqid();
+        $sortedSetName = uniqid();
+        $elements = [
+            "foo" => 1.0,
+        ];
+        $response = $this->client->sortedSetPutElements($cacheName, $sortedSetName, $elements);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetPutElementsWithNullCacheName_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $elements = [
+            "foo" => 1.0,
+        ];
+        $response = $this->client->sortedSetPutElements((string)null, $sortedSetName, $elements);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetPutElementsWithEmptyCacheName_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $elements = [
+            "foo" => 1.0,
+        ];
+        $response = $this->client->sortedSetPutElements("", $sortedSetName, $elements);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetPutElementsWithNullValue_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $elements = [
+            (string)null => 1.0,
+        ];
+        $response = $this->client->sortedSetPutElements("", $sortedSetName, $elements);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
 
     // placeholder: sortedSetIncrementScore
 
@@ -3174,10 +3263,8 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
 
-        foreach ($elements as $value => $score) {
-            $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, $value, $score);
-            $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        }
+        $response = $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName, $elements);
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
         // full array ascending
         $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);

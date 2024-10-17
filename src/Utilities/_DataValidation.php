@@ -192,6 +192,23 @@ if (!function_exists('validateSortedSetRanks')) {
     }
 }
 
+if (!function_exists('validateSortedSetElements')) {
+    function validateSortedSetElements(array $elements): void
+    {
+        foreach ($elements as $value => $score) {
+            if (!is_string($value)) {
+                throw new InvalidArgumentError("Sorted set value must be a string");
+            }
+
+            if (!is_float($score)) {
+                throw new InvalidArgumentException("Sorted set score must be a float");
+            }
+
+            validateValueName($value);
+        }
+    }
+}
+
 if (!function_exists('validateSortedSetValues')) {
     function validateSortedSetValues(array $values): void
     {
