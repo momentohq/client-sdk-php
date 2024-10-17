@@ -191,3 +191,17 @@ if (!function_exists('validateSortedSetRanks')) {
         }
     }
 }
+
+if (!function_exists('validateSortedSetValues')) {
+    function validateSortedSetValues(array $values): void
+    {
+        if (empty($values)) {
+            throw new InvalidArgumentError("sorted set values must be a non-empty array");
+        }
+        foreach ($values as $value) {
+            if (!is_string($value) || isNullOrEmpty($value)) {
+                throw new InvalidArgumentError("sorted set values must all be non-empty strings");
+            }
+        }
+    }
+}
