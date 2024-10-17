@@ -3299,12 +3299,46 @@ class CacheClientTest extends TestCase
 
     public function testSortedSetRemoveElement_HappyPath()
     {
+        // 1. Remove an element from a sorted set that does not exist
         $sortedSetName = uniqid();
         $value = uniqid();
         $response = $this->client->sortedSetRemoveElement($this->TEST_CACHE_NAME, $sortedSetName, $value);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
 
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+
+        // 2. Remove an element from sorted set
+        // Set up: Add an element to the sorted set
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $score = 1.0;
+        $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, $value, $score);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        // 2.1 Remove a different element from the sorted set
+        $response = $this->client->sortedSetRemoveElement($this->TEST_CACHE_NAME, $sortedSetName, uniqid());
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        // Ensure the original element is still in the sorted set
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $hit = $response->asHit();
+        $this->assertNotNull($hit, "Expected a hit but got: $response");
+        $this->assertCount(1, $hit->valuesArray());
+        $this->assertArrayHasKey($value, $hit->valuesArray());
+        $this->assertEquals($score, $hit->valuesArray()[$value]);
+
+        // 2.2 Remove the original element from the sorted set
+        $response = $this->client->sortedSetRemoveElement($this->TEST_CACHE_NAME, $sortedSetName, $value);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        // Ensure the sorted set is now empty
         $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
