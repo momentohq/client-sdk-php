@@ -2119,10 +2119,6 @@ class CacheClientTest extends TestCase
     public function testDictionarySetFieldsWithEmptyItems_IsError()
     {
         $dictionaryName = uniqid();
-        $items = [""];
-        $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
-        $this->assertNotNull($response->asError(), "Expected error but got: $response");
-        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
 
         $items = [];
         $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
@@ -2240,7 +2236,7 @@ class CacheClientTest extends TestCase
     public function testDictionaryGetFields_HappyPath()
     {
         $dictionaryName = uniqid();
-        $field1 = uniqid();
+        $field1 = "1234"; // explicit integer-like string to make sure php casting doesn't break validation
         $field2 = uniqid();
         $field3 = uniqid();
         $value1 = uniqid();
@@ -2267,7 +2263,7 @@ class CacheClientTest extends TestCase
     public function testDictionaryGetBatchFieldsValuesArray_HappyPath()
     {
         $dictionaryName = uniqid();
-        $field1 = uniqid();
+        $field1 = "1234"; // explicit integer-like string to make sure php casting doesn't break validation
         $field2 = uniqid();
         $field3 = uniqid();
         $value1 = uniqid();

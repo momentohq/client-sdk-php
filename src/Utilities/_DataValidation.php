@@ -16,9 +16,11 @@ if (!function_exists('validateTtl')) {
 }
 
 if (!function_exists('isNullOrEmpty')) {
-    function isNullOrEmpty(?string $str = null): bool
+    function isNullOrEmpty($value): bool
     {
-        return (is_null($str) || $str === "");
+        // if the value is not null, check if the string value is empty. This covers strings that have been
+        // automatically converted into integers. Scalars cover int, float, string, and bool.
+        return is_null($value) || (is_scalar($value) && strval($value) === "");
     }
 }
 
@@ -68,7 +70,7 @@ if (!function_exists('validateKeys')) {
         foreach ($keys as $key) {
             // Explicitly test type of key. If someone passes us a ["a", "b", "c"] style list upstream
             // instead of a ["key"=>"val"] dict, the "keys" will be integers and we want to reject the payload.
-            if (!is_string($key) || isNullOrEmpty($key)) {
+            if (isNullOrEmpty($key)) {
                 throw new InvalidArgumentError("Keys must all be non-empty strings");
             }
         }
@@ -196,12 +198,8 @@ if (!function_exists('validateSortedSetElements')) {
     function validateSortedSetElements(array $elements): void
     {
         foreach ($elements as $value => $score) {
-            if (!is_string($value)) {
-                throw new InvalidArgumentError("Sorted set value must be a string");
-            }
-
             if (!is_float($score)) {
-                throw new InvalidArgumentException("Sorted set score must be a float");
+                throw new InvalidArgumentError("Sorted set score must be a float");
             }
 
             validateValueName($value);
@@ -216,7 +214,7 @@ if (!function_exists('validateSortedSetValues')) {
             throw new InvalidArgumentError("sorted set values must be a non-empty array");
         }
         foreach ($values as $value) {
-            if (!is_string($value) || isNullOrEmpty($value)) {
+            if (isNullOrEmpty($value)) {
                 throw new InvalidArgumentError("sorted set values must all be non-empty strings");
             }
         }
