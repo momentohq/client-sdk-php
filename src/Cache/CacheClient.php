@@ -1866,7 +1866,7 @@ class CacheClient implements LoggerAwareInterface
     /**
      * Increment the score of an element in a sorted set.
      *
-     * @param string $cacheName Name of the cache in which to increment the key's value
+     * @param string $cacheName Name of the cache in which to increment the element's score
      * @param string $sortedSetName The name of the sorted set in which to increment the element's score
      * @param string $value The value to increment
      * @param float $amount The amount by which to increment the score
