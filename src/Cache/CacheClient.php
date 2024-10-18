@@ -46,6 +46,7 @@ use Momento\Cache\CacheOperationTypes\SetLengthResponse;
 use Momento\Cache\CacheOperationTypes\SetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetFetchResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetGetScoreResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
@@ -1828,7 +1829,66 @@ class CacheClient implements LoggerAwareInterface
         return $this->sortedSetPutElementsAsync($cacheName, $sortedSetName, $elements, $ttl)->wait();
     }
 
-    // placeholder: sortedSetIncrementScore
+
+    /**
+     * Increment the score of an element in a sorted set.
+     *
+     * @param string $cacheName Name of the cache in which to increment the key's value
+     * @param string $sortedSetName The name of the sorted set in which to increment the element's score
+     * @param string $value The value to increment
+     * @param float $amount The amount by which to increment the score
+     * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
+     * @return ResponseFuture<SortedSetIncrementScoreResponse> A waitable future which will
+     * provide the result of the increment operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the increment operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SortedSetIncrementScoreSuccess<br>
+     * * SortedSetIncrementScoreError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * } elseif ($success = $response->asSuccess()) {
+     *   $keyIsInCache = $success->exists();
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function sortedSetIncrementScoreAsync(string $cacheName, string $sortedSetName, string $value, float $amount, ?CollectionTtl $ttl = null): ResponseFuture
+    {
+        return $this->getNextDataClient()->sortedSetIncrementScore($cacheName, $sortedSetName, $value, $amount, $ttl);
+    }
+
+    /**
+     * Increment the score of an element in a sorted set.
+     *
+     * @param string $cacheName Name of the cache in which to increment the key's value
+     * @param string $sortedSetName The name of the sorted set in which to increment the element's score
+     * @param string $value The value to increment
+     * @param float $amount The amount by which to increment the score
+     * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
+     * @return SortedSetIncrementScoreResponse Represents the result of the increment operation.
+     * This result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SortedSetIncrementScoreSuccess<br>
+     * * SortedSetIncrementScoreError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($error = $response->asError()) {
+     *   // handle error condition
+     * } elseif ($success = $response->asSuccess()) {
+     *   $keyIsInCache = $success->exists();
+     * }
+     * </code>
+     */
+    public function sortedSetIncrementScore(string $cacheName, string $sortedSetName, string $value, float $amount, ?CollectionTtl $ttl = null): SortedSetIncrementScoreResponse
+    {
+        return $this->sortedSetIncrementScoreAsync($cacheName, $sortedSetName, $value, $amount, $ttl)->wait();
+    }
 
     /**
      * Fetch the elements in a sorted set by index (rank).
