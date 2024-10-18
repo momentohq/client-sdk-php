@@ -3498,7 +3498,7 @@ abstract class SortedSetFetchResponse extends ResponseBase
  */
 class SortedSetFetchHit extends SortedSetFetchResponse
 {
-    private array $elements;
+    private array $elements = [];
 
     public function __construct(_SortedSetFetchResponse $response)
     {
