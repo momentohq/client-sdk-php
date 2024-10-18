@@ -3244,27 +3244,41 @@ class SetRemoveElementError extends SetRemoveElementResponse
  * response object is resolved to a type-safe object of one of
  * the following subtypes:
  *
- * * SortedSetLengthByScoreSuccess
+ * * SortedSetLengthByScoreHit
+ * * SortedSetLengthByScoreMiss
  * * SortedSetLengthByScoreError
  *
  * Pattern matching can be used to operate on the appropriate subtype.
  * For example:
  * <code>
- * if ($success = $response->asSuccess()) {
- *     return $success->length();
- * } elseif ($error = $response->asError())
- *     // handle error as appropriate
- * }
+ * if ($success = $response->asHit()) {
+ *      return $success->length();
+ *  } elseif ($response->asMiss())
+ *      // handle miss as appropriate
+ *  } elseif ($error = $response->asError())
+ *      // handle error as appropriate
+ *  }
  * </code>
  */
 abstract class SortedSetLengthByScoreResponse extends ResponseBase
 {
     /**
-     * @return SortedSetLengthByScoreSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     * @return SortedSetLengthByScoreHit|null Returns the hit subtype if the request returned a hit and null otherwise.
      */
-    public function asSuccess(): ?SortedSetLengthByScoreSuccess
+    public function asHit(): ?SortedSetLengthByScoreHit
     {
-        if ($this->isSuccess()) {
+        if ($this->isHit()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SortedSetLengthByScoreMiss|null Returns the miss subtype if the request returned a miss and null otherwise.
+     */
+    public function asMiss(): ?SortedSetLengthByScoreMiss
+    {
+        if ($this->isMiss()) {
             return $this;
         }
         return null;
@@ -3285,7 +3299,7 @@ abstract class SortedSetLengthByScoreResponse extends ResponseBase
 /**
  * Indicates that the request that generated it was successful.
  */
-class SortedSetLengthByScoreSuccess extends SortedSetLengthByScoreResponse
+class SortedSetLengthByScoreHit extends SortedSetLengthByScoreResponse
 {
     private int $length;
 
@@ -3307,6 +3321,13 @@ class SortedSetLengthByScoreSuccess extends SortedSetLengthByScoreResponse
     {
         return parent::__toString() . ": {$this->length}";
     }
+}
+
+/**
+ * Indicates that the request that generated it was a cache miss.
+ */
+class SortedSetLengthByScoreMiss extends SortedSetLengthByScoreResponse
+{
 }
 
 /**

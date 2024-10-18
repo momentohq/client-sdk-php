@@ -202,6 +202,8 @@ use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreError;
 use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreSuccess;
 use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreError;
+use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreHit;
+use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreMiss;
 use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreSuccess;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementError;
@@ -1687,7 +1689,10 @@ class ScsDataClient implements LoggerAwareInterface
                 try {
                     $response = $this->processCall($call);
 
-                    return new SortedSetLengthByScoreSuccess($response);
+                    if ($response->hasFound()) {
+                        return new SortedSetLengthByScoreHit($response);
+                    }
+                    return new SortedSetLengthByScoreMiss();
                 } catch (SdkError $e) {
                     return new SortedSetLengthByScoreError($e);
                 } catch (Exception $e) {

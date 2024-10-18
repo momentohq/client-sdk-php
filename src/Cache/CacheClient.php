@@ -2209,13 +2209,16 @@ class CacheClient implements LoggerAwareInterface
      * <code>$response = $responseFuture->wait();</code><br />
      * The response represents the result of the sorted set length by score operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * SortedSetLengthByScoreSuccess<br>
+     * * SortedSetLengthByScoreHit<br>
+     * * SortedSetLengthByScoreMiss<br>
      * * SortedSetLengthByScoreError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>
-     * if ($success = $response->asSuccess()) {
-     *   $length = success->length();
-     * } elseif ($error = $response->asError()) {
+     * if ($success = $response->asHit()) {
+     *   return $success->length();
+     * } elseif ($response->asMiss())
+     *   // handle miss response
+     * } elseif ($error = $response->asError())
      *   // handle error condition
      * }
      * </code>
@@ -2239,13 +2242,16 @@ class CacheClient implements LoggerAwareInterface
      *  elements to fetch. Defaults to positive infinity.
      * @return SortedSetLengthByScoreResponse Represents the result of the sorted set length by score operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
-     * * SortedSetLengthByScoreSuccess<br>
-     * * SortedSetByScoreLengthError<br>
+     * * SortedSetLengthByScoreHit<br>
+     * * SortedSetLengthByScoreMiss<br>
+     * * SortedSetLengthByScoreError<br>
      * Pattern matching can be to operate on the appropriate subtype:<br>
      * <code>
-     * if ($success = $response->asSuccess()) {
-     *   $length = success->length();
-     * } elseif ($error = $response->asError()) {
+     * if ($success = $response->asHit()) {
+     *   return $success->length();
+     * } elseif ($response->asMiss())
+     *   // handle miss response
+     * } elseif ($error = $response->asError())
      *   // handle error condition
      * }
      * </code>
