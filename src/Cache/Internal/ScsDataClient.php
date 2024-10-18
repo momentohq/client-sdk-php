@@ -234,6 +234,7 @@ use function Momento\Utilities\validateSetName;
 use function Momento\Utilities\validateSortedSetElements;
 use function Momento\Utilities\validateSortedSetName;
 use function Momento\Utilities\validateSortedSetRanks;
+use function Momento\Utilities\validateSortedSetScores;
 use function Momento\Utilities\validateSortedSetValues;
 use function Momento\Utilities\validateTruncateSize;
 use function Momento\Utilities\validateTtl;
@@ -1665,6 +1666,89 @@ class ScsDataClient implements LoggerAwareInterface
                 $byIndex->setUnboundedEnd(new _Unbounded());
             }
             $sortedSetFetchRequest->setByIndex($byIndex);
+
+            if (is_null($order) || $order >= SORT_ASC) {
+                $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::ASCENDING);
+            } else {
+                $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::DESCENDING);
+            }
+
+            $call = $this->grpcManager->client->SortedSetFetch(
+                $sortedSetFetchRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SortedSetFetchError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SortedSetFetchError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SortedSetFetchResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    if ($response->hasFound()) {
+                        return new SortedSetFetchHit($response);
+                    }
+                    return new SortedSetFetchMiss();
+                } catch (SdkError $e) {
+                    return new SortedSetFetchError($e);
+                } catch (Exception $e) {
+                    return new SortedSetFetchError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    /**
+     * @return ResponseFuture<SortedSetFetchResponse>
+     */
+    public function sortedSetFetchByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null, ?int $order = SORT_ASC, ?int $offset = null, ?int $count = null): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSortedSetName($sortedSetName);
+            validateSortedSetScores($minScore, $maxScore);
+
+            $sortedSetFetchRequest = new _SortedSetFetchRequest();
+            $sortedSetFetchRequest->setSetName($sortedSetName);
+            $sortedSetFetchRequest->setWithScores(true);
+
+            $byScore = new _SortedSetFetchRequest\_ByScore();
+
+            if (is_null($minScore)) {
+                $byScore->setUnboundedMin(new _Unbounded());
+            } else {
+                $byScore->setMinScore(new _SortedSetFetchRequest\_ByScore\_Score([
+                    'score' => $minScore,
+                    'exclusive' => false,
+                ]));
+            }
+            if (is_null($maxScore)) {
+                $byScore->setUnboundedMax(new _Unbounded());
+            } else {
+                $byScore->setMaxScore(new _SortedSetFetchRequest\_ByScore\_Score([
+                    'score' => $maxScore,
+                    'exclusive' => false,
+                ]));
+            }
+
+            if (is_null($offset)) {
+                $byScore->setOffset(0);
+            } else {
+                $byScore->setOffset($offset);
+            }
+
+            if (is_null($count)) {
+                // a negative count returns all elements.
+                $byScore->setCount(-1);
+            } else {
+                $byScore->setCount($count);
+            }
+
+            $sortedSetFetchRequest->setByScore($byScore);
 
             if (is_null($order) || $order >= SORT_ASC) {
                 $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::ASCENDING);

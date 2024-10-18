@@ -1899,7 +1899,84 @@ class CacheClient implements LoggerAwareInterface
         return $this->sortedSetFetchByRankAsync($cacheName, $sortedSetName, $startRank, $endRank, $order)->wait();
     }
 
-    // placeholder: sortedSetFetchByScore
+    /**
+     * Fetch the elements in a sorted set by score.
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $sortedSetName The sorted set to fetch.
+     * @param ?float $minScore The minimum score (inclusive) of the
+     * elements to fetch. Defaults to negative infinity.
+     * @param ?float $maxScore The maximum score (inclusive) of the
+     * elements to fetch. Defaults to positive infinity.
+     * @param ?int $order The order to fetch the elements in. Defaults to Ascending.
+     *  Will be treated as ascending if SORT_ASC or higher is supplied, and descending if SORT_DESC or lower is supplied.
+     * @param ?int $offset The number of elements to skip before
+     * returning the first element. Defaults to 0. Note: this is not the rank of
+     * the first element to return, but the number of elements of the result set
+     * to skip before returning the first element.
+     * @param ?int $count The maximum number of elements to return.
+     * Defaults to undefined, which returns all elements.
+     * @return ResponseFuture<SortedSetFetchResponse> A waitable future which will
+     * provide the result of the sorted set fetch operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the sorted set fetch operation. This
+     * result is resolved to a type-safe object of one of the following
+     * types:<br>
+     * * SortedSetFetchHit<br>
+     * * SortedSetFetchMiss<br>
+     * * SortedSetFetchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $theSet = $response->valueArray();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function sortedSetFetchByScoreAsync(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null, ?int $order = SORT_ASC, ?int $offset = null, ?int $count = null): ResponseFuture
+    {
+        return $this->getNextDataClient()->sortedSetFetchByScore($cacheName, $sortedSetName, $minScore, $maxScore, $order, $offset, $count);
+    }
+
+    /**
+     * Fetch the elements in a sorted set by score.
+     *
+     * @param string $cacheName Name of the cache that contains the set.
+     * @param string $sortedSetName The sorted set to fetch.
+     * @param ?float $minScore The minimum score (inclusive) of the
+     * elements to fetch. Defaults to negative infinity.
+     * @param ?float $maxScore The maximum score (inclusive) of the
+     * elements to fetch. Defaults to positive infinity.
+     * @param ?int $order The order to fetch the elements in. Defaults to Ascending.
+     * Will be treated as ascending if SORT_ASC or higher is supplied, and descending if SORT_DESC or lower is supplied.
+     * @param ?int $offset The number of elements to skip before
+     * returning the first element. Defaults to 0. Note: this is not the rank of
+     * the first element to return, but the number of elements of the result set
+     * to skip before returning the first element.
+     * @param ?int $count The maximum number of elements to return.
+     * Defaults to undefined, which returns all elements.
+     * @return SortedSetFetchResponse Represents the result of the sorted set fetch operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SortedSetFetchHit<br>
+     * * SortedSetFetchMiss<br>
+     * * SortedSetFetchError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($hit = $response->asHit()) {
+     *   $theSet = $response->valueArray();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     */
+    public function sortedSetFetchByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null, ?int $order = SORT_ASC, ?int $offset = null, ?int $count = null): SortedSetFetchResponse
+    {
+        return $this->sortedSetFetchByScoreAsync($cacheName, $sortedSetName, $minScore, $maxScore, $order, $offset, $count)->wait();
+    }
 
     /**
      * Get the score associated with a value in a sorted set.
