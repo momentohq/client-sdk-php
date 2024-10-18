@@ -220,3 +220,16 @@ if (!function_exists('validateSortedSetValues')) {
         }
     }
 }
+
+if (!function_exists('validateSortedSetScores')) {
+    function validateSortedSetScores(?float $minScore, ?float $maxScore): void
+    {
+        if (is_null($minScore) || is_null($maxScore)) {
+            return;
+        }
+
+        if ($minScore > $maxScore) {
+            throw new InvalidArgumentError("minScore must be less than or equal to maxScore");
+        }
+    }
+}
