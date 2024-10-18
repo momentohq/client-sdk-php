@@ -47,6 +47,7 @@ use Momento\Cache\CacheOperationTypes\SetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\SetResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetFetchResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetGetScoreResponse;
 use Momento\Cache\CacheOperationTypes\CreateCacheResponse;
@@ -1677,8 +1678,6 @@ class CacheClient implements LoggerAwareInterface
         return $this->setLengthAsync($cacheName, $setName)->wait();
     }
 
-    // placeholder: sortedSetLengthByScore
-
     /**
      * Remove an element from a set.
      *
@@ -2194,6 +2193,66 @@ class CacheClient implements LoggerAwareInterface
     public function sortedSetRemoveElements(string $cacheName, string $sortedSetName, array $values): SortedSetRemoveElementsResponse
     {
         return $this->sortedSetRemoveElementsAsync($cacheName, $sortedSetName, $values)->wait();
+    }
+
+    /**
+     * Get the length of a sorted set, optionally limited by a minimum and maximum score.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted set.
+     * @param string $sortedSetName The name of the sorted set whose length should be returned.
+     * @param ?float $minScore The minimum score (inclusive) of the
+     * elements to fetch. Defaults to negative infinity.
+     * @param ?float $maxScore The maximum score (inclusive) of the
+     * elements to fetch. Defaults to positive infinity.
+     * @return ResponseFuture<SortedSetLengthByScoreResponse> A waitable future which will
+     * provide the result of the sorted set length by score operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the sorted set length by score operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SortedSetLengthByScoreSuccess<br>
+     * * SortedSetLengthByScoreError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $length = success->length();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     * If inspection of the response is not required, one need not call wait as
+     * we implicitly wait for completion of the request on destruction of the
+     * response future.
+     */
+    public function sortedSetLengthByScoreAsync(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null): ResponseFuture
+    {
+        return $this->getNextDataClient()->sortedSetLengthByScore($cacheName, $sortedSetName, $minScore, $maxScore);
+    }
+
+    /**
+     * Get the length of a sorted set, optionally limited by a minimum and maximum score.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted set.
+     * @param string $sortedSetName The name of the sorted set whose length should be returned.
+     * @param ?float $minScore The minimum score (inclusive) of the
+     *  elements to fetch. Defaults to negative infinity.
+     * @param ?float $maxScore The maximum score (inclusive) of the
+     *  elements to fetch. Defaults to positive infinity.
+     * @return SortedSetLengthByScoreResponse Represents the result of the sorted set length by score operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SortedSetLengthByScoreSuccess<br>
+     * * SortedSetByScoreLengthError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   $length = success->length();
+     * } elseif ($error = $response->asError()) {
+     *   // handle error condition
+     * }
+     * </code>
+     */
+    public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null): SortedSetLengthByScoreResponse
+    {
+        return $this->sortedSetLengthByScoreAsync($cacheName, $sortedSetName, $minScore, $maxScore)->wait();
     }
 
     /**

@@ -22,10 +22,10 @@ use Cache_client\_SetContainsResponse;
 use Cache_client\_SetFetchResponse;
 use Cache_client\_SetLengthResponse;
 use Cache_client\_SortedSetFetchResponse;
+use Cache_client\_SortedSetLengthByScoreResponse;
 use Cache_client\ECacheResult;
 use Closure;
 use Control_client\_ListCachesResponse;
-use Generator;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Throwable;
@@ -3239,7 +3239,83 @@ class SetRemoveElementError extends SetRemoveElementResponse
     use ErrorBody;
 }
 
-// placeholder: sortedSetLengthByScore
+/**
+ * Parent response type for a sorted set length by score request. The
+ * response object is resolved to a type-safe object of one of
+ * the following subtypes:
+ *
+ * * SortedSetLengthByScoreSuccess
+ * * SortedSetLengthByScoreError
+ *
+ * Pattern matching can be used to operate on the appropriate subtype.
+ * For example:
+ * <code>
+ * if ($success = $response->asSuccess()) {
+ *     return $success->length();
+ * } elseif ($error = $response->asError())
+ *     // handle error as appropriate
+ * }
+ * </code>
+ */
+abstract class SortedSetLengthByScoreResponse extends ResponseBase
+{
+    /**
+     * @return SortedSetLengthByScoreSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): ?SortedSetLengthByScoreSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SortedSetLengthByScoreError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SortedSetLengthByScoreError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+/**
+ * Indicates that the request that generated it was successful.
+ */
+class SortedSetLengthByScoreSuccess extends SortedSetLengthByScoreResponse
+{
+    private int $length;
+
+    public function __construct(_SortedSetLengthByScoreResponse $response)
+    {
+        parent::__construct();
+        $this->length = $response->getFound() ? $response->getFound()->getLength() : 0;
+    }
+
+    /**
+     * @return int Length of the specified sorted set.
+     */
+    public function length(): int
+    {
+        return $this->length;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": {$this->length}";
+    }
+}
+
+/**
+ * Contains information about an error returned from the request.
+ */
+class SortedSetLengthByScoreError extends SortedSetLengthByScoreResponse
+{
+    use ErrorBody;
+}
 
 /**
  * Parent response type for a sorted set put element request. The
