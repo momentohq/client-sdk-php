@@ -2355,7 +2355,7 @@ abstract class DictionaryFetchResponse extends ResponseBase
  */
 class DictionaryFetchHit extends DictionaryFetchResponse
 {
-    private array $valuesDictionary;
+    private array $valuesDictionary = [];
 
     public function __construct(_DictionaryFetchResponse $response)
     {
@@ -3062,7 +3062,7 @@ abstract class SetFetchResponse extends ResponseBase
  */
 class SetFetchHit extends SetFetchResponse
 {
-    private array $stringSet;
+    private array $stringSet = [];
 
     public function __construct(_SetFetchResponse $response)
     {
@@ -3422,7 +3422,7 @@ abstract class SortedSetFetchResponse extends ResponseBase
  */
 class SortedSetFetchHit extends SortedSetFetchResponse
 {
-    private array $elements;
+    private array $elements = [];
 
     public function __construct(_SortedSetFetchResponse $response)
     {

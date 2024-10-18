@@ -1655,12 +1655,12 @@ class ScsDataClient implements LoggerAwareInterface
             $sortedSetFetchRequest->setWithScores(true);
 
             $byIndex = new _SortedSetFetchRequest\_ByIndex();
-            if ($startRank) {
+            if (!is_null($startRank)) {
                 $byIndex->setInclusiveStartIndex($startRank);
             } else {
                 $byIndex->setUnboundedStart(new _Unbounded());
             }
-            if ($endRank) {
+            if (!is_null($endRank)) {
                 $byIndex->setExclusiveEndIndex($endRank);
             } else {
                 $byIndex->setUnboundedEnd(new _Unbounded());

@@ -3520,6 +3520,16 @@ class CacheClientTest extends TestCase
         ];
 
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
+
+        // limit by count to 0
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, null, null, null, 0);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $fetchedElements = $response->asHit()->valuesArray();
+        $expectedElements = [];
+
+        $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
     }
 
     public function testSortedSetFetchByScoreWithNonexistantCache_ThrowsException()
