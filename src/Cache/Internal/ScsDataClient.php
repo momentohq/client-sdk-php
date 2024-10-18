@@ -36,6 +36,7 @@ use Cache_client\_SortedSetElement;
 use Cache_client\_SortedSetFetchRequest;
 use Cache_client\_SortedSetGetScoreRequest;
 use Cache_client\_SortedSetIncrementRequest;
+use Cache_client\_SortedSetLengthByScoreRequest;
 use Cache_client\_SortedSetPutRequest;
 use Cache_client\_SortedSetRemoveRequest;
 use Cache_client\_UpdateTtlRequest;
@@ -200,6 +201,9 @@ use Momento\Cache\CacheOperationTypes\SortedSetGetScoreResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreError;
 use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetIncrementScoreSuccess;
+use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreError;
+use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreSuccess;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementError;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementsError;
@@ -1639,6 +1643,55 @@ class ScsDataClient implements LoggerAwareInterface
                     return new SortedSetPutElementsError($e);
                 } catch (Exception $e) {
                     return new SortedSetPutElementsError(new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    /**
+     * @return ResponseFuture<SortedSetLengthByScoreResponse>
+     */
+    public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null): ResponseFuture
+    {
+        try {
+            validateCacheName($cacheName);
+            validateSortedSetName($sortedSetName);
+            validateSortedSetScores($minScore, $maxScore);
+            $sortedSetLengthByScoreRequest = new _SortedSetLengthByScoreRequest();
+            $sortedSetLengthByScoreRequest->setSetName($sortedSetName);
+
+            if (!is_null($minScore)) {
+                $sortedSetLengthByScoreRequest->setInclusiveMin($minScore);
+            } else {
+                $sortedSetLengthByScoreRequest->setUnboundedMin(new _Unbounded());
+            }
+            if (!is_null($maxScore)) {
+                $sortedSetLengthByScoreRequest->setInclusiveMax($maxScore);
+            } else {
+                $sortedSetLengthByScoreRequest->setUnboundedMax(new _Unbounded());
+            }
+
+            $call = $this->grpcManager->client->SortedSetLengthByScore(
+                $sortedSetLengthByScoreRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SortedSetLengthByScoreError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SortedSetLengthByScoreError(new UnknownError($e->getMessage())));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SortedSetLengthByScoreResponse {
+                try {
+                    $response = $this->processCall($call);
+
+                    return new SortedSetLengthByScoreSuccess($response);
+                } catch (SdkError $e) {
+                    return new SortedSetLengthByScoreError($e);
+                } catch (Exception $e) {
+                    return new SortedSetLengthByScoreError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );
