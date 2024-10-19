@@ -3936,6 +3936,106 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
+    public function testSortedSetLengthByScore_HappyPath()
+    {
+        $sortedSetName = uniqid();
+
+        $elements = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+            "qux" => 4.0,
+        ];
+
+        // the length is 0 when the set does not yet exist
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
+
+        $response = $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName, $elements);
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        // full set
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
+
+        $fetchedLength = $response->asHit()->length();
+        $expectedLength = 4;
+        $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
+
+        // limit by min score
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
+
+        $fetchedLength = $response->asHit()->length();
+        $expectedLength = 3;
+        $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
+
+        // limit by max score
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, null, 3.9);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
+
+        $fetchedLength = $response->asHit()->length();
+        $expectedLength = 3;
+        $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
+
+        // limit by min and max score
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, 3.9);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
+
+        $fetchedLength = $response->asHit()->length();
+        $expectedLength = 2;
+        $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
+
+        // no elements in score range
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 100.0);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
+
+        $fetchedLength = $response->asHit()->length();
+        $expectedLength = 0;
+        $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
+    }
+
+    public function testSortedSetLengthByScoreWithNonexistantCache_ThrowsException()
+    {
+        $cacheName = uniqid();
+        $sortedSetName = uniqid();
+        $response = $this->client->sortedSetLengthByScore($cacheName, $sortedSetName);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetLengthByScoreWithNullCacheName_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $response = $this->client->sortedSetLengthByScore((string)null, $sortedSetName);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetLengthByScoreWithEmptyCacheName_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $response = $this->client->sortedSetLengthByScore("", $sortedSetName);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetLengthByScoreWithMinScoreLargerThanMaxScore_ThrowsException()
+    {
+        $sortedSetName = uniqid();
+        $minScore = 100.0;
+        $maxScore = 1.0;
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, $minScore, $maxScore);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
     public function testGetBatch_HappyPath()
     {
         $cacheName = $this->TEST_CACHE_NAME;
