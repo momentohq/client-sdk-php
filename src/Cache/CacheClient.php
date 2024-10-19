@@ -1900,7 +1900,8 @@ class CacheClient implements LoggerAwareInterface
      * This rank is exclusive, i.e. the element at this rank will not be fetched.
      * Defaults to null, which fetches up until and including the last element.
      * @param ?int $order The order to fetch the elements in. Defaults to Ascending.
-     * Will be treated as ascending if SORT_ASC or higher is supplied, and descending if SORT_DESC or lower is supplied.
+     * Use SORT_ASC for ascending order, or SORT_DESC for descending order.
+     * Any other values will be treated as ascending
      * @return ResponseFuture<SortedSetFetchResponse> A waitable future which will
      * provide the result of the sorted set fetch operation upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
@@ -1938,7 +1939,8 @@ class CacheClient implements LoggerAwareInterface
      * This rank is exclusive, i.e. the element at this rank will not be fetched.
      * Defaults to null, which fetches up until and including the last element.
      * @param ?int $order The order to fetch the elements in. Defaults to Ascending.
-     * Will be treated as ascending if SORT_ASC or higher is supplied, and descending if SORT_DESC or lower is supplied.
+     * Use SORT_ASC for ascending order, or SORT_DESC for descending order.
+     * Any other values will be treated as ascending
      * @return SortedSetFetchResponse Represents the result of the sorted set fetch operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * SortedSetFetchHit<br>
@@ -1968,7 +1970,8 @@ class CacheClient implements LoggerAwareInterface
      * @param ?float $maxScore The maximum score (inclusive) of the
      * elements to fetch. Defaults to positive infinity.
      * @param ?int $order The order to fetch the elements in. Defaults to Ascending.
-     *  Will be treated as ascending if SORT_ASC or higher is supplied, and descending if SORT_DESC or lower is supplied.
+     * Use SORT_ASC for ascending order, or SORT_DESC for descending order.
+     * Any other values will be treated as ascending
      * @param ?int $offset The number of elements to skip before
      * returning the first element. Defaults to 0. Note: this is not the rank of
      * the first element to return, but the number of elements of the result set
@@ -2011,7 +2014,8 @@ class CacheClient implements LoggerAwareInterface
      * @param ?float $maxScore The maximum score (inclusive) of the
      * elements to fetch. Defaults to positive infinity.
      * @param ?int $order The order to fetch the elements in. Defaults to Ascending.
-     * Will be treated as ascending if SORT_ASC or higher is supplied, and descending if SORT_DESC or lower is supplied.
+     * Use SORT_ASC for ascending order, or SORT_DESC for descending order.
+     * Any other values will be treated as ascending
      * @param ?int $offset The number of elements to skip before
      * returning the first element. Defaults to 0. Note: this is not the rank of
      * the first element to return, but the number of elements of the result set
