@@ -202,7 +202,7 @@ if (!function_exists('validateSortedSetElements')) {
                 throw new InvalidArgumentError("Sorted set score must be a float");
             }
 
-            validateValueName($value);
+            validateNullOrEmpty($value, "Sorted set value");
         }
     }
 }
@@ -230,6 +230,15 @@ if (!function_exists('validateSortedSetScores')) {
 
         if ($minScore > $maxScore) {
             throw new InvalidArgumentError("minScore must be less than or equal to maxScore");
+        }
+    }
+}
+
+if (!function_exists('validateSortedSetOrder')) {
+    function validateSortedSetOrder(int $order): void
+    {
+        if ($order != SORT_ASC && $order != SORT_DESC) {
+            throw new InvalidArgumentError("Sorted set sort order must be SORT_ASC or SORT_DESC");
         }
     }
 }

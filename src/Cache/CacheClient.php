@@ -1965,13 +1965,16 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $sortedSetName The sorted set to fetch.
-     * @param ?float $minScore The minimum score (inclusive) of the
-     * elements to fetch. Defaults to negative infinity.
-     * @param ?float $maxScore The maximum score (inclusive) of the
-     * elements to fetch. Defaults to positive infinity.
-     * @param ?int $order The order to fetch the elements in. Defaults to Ascending.
-     * Use SORT_ASC for ascending order, or SORT_DESC for descending order.
-     * Any other values will be treated as ascending
+     * @param ?float $minScore The minimum score of the elements to fetch.
+     * Defaults to negative infinity.
+     * @param bool $inclusiveMin Whether to include elements with a score equal to $minScore in the length.
+     * Defaults to true.
+     * @param ?float $maxScore The maximum score of the elements to fetch.
+     * Defaults to positive infinity.
+     * @param bool $inclusiveMax Whether to include elements with a score equal to $maxScore in the length.
+     * Defaults to true.
+     * @param int $order The order to fetch the elements in. Defaults to Ascending.
+     * Must be SORT_ASC for ascending order, or SORT_DESC for descending order.
      * @param ?int $offset The number of elements to skip before
      * returning the first element. Defaults to 0. Note: this is not the rank of
      * the first element to return, but the number of elements of the result set
@@ -1999,9 +2002,9 @@ class CacheClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function sortedSetFetchByScoreAsync(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null, ?int $order = SORT_ASC, ?int $offset = null, ?int $count = null): ResponseFuture
+    public function sortedSetFetchByScoreAsync(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true, int $order = SORT_ASC, ?int $offset = null, ?int $count = null): ResponseFuture
     {
-        return $this->getNextDataClient()->sortedSetFetchByScore($cacheName, $sortedSetName, $minScore, $maxScore, $order, $offset, $count);
+        return $this->getNextDataClient()->sortedSetFetchByScore($cacheName, $sortedSetName, $minScore, $inclusiveMin, $maxScore, $inclusiveMax, $order, $offset, $count);
     }
 
     /**
@@ -2009,13 +2012,16 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $sortedSetName The sorted set to fetch.
-     * @param ?float $minScore The minimum score (inclusive) of the
-     * elements to fetch. Defaults to negative infinity.
-     * @param ?float $maxScore The maximum score (inclusive) of the
-     * elements to fetch. Defaults to positive infinity.
-     * @param ?int $order The order to fetch the elements in. Defaults to Ascending.
-     * Use SORT_ASC for ascending order, or SORT_DESC for descending order.
-     * Any other values will be treated as ascending
+     * @param ?float $minScore The minimum score of the elements to fetch.
+     * Defaults to negative infinity.
+     * @param bool $inclusiveMin Whether to include elements with a score equal to $minScore in the length.
+     * Defaults to true.
+     * @param ?float $maxScore The maximum score of the elements to fetch.
+     * Defaults to positive infinity.
+     * @param bool $inclusiveMax Whether to include elements with a score equal to $maxScore in the length.
+     * Defaults to true.
+     * @param int $order The order to fetch the elements in. Defaults to Ascending.
+     * Must be SORT_ASC for ascending order, or SORT_DESC for descending order.
      * @param ?int $offset The number of elements to skip before
      * returning the first element. Defaults to 0. Note: this is not the rank of
      * the first element to return, but the number of elements of the result set
@@ -2036,9 +2042,9 @@ class CacheClient implements LoggerAwareInterface
      * }
      * </code>
      */
-    public function sortedSetFetchByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null, ?int $order = SORT_ASC, ?int $offset = null, ?int $count = null): SortedSetFetchResponse
+    public function sortedSetFetchByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true, int $order = SORT_ASC, ?int $offset = null, ?int $count = null): SortedSetFetchResponse
     {
-        return $this->sortedSetFetchByScoreAsync($cacheName, $sortedSetName, $minScore, $maxScore, $order, $offset, $count)->wait();
+        return $this->sortedSetFetchByScoreAsync($cacheName, $sortedSetName, $minScore, $inclusiveMin, $maxScore, $inclusiveMax, $order, $offset, $count)->wait();
     }
 
     /**

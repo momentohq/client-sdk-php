@@ -242,6 +242,7 @@ use function Momento\Utilities\validateOperationTimeout;
 use function Momento\Utilities\validateSetName;
 use function Momento\Utilities\validateSortedSetElements;
 use function Momento\Utilities\validateSortedSetName;
+use function Momento\Utilities\validateSortedSetOrder;
 use function Momento\Utilities\validateSortedSetRanks;
 use function Momento\Utilities\validateSortedSetScores;
 use function Momento\Utilities\validateSortedSetValues;
@@ -1755,12 +1756,13 @@ class ScsDataClient implements LoggerAwareInterface
     /**
      * @return ResponseFuture<SortedSetFetchResponse>
      */
-    public function sortedSetFetchByRank(string $cacheName, string $sortedSetName, ?int $startRank = 0, ?int $endRank = null, ?int $order = SORT_ASC): ResponseFuture
+    public function sortedSetFetchByRank(string $cacheName, string $sortedSetName, ?int $startRank = 0, ?int $endRank = null, int $order = SORT_ASC): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
             validateSortedSetName($sortedSetName);
             validateSortedSetRanks($startRank, $endRank);
+            validateSortedSetOrder($order);
 
             $sortedSetFetchRequest = new _SortedSetFetchRequest();
             $sortedSetFetchRequest->setSetName($sortedSetName);
@@ -1817,12 +1819,13 @@ class ScsDataClient implements LoggerAwareInterface
     /**
      * @return ResponseFuture<SortedSetFetchResponse>
      */
-    public function sortedSetFetchByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null, ?int $order = SORT_ASC, ?int $offset = null, ?int $count = null): ResponseFuture
+    public function sortedSetFetchByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true, int $order = SORT_ASC, ?int $offset = null, ?int $count = null): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
             validateSortedSetName($sortedSetName);
             validateSortedSetScores($minScore, $maxScore);
+            validateSortedSetOrder($order);
 
             $sortedSetFetchRequest = new _SortedSetFetchRequest();
             $sortedSetFetchRequest->setSetName($sortedSetName);
@@ -1835,7 +1838,7 @@ class ScsDataClient implements LoggerAwareInterface
             } else {
                 $byScore->setMinScore(new _SortedSetFetchRequest\_ByScore\_Score([
                     'score' => $minScore,
-                    'exclusive' => false,
+                    'exclusive' => !$inclusiveMin,
                 ]));
             }
             if (is_null($maxScore)) {
@@ -1843,7 +1846,7 @@ class ScsDataClient implements LoggerAwareInterface
             } else {
                 $byScore->setMaxScore(new _SortedSetFetchRequest\_ByScore\_Score([
                     'score' => $maxScore,
-                    'exclusive' => false,
+                    'exclusive' => !$inclusiveMax,
                 ]));
             }
 
@@ -1862,10 +1865,10 @@ class ScsDataClient implements LoggerAwareInterface
 
             $sortedSetFetchRequest->setByScore($byScore);
 
-            if (is_null($order) || $order >= SORT_ASC) {
-                $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::ASCENDING);
-            } else {
+            if ($order == SORT_DESC) {
                 $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::DESCENDING);
+            } else {
+                $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::ASCENDING);
             }
 
             $call = $this->grpcManager->client->SortedSetFetch(
