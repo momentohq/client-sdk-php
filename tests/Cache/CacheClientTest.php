@@ -2274,7 +2274,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals("$response", get_class($response) . ": 12");
     }
 
-    public function testSetAddElementWithEmptyCacheName_ThrowsException()
+    public function testSetAddElementWithEmptyCacheName_ReturnsError()
     {
         $setName = uniqid();
         $element = uniqid();
@@ -2283,7 +2283,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetAddElementWithEmptySetName_ThrowsException()
+    public function testSetAddElementWithEmptySetName_ReturnsError()
     {
         $element = uniqid();
         $response = $this->client->setAddElement($this->TEST_CACHE_NAME, "", $element, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
@@ -2291,7 +2291,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetAddElementWithEmptyElement_ThrowsException()
+    public function testSetAddElementWithEmptyElement_ReturnsError()
     {
         $setName = uniqid();
         $response = $this->client->setAddElement($this->TEST_CACHE_NAME, $setName, "", CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
@@ -2299,7 +2299,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetAddElementsWithEmptyCacheName_ThrowsException()
+    public function testSetAddElementsWithEmptyCacheName_ReturnsError()
     {
         $setName = uniqid();
         $elements = [uniqid(), uniqid()];
@@ -2308,7 +2308,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetAddElementsWithEmptySetName_ThrowsException()
+    public function testSetAddElementsWithEmptySetName_ReturnsError()
     {
         $elements = [uniqid(), uniqid()];
         $response = $this->client->setAddElements($this->TEST_CACHE_NAME, "", $elements, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
@@ -2316,7 +2316,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetAddElementsWithNoElements_ThrowsException()
+    public function testSetAddElementsWithNoElements_ReturnsError()
     {
         $setName = uniqid();
         $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, [], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
@@ -2324,7 +2324,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetAddElementsWithEmptyElement_ThrowsException()
+    public function testSetAddElementsWithEmptyElement_ReturnsError()
     {
         $setName = uniqid();
         $response = $this->client->setAddElements($this->TEST_CACHE_NAME, $setName, [''], CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
@@ -2332,7 +2332,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetContainsElementsWithEmptyCacheName_ThrowsException()
+    public function testSetContainsElementsWithEmptyCacheName_ReturnsError()
     {
         $setName = uniqid();
         $elements = [uniqid(), uniqid()];
@@ -2341,7 +2341,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetContainsElementsWithEmptySetName_ThrowsException()
+    public function testSetContainsElementsWithEmptySetName_ReturnsError()
     {
         $elements = [uniqid(), uniqid()];
         $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, "", $elements);
@@ -2349,7 +2349,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetContainsElementsWithNoElements_ThrowsException()
+    public function testSetContainsElementsWithNoElements_ReturnsError()
     {
         $setName = uniqid();
         $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, []);
@@ -2357,7 +2357,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetContainsElementsWithEmptyElement_ThrowsException()
+    public function testSetContainsElementsWithEmptyElement_ReturnsError()
     {
         $setName = uniqid();
         $response = $this->client->setContainsElements($this->TEST_CACHE_NAME, $setName, ['']);
@@ -2365,7 +2365,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetFetchWithEmptyCacheName_ThrowsException()
+    public function testSetFetchWithEmptyCacheName_ReturnsError()
     {
         $setName = uniqid();
         $response = $this->client->setFetch("", $setName);
@@ -2373,7 +2373,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetFetchWithEmptySetName_ThrowsException()
+    public function testSetFetchWithEmptySetName_ReturnsError()
     {
         $response = $this->client->setFetch($this->TEST_CACHE_NAME, "");
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
@@ -2638,7 +2638,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
     }
 
-    public function testSetRemoveElementWithEmptyCacheName_ThrowsException()
+    public function testSetRemoveElementWithEmptyCacheName_ReturnsError()
     {
         $setName = uniqid();
         $element = uniqid();
@@ -2647,7 +2647,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetRemoveElementWithEmptySetName_ThrowsException()
+    public function testSetRemoveElementWithEmptySetName_ReturnsError()
     {
         $element = uniqid();
         $response = $this->client->setRemoveElement($this->TEST_CACHE_NAME, "", $element);
@@ -2655,7 +2655,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSetRemoveElementWithEmptyElement_ThrowsException()
+    public function testSetRemoveElementWithEmptyElement_ReturnsError()
     {
         $setName = uniqid();
         $response = $this->client->setRemoveElement($this->TEST_CACHE_NAME, $setName, "");
@@ -2746,7 +2746,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($score, $valuesArray[$value], "The score for value '$value' does not match the expected score.");
     }
 
-    public function testSortedSetPutElementWithNonexistentCache_ThrowsException()
+    public function testSortedSetPutElementWithNonexistentCache_ReturnsError()
     {
         $cacheName = uniqid();
         $sortedSetName = uniqid();
@@ -2757,7 +2757,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetPutElementWithEmptyCacheName_ThrowsException()
+    public function testSortedSetPutElementWithEmptyCacheName_ReturnsError()
     {
         $sortedSetName = uniqid();
         $value = uniqid();
@@ -2767,7 +2767,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetPutElementWithEmptyValue_ThrowsException()
+    public function testSortedSetPutElementWithEmptyValue_ReturnsError()
     {
         $sortedSetName = uniqid();
         $score = 1.0;
@@ -2822,7 +2822,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
     }
 
-    public function testSortedSetPutElementsWithNonexistentCache_ThrowsException()
+    public function testSortedSetPutElementsWithNonexistentCache_ReturnsError()
     {
         $cacheName = uniqid();
         $sortedSetName = uniqid();
@@ -2834,7 +2834,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetPutElementsWithEmptyCacheName_ThrowsException()
+    public function testSortedSetPutElementsWithEmptyCacheName_ReturnsError()
     {
         $sortedSetName = uniqid();
         $elements = [
@@ -2845,7 +2845,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetPutElementsWithEmptyValue_ThrowsException()
+    public function testSortedSetPutElementsWithEmptyValue_ReturnsError()
     {
         $sortedSetName = uniqid();
         $elements = [
@@ -2950,7 +2950,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetIncrementScore_NonexistentCache_ThrowsException()
+    public function testSortedSetIncrementScore_NonexistentCache_ReturnsError()
     {
         $cacheName = uniqid();
         $sortedSetName = uniqid();
@@ -3060,7 +3060,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
     }
 
-    public function testSortedSetFetchByRankWithNonexistantCache_ThrowsException()
+    public function testSortedSetFetchByRankWithNonexistantCache_ReturnsError()
     {
         $cacheName = uniqid();
         $sortedSetName = uniqid();
@@ -3069,7 +3069,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetFetchByRankWithEmptyCacheName_ThrowsException()
+    public function testSortedSetFetchByRankWithEmptyCacheName_ReturnsError()
     {
         $sortedSetName = uniqid();
         $response = $this->client->sortedSetFetchByRank("", $sortedSetName);
@@ -3077,7 +3077,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetFetchByRankWithStartRankGreaterThanEndRank_ThrowsException()
+    public function testSortedSetFetchByRankWithStartRankGreaterThanEndRank_ReturnsError()
     {
         $sortedSetName = uniqid();
         $startRank = 100;
@@ -3087,7 +3087,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetFetchByRankWithNegativeStartRankLessThanEndRank_ThrowsException()
+    public function testSortedSetFetchByRankWithNegativeStartRankLessThanEndRank_ReturnsError()
     {
         $sortedSetName = uniqid();
         $startRank = -1;
@@ -3097,7 +3097,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetFetchByRankWithBadOrder_ThrowsException()
+    public function testSortedSetFetchByRankWithBadOrder_ReturnsError()
     {
         $sortedSetName = uniqid();
         $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName, null, null, 1234);
@@ -3288,7 +3288,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
     }
 
-    public function testSortedSetFetchByScoreWithNonexistantCache_ThrowsException()
+    public function testSortedSetFetchByScoreWithNonexistantCache_ReturnsError()
     {
         $cacheName = uniqid();
         $sortedSetName = uniqid();
@@ -3297,7 +3297,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetFetchByScoreWithEmptyCacheName_ThrowsException()
+    public function testSortedSetFetchByScoreWithEmptyCacheName_ReturnsError()
     {
         $sortedSetName = uniqid();
         $response = $this->client->sortedSetFetchByScore("", $sortedSetName);
@@ -3305,7 +3305,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetFetchByScoreWithMinScoreLargerThanMaxScore_ThrowsException()
+    public function testSortedSetFetchByScoreWithMinScoreLargerThanMaxScore_ReturnsError()
     {
         $sortedSetName = uniqid();
         $minScore = 100.0;
@@ -3315,7 +3315,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetFetchByScoreWithBadOrder_ThrowsException()
+    public function testSortedSetFetchByScoreWithBadOrder_ReturnsError()
     {
         $sortedSetName = uniqid();
         $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, null, true, 1234);
@@ -3370,7 +3370,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
     }
 
-    public function testSortedSetRemoveElementWithNonexistentCache_ThrowsException()
+    public function testSortedSetRemoveElementWithNonexistentCache_ReturnsError()
     {
         $cacheName = uniqid();
         $sortedSetName = uniqid();
@@ -3381,7 +3381,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetRemoveElementWithEmptyCacheName_ThrowsException()
+    public function testSortedSetRemoveElementWithEmptyCacheName_ReturnsError()
     {
         $sortedSetName = uniqid();
         $value = uniqid();
@@ -3391,7 +3391,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetRemoveElementWithEmptyValue_ThrowsException()
+    public function testSortedSetRemoveElementWithEmptyValue_ReturnsError()
     {
         $sortedSetName = uniqid();
 
@@ -3455,7 +3455,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
     }
 
-    public function testSortedSetRemoveElementsWithNonexistentCache_ThrowsException()
+    public function testSortedSetRemoveElementsWithNonexistentCache_ReturnsError()
     {
         $cacheName = uniqid();
         $sortedSetName = uniqid();
@@ -3466,7 +3466,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetRemoveElementsWithEmptyCacheName_ThrowsException()
+    public function testSortedSetRemoveElementsWithEmptyCacheName_ReturnsError()
     {
         $sortedSetName = uniqid();
         $values = [uniqid(), uniqid()];
@@ -3476,7 +3476,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetRemoveElementsWithEmptyValuesArray_ThrowsException()
+    public function testSortedSetRemoveElementsWithEmptyValuesArray_ReturnsError()
     {
         $sortedSetName = uniqid();
         $values = [];
@@ -3486,7 +3486,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetRemoveElementsWithNullValuesArray_ThrowsException()
+    public function testSortedSetRemoveElementsWithNullValuesArray_ReturnsError()
     {
         $sortedSetName = uniqid();
 
@@ -3664,7 +3664,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
     }
 
-    public function testSortedSetLengthByScoreWithNonexistantCache_ThrowsException()
+    public function testSortedSetLengthByScoreWithNonexistantCache_ReturnsError()
     {
         $cacheName = uniqid();
         $sortedSetName = uniqid();
@@ -3673,7 +3673,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::CACHE_NOT_FOUND_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetLengthByScoreWithEmptyCacheName_ThrowsException()
+    public function testSortedSetLengthByScoreWithEmptyCacheName_ReturnsError()
     {
         $sortedSetName = uniqid();
         $response = $this->client->sortedSetLengthByScore("", $sortedSetName);
@@ -3681,7 +3681,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetLengthByScoreWithMinScoreLargerThanMaxScore_ThrowsException()
+    public function testSortedSetLengthByScoreWithMinScoreLargerThanMaxScore_ReturnsError()
     {
         $sortedSetName = uniqid();
         $minScore = 100.0;
