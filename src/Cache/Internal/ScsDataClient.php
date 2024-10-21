@@ -205,7 +205,6 @@ use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreError;
 use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreHit;
 use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreMiss;
 use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreResponse;
-use Momento\Cache\CacheOperationTypes\SortedSetLengthByScoreSuccess;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementError;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementsError;
@@ -293,7 +292,7 @@ class ScsDataClient implements LoggerAwareInterface
             $ttl = $this->defaultTtlSeconds;
         }
         validateTtl($ttl);
-        return (int) round($ttl * 1000);
+        return (int)round($ttl * 1000);
     }
 
     private function returnCollectionTtl(?CollectionTtl $ttl): CollectionTtl
@@ -698,12 +697,12 @@ class ScsDataClient implements LoggerAwareInterface
     /**
      * SetIfNotExists is deprecated on the service. Here we call the new SetIfAbsent
      * and return SetIfNotExists responses.
-     * @deprecated Use SetIfAbsent instead
      * @param string $cacheName
      * @param string $key
      * @param string $value
      * @param int|float|null $ttlSeconds
      * @return ResponseFuture<SetIfNotExistsResponse>
+     * @deprecated Use SetIfAbsent instead
      */
     public function setIfNotExists(string $cacheName, string $key, string $value, $ttlSeconds = null): ResponseFuture
     {
@@ -1653,7 +1652,7 @@ class ScsDataClient implements LoggerAwareInterface
     /**
      * @return ResponseFuture<SortedSetLengthByScoreResponse>
      */
-    public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null): ResponseFuture
+    public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -1663,12 +1662,20 @@ class ScsDataClient implements LoggerAwareInterface
             $sortedSetLengthByScoreRequest->setSetName($sortedSetName);
 
             if (!is_null($minScore)) {
-                $sortedSetLengthByScoreRequest->setInclusiveMin($minScore);
+                if ($inclusiveMin) {
+                    $sortedSetLengthByScoreRequest->setInclusiveMin($minScore);
+                } else {
+                    $sortedSetLengthByScoreRequest->setExclusiveMin($minScore);
+                }
             } else {
                 $sortedSetLengthByScoreRequest->setUnboundedMin(new _Unbounded());
             }
             if (!is_null($maxScore)) {
-                $sortedSetLengthByScoreRequest->setInclusiveMax($maxScore);
+                if ($inclusiveMax) {
+                    $sortedSetLengthByScoreRequest->setInclusiveMax($maxScore);
+                } else {
+                    $sortedSetLengthByScoreRequest->setExclusiveMax($maxScore);
+                }
             } else {
                 $sortedSetLengthByScoreRequest->setUnboundedMax(new _Unbounded());
             }
@@ -1931,7 +1938,7 @@ class ScsDataClient implements LoggerAwareInterface
 
     }
 
-    public function sortedSetRemoveElements(string $cacheName, string $sortedSetName, array $values) : ResponseFuture
+    public function sortedSetRemoveElements(string $cacheName, string $sortedSetName, array $values): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -2046,7 +2053,7 @@ class ScsDataClient implements LoggerAwareInterface
         return ResponseFuture::createPending(
             function () use ($call): GetBatchResponse {
                 try {
-                    $results= [];
+                    $results = [];
                     $responses = $call->responses();
                     foreach ($responses as $response) {
                         if ($response->getResult() == ECacheResult::Hit) {

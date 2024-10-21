@@ -2204,10 +2204,14 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The name of the sorted set whose length should be returned.
-     * @param ?float $minScore The minimum score (inclusive) of the
-     * elements to fetch. Defaults to negative infinity.
-     * @param ?float $maxScore The maximum score (inclusive) of the
-     * elements to fetch. Defaults to positive infinity.
+     * @param ?float $minScore The minimum score of the elements to include in the length.
+     * Defaults to negative infinity.
+     * @param bool $inclusiveMin Whether to include elements with a score equal to $minScore in the length.
+     * Defaults to true.
+     * @param ?float $maxScore The maximum score of the elements to include in the length.
+     * Defaults to positive infinity.
+     * @param bool $inclusiveMax Whether to include elements with a score equal to $maxScore in the length.
+     * Defaults to true.
      * @return ResponseFuture<SortedSetLengthByScoreResponse> A waitable future which will
      * provide the result of the sorted set length by score operation upon a blocking call to wait:<br />
      * <code>$response = $responseFuture->wait();</code><br />
@@ -2230,9 +2234,9 @@ class CacheClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function sortedSetLengthByScoreAsync(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null): ResponseFuture
+    public function sortedSetLengthByScoreAsync(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true): ResponseFuture
     {
-        return $this->getNextDataClient()->sortedSetLengthByScore($cacheName, $sortedSetName, $minScore, $maxScore);
+        return $this->getNextDataClient()->sortedSetLengthByScore($cacheName, $sortedSetName, $minScore, $inclusiveMin, $maxScore, $inclusiveMax);
     }
 
     /**
@@ -2240,10 +2244,14 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The name of the sorted set whose length should be returned.
-     * @param ?float $minScore The minimum score (inclusive) of the
-     *  elements to fetch. Defaults to negative infinity.
-     * @param ?float $maxScore The maximum score (inclusive) of the
-     *  elements to fetch. Defaults to positive infinity.
+     * @param ?float $minScore The minimum score of the elements to include in the length.
+     *  Defaults to negative infinity.
+     * @param bool $inclusiveMin Whether to include elements with a score equal to $minScore in the length.
+     *  Defaults to true.
+     * @param ?float $maxScore The maximum score of the elements to include in the length.
+     *  Defaults to positive infinity.
+     * @param bool $inclusiveMax Whether to include elements with a score equal to $maxScore in the length.
+     *  Defaults to true.
      * @return SortedSetLengthByScoreResponse Represents the result of the sorted set length by score operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * SortedSetLengthByScoreHit<br>
@@ -2260,9 +2268,9 @@ class CacheClient implements LoggerAwareInterface
      * }
      * </code>
      */
-    public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, ?float $maxScore = null): SortedSetLengthByScoreResponse
+    public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true): SortedSetLengthByScoreResponse
     {
-        return $this->sortedSetLengthByScoreAsync($cacheName, $sortedSetName, $minScore, $maxScore)->wait();
+        return $this->sortedSetLengthByScoreAsync($cacheName, $sortedSetName, $minScore, $inclusiveMin, $maxScore, $inclusiveMax)->wait();
     }
 
     /**
