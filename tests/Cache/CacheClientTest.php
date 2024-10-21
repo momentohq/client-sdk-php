@@ -2728,8 +2728,6 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got $response.");
     }
 
-    // placeholder: sortedSetLengthByScore
-
     public function testSortedSetPutElement_HappyPath()
     {
         $sortedSetName = uniqid();
@@ -3554,8 +3552,26 @@ class CacheClientTest extends TestCase
         $expectedLength = 3;
         $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
 
+        // limit by min score (exclusive)
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.0, false);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
+
+        $fetchedLength = $response->asHit()->length();
+        $expectedLength = 3;
+        $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
+
         // limit by max score
-        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, null, 3.9);
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, 3.9);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
+
+        $fetchedLength = $response->asHit()->length();
+        $expectedLength = 3;
+        $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
+
+        // limit by max score (exclusive)
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, 4.0, false);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
 
@@ -3564,7 +3580,16 @@ class CacheClientTest extends TestCase
         $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
 
         // limit by min and max score
-        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, 3.9);
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, true, 3.9);
+        $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
+        $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
+
+        $fetchedLength = $response->asHit()->length();
+        $expectedLength = 2;
+        $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
+
+        // limit by min and max score (exclusive)
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.0, false, 4.0, false);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
 
@@ -3604,7 +3629,7 @@ class CacheClientTest extends TestCase
         $sortedSetName = uniqid();
         $minScore = 100.0;
         $maxScore = 1.0;
-        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, $minScore, $maxScore);
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, $minScore, true, $maxScore);
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
