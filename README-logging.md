@@ -1,17 +1,12 @@
-<head>
-  <meta name="Momento PHP Client Library Documentation" content="PHP client software development kit for Momento Serverless Cache">
-</head>
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
+# Momento SDK Logging facilities
 
-# Momento PHP SDK Logging facilities
-
-The PHP SDK uses the [PSR-3](https://www.php-fig.org/psr/psr-3/) standard to allow the use of any compatible logging
+The Momento SDK for PHP uses the [PSR-3](https://www.php-fig.org/psr/psr-3/) standard to allow the use of any compatible logging
 implementation. This means you can either use your own favorite (PSR-3) logging package for the Momento client's logging
 needs or you can use one provided by the SDK.
 
 ## SDK-provided logging
 
-The Momento PHP SDK provides a few bare-bones logger factories to provide logging facilities for the client. The
+The SDK provides a few bare-bones logger factories to provide logging facilities for the client. The
 built-in logging factories include:
 
 * Momento\Logging\StderrLoggerFactory - provides a logger that prints messages to stderr depending on the configured log level

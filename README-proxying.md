@@ -1,5 +1,3 @@
-<img src="https://docs.momentohq.com/img/logo.svg" alt="logo" width="400"/>
-
 # Using Momento With A Proxy
 
 Momento `CacheClient` connections can be proxied with relative ease. We'll provide an example here, using
