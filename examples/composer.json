@@ -1,7 +1,6 @@
 {
   "require": {
-    "momentohq/client-sdk-php": "dev-main",
+    "momentohq/client-sdk-php": "v1.14.0",
     "monolog/monolog": "^2.5"
-  },
-    "minimum-stability": "dev"
+  }
 }

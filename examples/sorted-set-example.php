@@ -82,9 +82,9 @@ if ($response->asHit()) {
     exit(1);
 }
 
-// fetch sorted set by score (0 to -1 for all elements) in ascending order
+// fetch sorted set by score (0 to 2) in ascending order
 $logger->info("Fetching sorted set $SET_NAME by score\n");
-$response = $client->sortedSetFetchByScore($CACHE_NAME, $SET_NAME, 0, -1);
+$response = $client->sortedSetFetchByScore($CACHE_NAME, $SET_NAME, 0, 2);
 if ($response->asHit()) {
     $logger->info("SUCCESS: Sorted set $SET_NAME: " . implode(', ', $response->asHit()->valuesArray()) . "\n");
 } elseif ($err = $response->asMiss()) {
