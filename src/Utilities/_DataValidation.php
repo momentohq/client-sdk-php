@@ -198,9 +198,7 @@ if (!function_exists('validateSortedSetElements')) {
     function validateSortedSetElements(array $elements): void
     {
         foreach ($elements as $value => $score) {
-            if (!is_float($score)) {
-                throw new InvalidArgumentError("Sorted set score must be a float");
-            }
+            validateSortedSetScore($score);
 
             validateNullOrEmpty($value, "Sorted set value");
         }
@@ -221,15 +219,29 @@ if (!function_exists('validateSortedSetValues')) {
     }
 }
 
-if (!function_exists('validateSortedSetScores')) {
-    function validateSortedSetScores(?float $minScore, ?float $maxScore): void
+if (!function_exists('validateSortedSetScore')) {
+    function validateSortedSetScore($score): void
     {
-        if (is_null($minScore) || is_null($maxScore)) {
-            return;
+        if (is_null($score) || (!is_int($score) && !is_float($score))) {
+            throw new InvalidArgumentError("sorted set score must be an int or float");
+        }
+    }
+}
+
+if (!function_exists('validateSortedSetScores')) {
+    function validateSortedSetScores($minScore, $maxScore): void
+    {
+        if (!is_null($minScore)) {
+            validateSortedSetScore($minScore);
+        }
+        if (!is_null($maxScore)) {
+            validateSortedSetScore($maxScore);
         }
 
-        if ($minScore > $maxScore) {
-            throw new InvalidArgumentError("minScore must be less than or equal to maxScore");
+        if (!is_null($minScore) && !is_null($maxScore)) {
+            if ($minScore > $maxScore) {
+                throw new InvalidArgumentError("minScore must be less than or equal to maxScore");
+            }
         }
     }
 }
