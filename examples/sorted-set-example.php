@@ -96,7 +96,7 @@ if ($response->asHit()) {
 
 // fetch sorted set by score (0 to 2) in descending order
 $logger->info("Fetching sorted set $SET_NAME by score in descending order\n");
-$response = $client->sortedSetFetchByScore($CACHE_NAME, $SET_NAME, $minScore = 0, $maxScore = 2, $inclusiveMin = true, $inclusiveMax = true, $order=SORT_DESC);
+$response = $client->sortedSetFetchByScore($CACHE_NAME, $SET_NAME, minScore: 0, maxScore: 2, order: SORT_DESC);
 if ($response->asHit()) {
     $logger->info("SUCCESS: Sorted set $SET_NAME: " . implode(', ', $response->asHit()->valuesArray()) . "\n");
 } elseif ($err = $response->asMiss()) {
