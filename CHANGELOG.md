@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.14.0](https://github.com/momentohq/client-sdk-php/compare/v1.13.0...v1.14.0) (2024-10-25)
+
+
+### Features
+
+* add flags for toggling inclusivity on fetchByScore scores ([#238](https://github.com/momentohq/client-sdk-php/issues/238)) ([a8cfed8](https://github.com/momentohq/client-sdk-php/commit/a8cfed84a6c56ae647edaa74d7a326efea202912))
+* add flags for toggling inclusivity on length by score scores ([#237](https://github.com/momentohq/client-sdk-php/issues/237)) ([1b150b4](https://github.com/momentohq/client-sdk-php/commit/1b150b4aa9594cb0856b3a2f0d003438d7d16285))
+* add sorted set increment score ([#229](https://github.com/momentohq/client-sdk-php/issues/229)) ([d704d4e](https://github.com/momentohq/client-sdk-php/commit/d704d4e43cd1109e5c2433011fefb07978e6963b))
+* add sorted set put element and fetch by rank ([#218](https://github.com/momentohq/client-sdk-php/issues/218)) ([12d92fe](https://github.com/momentohq/client-sdk-php/commit/12d92fe3ee2671844a27b53578f564c7d938cdbc))
+* add sorted set remove elements ([#227](https://github.com/momentohq/client-sdk-php/issues/227)) ([1f44343](https://github.com/momentohq/client-sdk-php/commit/1f443435bc3b90ba98bbc9cde910f00918f406d8))
+* add sortedSetFetchByScore ([#230](https://github.com/momentohq/client-sdk-php/issues/230)) ([9e62367](https://github.com/momentohq/client-sdk-php/commit/9e6236716bc608dbec9f6f53b35d6b35c9169a5b))
+* add sortedSetGetScore ([#221](https://github.com/momentohq/client-sdk-php/issues/221)) ([0cde7a4](https://github.com/momentohq/client-sdk-php/commit/0cde7a48c6e94c86ff268e3b9625b2bf7c408e04))
+* add sortedSetLengthByScore ([#234](https://github.com/momentohq/client-sdk-php/issues/234)) ([7b4ff9e](https://github.com/momentohq/client-sdk-php/commit/7b4ff9eada9ed7202e5c5cad9c6fee18aea1ffa9))
+* add sortedSetPutElements ([#226](https://github.com/momentohq/client-sdk-php/issues/226)) ([fa68601](https://github.com/momentohq/client-sdk-php/commit/fa6860132c7d4187565938b72babba9d42ac7703))
+* add sortedSetRemoveElement api ([#222](https://github.com/momentohq/client-sdk-php/issues/222)) ([f1948f2](https://github.com/momentohq/client-sdk-php/commit/f1948f219d274a6a17594045b50b84746ebfe828))
+
+
+### Bug Fixes
+
+* doc strings ([#217](https://github.com/momentohq/client-sdk-php/issues/217)) ([759c9e4](https://github.com/momentohq/client-sdk-php/commit/759c9e4318a2fee1859e095a0c6d3cfb248fcdae))
+* initializing typed property  in sortedSetFetchHit ([#232](https://github.com/momentohq/client-sdk-php/issues/232)) ([d5719a8](https://github.com/momentohq/client-sdk-php/commit/d5719a86367d08072ea63a51673328223582b3bf))
+* stop using is_string() for validation ([#233](https://github.com/momentohq/client-sdk-php/issues/233)) ([711683c](https://github.com/momentohq/client-sdk-php/commit/711683c63afd7f50c5f532fae24b5ede4c8c8bfe))
+
+
+### Miscellaneous
+
+* add placeholders to avoid future merge conflicts ([#225](https://github.com/momentohq/client-sdk-php/issues/225)) ([d32c7e5](https://github.com/momentohq/client-sdk-php/commit/d32c7e5e18b3c8aac68d17c54d3860c16e23d512))
+* correct `sorted set remove elements` mention in docstrings ([#228](https://github.com/momentohq/client-sdk-php/issues/228)) ([d8fbfca](https://github.com/momentohq/client-sdk-php/commit/d8fbfcaf5076133dc10a5274e30b5327d494c7fe))
+* fix inconsistent comment ([#231](https://github.com/momentohq/client-sdk-php/issues/231)) ([91a18d8](https://github.com/momentohq/client-sdk-php/commit/91a18d86f2207fa47176350fb3de5b142648a0fb))
+* make order in the sorted set functions more explicit ([#235](https://github.com/momentohq/client-sdk-php/issues/235)) ([702897c](https://github.com/momentohq/client-sdk-php/commit/702897c5d69ebbeba533ebe4955823ba228c9d38))
+* remove the type from sorted set scores so they support ints ([#242](https://github.com/momentohq/client-sdk-php/issues/242)) ([c84adcc](https://github.com/momentohq/client-sdk-php/commit/c84adcca5ab05d728967b563355b63bfd76b7789))
+* remove unnecessary tests and fix test warnings ([#236](https://github.com/momentohq/client-sdk-php/issues/236)) ([8d41a6e](https://github.com/momentohq/client-sdk-php/commit/8d41a6ec34a1ddf12af87e035ac5e8e71913aeaa))
+* rename the ThrowsException tests to ReturnsError ([#239](https://github.com/momentohq/client-sdk-php/issues/239)) ([6e21636](https://github.com/momentohq/client-sdk-php/commit/6e2163625c0e2ce8a3ed6f6ff51d0382e053c2fe))
+* support devcontainer development ([#220](https://github.com/momentohq/client-sdk-php/issues/220)) ([d0c9a85](https://github.com/momentohq/client-sdk-php/commit/d0c9a85d6369ec761447c4c264a5dd505baadab5))
+* Update the documentation comply with the PHP license ([#240](https://github.com/momentohq/client-sdk-php/issues/240)) ([f40b7dd](https://github.com/momentohq/client-sdk-php/commit/f40b7dd67d12515acd82009f127fdb28a25ed3ec))
+
 ## [1.13.0](https://github.com/momentohq/client-sdk-php/compare/v1.12.0...v1.13.0) (2024-10-15)
 
 
