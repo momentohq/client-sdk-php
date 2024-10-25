@@ -94,6 +94,18 @@ if ($response->asHit()) {
     exit(1);
 }
 
+// fetch sorted set by score (0 to 2) in descending order
+$logger->info("Fetching sorted set $SET_NAME by score in descending order\n");
+$response = $client->sortedSetFetchByScore($CACHE_NAME, $SET_NAME, minScore: 0, maxScore: 2, order: SORT_DESC);
+if ($response->asHit()) {
+    $logger->info("SUCCESS: Sorted set $SET_NAME: " . implode(', ', $response->asHit()->valuesArray()) . "\n");
+} elseif ($err = $response->asMiss()) {
+    $logger->info("Sorted set $SET_NAME not found\n");
+} elseif ($err = $response->asError()) {
+    $logger->info("Error fetching sorted set: {$err->message()}\n");
+    exit(1);
+}
+
 // increment score of element in sorted set
 $logger->info("Incrementing score of element 'one' in sorted set $SET_NAME by 1\n");
 $response = $client->sortedSetIncrementScore($CACHE_NAME, $SET_NAME, "one", 1);
