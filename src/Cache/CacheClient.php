@@ -1732,7 +1732,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The set to add the element to.
      * @param string $value The value to add.
-     * @param float $score The score to assign to the value.
+     * @param float|int $score The score to assign to the value.
      * @param CollectionTtl|null $ttl TTL for the sorted set in the cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to the client TTL.
      * @return ResponseFuture<SortedSetPutElementResponse> A waitable future which
      * will provide the result of the sorted set put element operation upon a blocking call to
@@ -1752,7 +1752,7 @@ class CacheClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function sortedSetPutElementAsync(string $cacheName, string $sortedSetName, string $value, float $score, ?CollectionTtl $ttl = null): ResponseFuture
+    public function sortedSetPutElementAsync(string $cacheName, string $sortedSetName, string $value, $score, ?CollectionTtl $ttl = null): ResponseFuture
     {
         return $this->getNextDataClient()->sortedSetPutElement($cacheName, $sortedSetName, $value, $score, $ttl);
     }
@@ -1763,7 +1763,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The set to add the element to.
      * @param string $value The value to add.
-     * @param float $score The score to assign to the value.
+     * @param float|int $score The score to assign to the value.
      * @param CollectionTtl|null $ttl TTL for the sorted set in the cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to the client TTL.
      * @return SortedSetPutElementResponse Represents the result of the sorted set put element operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
@@ -1773,7 +1773,7 @@ class CacheClient implements LoggerAwareInterface
      * &nbsp;&nbsp;// handle error condition<br>
      * }</code>
      */
-    public function sortedSetPutElement(string $cacheName, string $sortedSetName, string $value, float $score, ?CollectionTtl $ttl = null): SortedSetPutElementResponse
+    public function sortedSetPutElement(string $cacheName, string $sortedSetName, string $value, $score, ?CollectionTtl $ttl = null): SortedSetPutElementResponse
     {
         return $this->sortedSetPutElementAsync($cacheName, $sortedSetName, $value, $score, $ttl)->wait();
     }
@@ -1783,7 +1783,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The set to add the elements to.
-     * @param array<string, float> $elements The value => score pairs to add.
+     * @param array<string, float|int> $elements The value => score pairs to add.
      * @param CollectionTtl|null $ttl TTL for the sorted set in the cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to the client TTL.
      * @return ResponseFuture<SortedSetPutElementsResponse> A waitable future which
      * will provide the result of the sorted set operation upon a blocking call to
@@ -1813,7 +1813,7 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The set to add the elements to.
-     * @param array<string, float> $elements The value => score pairs to add.
+     * @param array<string, float|int> $elements The value => score pairs to add.
      * @param CollectionTtl|null $ttl TTL for the sorted set in the cache. This TTL takes precedence over the TTL used when initializing a cache client. Defaults to the client TTL.
      * @return SortedSetPutElementsResponse Represents the result of the sorted set put elements operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
@@ -1835,7 +1835,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache in which to increment the key's value
      * @param string $sortedSetName The name of the sorted set in which to increment the element's score
      * @param string $value The value to increment
-     * @param float $amount The amount by which to increment the score
+     * @param float|int $amount The amount by which to increment the score
      * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
      * @return ResponseFuture<SortedSetIncrementScoreResponse> A waitable future which will
      * provide the result of the increment operation upon a blocking call to wait:<br />
@@ -1857,7 +1857,7 @@ class CacheClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function sortedSetIncrementScoreAsync(string $cacheName, string $sortedSetName, string $value, float $amount, ?CollectionTtl $ttl = null): ResponseFuture
+    public function sortedSetIncrementScoreAsync(string $cacheName, string $sortedSetName, string $value, $amount, ?CollectionTtl $ttl = null): ResponseFuture
     {
         return $this->getNextDataClient()->sortedSetIncrementScore($cacheName, $sortedSetName, $value, $amount, $ttl);
     }
@@ -1868,7 +1868,7 @@ class CacheClient implements LoggerAwareInterface
      * @param string $cacheName Name of the cache in which to increment the element's score
      * @param string $sortedSetName The name of the sorted set in which to increment the element's score
      * @param string $value The value to increment
-     * @param float $amount The amount by which to increment the score
+     * @param float|int $amount The amount by which to increment the score
      * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
      * @return SortedSetIncrementScoreResponse Represents the result of the increment operation.
      * This result is resolved to a type-safe object of one of the following
@@ -1884,7 +1884,7 @@ class CacheClient implements LoggerAwareInterface
      * }
      * </code>
      */
-    public function sortedSetIncrementScore(string $cacheName, string $sortedSetName, string $value, float $amount, ?CollectionTtl $ttl = null): SortedSetIncrementScoreResponse
+    public function sortedSetIncrementScore(string $cacheName, string $sortedSetName, string $value, $amount, ?CollectionTtl $ttl = null): SortedSetIncrementScoreResponse
     {
         return $this->sortedSetIncrementScoreAsync($cacheName, $sortedSetName, $value, $amount, $ttl)->wait();
     }
@@ -1965,12 +1965,12 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $sortedSetName The sorted set to fetch.
-     * @param ?float $minScore The minimum score of the elements to fetch.
+     * @param ?float|int $minScore The minimum score of the elements to fetch.
      * Defaults to negative infinity.
+     * @param ?float|int $maxScore The maximum score of the elements to fetch.
+     * Defaults to positive infinity.
      * @param bool $inclusiveMin Whether to include elements with a score equal to $minScore in the length.
      * Defaults to true.
-     * @param ?float $maxScore The maximum score of the elements to fetch.
-     * Defaults to positive infinity.
      * @param bool $inclusiveMax Whether to include elements with a score equal to $maxScore in the length.
      * Defaults to true.
      * @param int $order The order to fetch the elements in. Defaults to Ascending.
@@ -2002,9 +2002,9 @@ class CacheClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function sortedSetFetchByScoreAsync(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true, int $order = SORT_ASC, ?int $offset = null, ?int $count = null): ResponseFuture
+    public function sortedSetFetchByScoreAsync(string $cacheName, string $sortedSetName, $minScore = null, $maxScore = null, bool $inclusiveMin = true, bool $inclusiveMax = true, int $order = SORT_ASC, ?int $offset = null, ?int $count = null): ResponseFuture
     {
-        return $this->getNextDataClient()->sortedSetFetchByScore($cacheName, $sortedSetName, $minScore, $inclusiveMin, $maxScore, $inclusiveMax, $order, $offset, $count);
+        return $this->getNextDataClient()->sortedSetFetchByScore($cacheName, $sortedSetName, $minScore, $maxScore, $inclusiveMin, $inclusiveMax, $order, $offset, $count);
     }
 
     /**
@@ -2012,12 +2012,12 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the set.
      * @param string $sortedSetName The sorted set to fetch.
-     * @param ?float $minScore The minimum score of the elements to fetch.
+     * @param ?float|int $minScore The minimum score of the elements to fetch.
      * Defaults to negative infinity.
+     * @param ?float|int $maxScore The maximum score of the elements to fetch.
+     * Defaults to positive infinity.
      * @param bool $inclusiveMin Whether to include elements with a score equal to $minScore in the length.
      * Defaults to true.
-     * @param ?float $maxScore The maximum score of the elements to fetch.
-     * Defaults to positive infinity.
      * @param bool $inclusiveMax Whether to include elements with a score equal to $maxScore in the length.
      * Defaults to true.
      * @param int $order The order to fetch the elements in. Defaults to Ascending.
@@ -2042,9 +2042,9 @@ class CacheClient implements LoggerAwareInterface
      * }
      * </code>
      */
-    public function sortedSetFetchByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true, int $order = SORT_ASC, ?int $offset = null, ?int $count = null): SortedSetFetchResponse
+    public function sortedSetFetchByScore(string $cacheName, string $sortedSetName, $minScore = null, $maxScore = null, bool $inclusiveMin = true, bool $inclusiveMax = true, int $order = SORT_ASC, ?int $offset = null, ?int $count = null): SortedSetFetchResponse
     {
-        return $this->sortedSetFetchByScoreAsync($cacheName, $sortedSetName, $minScore, $inclusiveMin, $maxScore, $inclusiveMax, $order, $offset, $count)->wait();
+        return $this->sortedSetFetchByScoreAsync($cacheName, $sortedSetName, $minScore, $maxScore, $inclusiveMin, $inclusiveMax, $order, $offset, $count)->wait();
     }
 
     /**
@@ -2210,12 +2210,12 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The name of the sorted set whose length should be returned.
-     * @param ?float $minScore The minimum score of the elements to include in the length.
+     * @param ?float|int $minScore The minimum score of the elements to include in the length.
      * Defaults to negative infinity.
+     * @param ?float|int $maxScore The maximum score of the elements to include in the length.
+     * Defaults to positive infinity.
      * @param bool $inclusiveMin Whether to include elements with a score equal to $minScore in the length.
      * Defaults to true.
-     * @param ?float $maxScore The maximum score of the elements to include in the length.
-     * Defaults to positive infinity.
      * @param bool $inclusiveMax Whether to include elements with a score equal to $maxScore in the length.
      * Defaults to true.
      * @return ResponseFuture<SortedSetLengthByScoreResponse> A waitable future which will
@@ -2240,9 +2240,9 @@ class CacheClient implements LoggerAwareInterface
      * we implicitly wait for completion of the request on destruction of the
      * response future.
      */
-    public function sortedSetLengthByScoreAsync(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true): ResponseFuture
+    public function sortedSetLengthByScoreAsync(string $cacheName, string $sortedSetName, $minScore = null, $maxScore = null, bool $inclusiveMin = true, bool $inclusiveMax = true): ResponseFuture
     {
-        return $this->getNextDataClient()->sortedSetLengthByScore($cacheName, $sortedSetName, $minScore, $inclusiveMin, $maxScore, $inclusiveMax);
+        return $this->getNextDataClient()->sortedSetLengthByScore($cacheName, $sortedSetName, $minScore, $maxScore, $inclusiveMin, $inclusiveMax);
     }
 
     /**
@@ -2250,14 +2250,14 @@ class CacheClient implements LoggerAwareInterface
      *
      * @param string $cacheName Name of the cache that contains the sorted set.
      * @param string $sortedSetName The name of the sorted set whose length should be returned.
-     * @param ?float $minScore The minimum score of the elements to include in the length.
-     *  Defaults to negative infinity.
+     * @param ?float|int $minScore The minimum score of the elements to include in the length.
+     * Defaults to negative infinity.
+     * @param ?float|int $maxScore The maximum score of the elements to include in the length.
+     * Defaults to positive infinity.
      * @param bool $inclusiveMin Whether to include elements with a score equal to $minScore in the length.
-     *  Defaults to true.
-     * @param ?float $maxScore The maximum score of the elements to include in the length.
-     *  Defaults to positive infinity.
+     * Defaults to true.
      * @param bool $inclusiveMax Whether to include elements with a score equal to $maxScore in the length.
-     *  Defaults to true.
+     * Defaults to true.
      * @return SortedSetLengthByScoreResponse Represents the result of the sorted set length by score operation.
      * This result is resolved to a type-safe object of one of the following types:<br>
      * * SortedSetLengthByScoreHit<br>
@@ -2274,9 +2274,9 @@ class CacheClient implements LoggerAwareInterface
      * }
      * </code>
      */
-    public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true): SortedSetLengthByScoreResponse
+    public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, $minScore = null, $maxScore = null, bool $inclusiveMin = true, bool $inclusiveMax = true): SortedSetLengthByScoreResponse
     {
-        return $this->sortedSetLengthByScoreAsync($cacheName, $sortedSetName, $minScore, $inclusiveMin, $maxScore, $inclusiveMax)->wait();
+        return $this->sortedSetLengthByScoreAsync($cacheName, $sortedSetName, $minScore, $maxScore, $inclusiveMin, $inclusiveMax)->wait();
     }
 
     /**

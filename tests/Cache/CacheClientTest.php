@@ -2746,6 +2746,24 @@ class CacheClientTest extends TestCase
         $this->assertEquals($score, $valuesArray[$value], "The score for value '$value' does not match the expected score.");
     }
 
+    public function testSortedSetPutElementIntegerScore_HappyPath()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $score = 3;
+        $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, $value, $score);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+
+        $response = $this->client->sortedSetFetchByRank($this->TEST_CACHE_NAME, $sortedSetName);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+
+        $valuesArray = $response->asHit()->valuesArray();
+        $this->assertArrayHasKey($value, $valuesArray, "Expected value '$value' not found in the array");
+        $this->assertEquals($score, $valuesArray[$value], "The score for value '$value' does not match the expected score.");
+    }
+
     public function testSortedSetPutElementWithNonexistentCache_ReturnsError()
     {
         $cacheName = uniqid();
@@ -2776,12 +2794,22 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+    public function testSortedSetPutElementWithBadScoreType_ReturnsError()
+    {
+        $sortedSetName = uniqid();
+        $value = uniqid();
+        $score = "bad score";
+        $response = $this->client->sortedSetPutElement($this->TEST_CACHE_NAME, $sortedSetName, $value, $score);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
     public function testSortedSetPutElements_HappyPath()
     {
         $sortedSetName = uniqid();
         $elements = [
             "bar" => 2.0,
-            "baz" => 3.0,
+            "baz" => 3,
         ];
 
         $response = $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName, $elements);
@@ -2793,13 +2821,16 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
         $fetchedElements = $response->asHit()->valuesArray();
-        $expectedElements = $elements;
+        $expectedElements = [
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
 
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // add more elements to the set
         $newElements = [
-            "foo" => 1.0,
+            "foo" => 1,
             "qux" => 4.0,
         ];
 
@@ -2856,6 +2887,17 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+    public function testSortedSetPutElementsWithBadScoreType_ReturnsError()
+    {
+        $sortedSetName = uniqid();
+        $elements = [
+            "foo" => "bad score",
+        ];
+        $response = $this->client->sortedSetPutElements("", $sortedSetName, $elements);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
     public function testSortedSetIncrementScore_HappyPath()
     {
         $sortedSetName = uniqid();
@@ -2868,7 +2910,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals(1.5, $response->asSuccess()->score());
 
         // Increment the score again
-        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, $value, 3.0);
+        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, $value, 3);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(4.5, $response->asSuccess()->score());
@@ -2946,6 +2988,11 @@ class CacheClientTest extends TestCase
 
         // Empty cache name should trigger an error
         $response = $this->client->sortedSetIncrementScore("", $sortedSetName, uniqid(), 1.0);
+        $this->assertNotNull($response->asError(), "Expected an error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+
+        // Incorrect score type should trigger an error
+        $response = $this->client->sortedSetIncrementScore($this->TEST_CACHE_NAME, $sortedSetName, uniqid(), "bad amount");
         $this->assertNotNull($response->asError(), "Expected an error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -3135,7 +3182,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // full array descending
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, null, true, SORT_DESC);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, null, true, true, SORT_DESC);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3159,7 +3206,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // limit by min score exclusive
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.0, false);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1, null, false);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3173,7 +3220,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // limit by max score inclusive
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, 3.0);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, 3.0);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3187,7 +3234,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // limit by max score exclusive
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, 4.0, false);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, 4.0, true, false);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3201,7 +3248,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // limit by min and max score inclusive
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, true, 3.1);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, 3.1);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3214,7 +3261,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // limit by min and max score exclusive
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.0, false, 4.0, false);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1, 4, false, false);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3227,7 +3274,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // descending with min and max score
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, true, 3.0, true, SORT_DESC);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, 3.0, true, true, SORT_DESC);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3240,7 +3287,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // skip elements with offset
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, null, true, SORT_ASC, 2);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, null, true, true, SORT_ASC, 2);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3253,7 +3300,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // limit by min score and skip by offset
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, true, null, true, SORT_ASC, 2);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, null, true, true, SORT_ASC, 2);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3265,7 +3312,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // limit by count
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, null, true, SORT_ASC, null, 2);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, null, true, true, SORT_ASC, null, 2);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3278,7 +3325,7 @@ class CacheClientTest extends TestCase
         $this->assertSame($expectedElements, $fetchedElements, "The fetched elements did not match the expected elements.");
 
         // limit by count to 0
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, null, true, SORT_ASC, null, 0);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, null, true, true, SORT_ASC, null, 0);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
 
@@ -3305,12 +3352,28 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+    public function testSortedSetFetchByScoreWithBadMinScoreType_ReturnsError()
+    {
+        $sortedSetName = uniqid();
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, "bad score");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetFetchByScoreWithBadMaxScoreType_ReturnsError()
+    {
+        $sortedSetName = uniqid();
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.0,  "bad score");
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
     public function testSortedSetFetchByScoreWithMinScoreLargerThanMaxScore_ReturnsError()
     {
         $sortedSetName = uniqid();
         $minScore = 100.0;
         $maxScore = 1.0;
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, $minScore, true, $maxScore);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, $minScore, $maxScore);
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -3318,7 +3381,7 @@ class CacheClientTest extends TestCase
     public function testSortedSetFetchByScoreWithBadOrder_ReturnsError()
     {
         $sortedSetName = uniqid();
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, null, true, 1234);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, null, null, true, true, 1234);
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -3610,7 +3673,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
 
         // limit by min score (exclusive)
-        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.0, false);
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1, null, false);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
 
@@ -3619,7 +3682,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
 
         // limit by max score
-        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, 3.9);
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, null, 3.9);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
 
@@ -3628,7 +3691,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
 
         // limit by max score (exclusive)
-        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, null, true, 4.0, false);
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, null, 4, true, false);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
 
@@ -3637,7 +3700,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
 
         // limit by min and max score
-        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, true, 3.9);
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.1, 3.9);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
 
@@ -3646,7 +3709,7 @@ class CacheClientTest extends TestCase
         $this->assertEquals($expectedLength, $fetchedLength, "expected length of non-existent sorted set to be $expectedLength, not $fetchedLength");
 
         // limit by min and max score (exclusive)
-        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.0, false, 4.0, false);
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, 1, 4, false, false);
         $this->assertNull($response->asError(), "Error occurred while fetching sorted set '$sortedSetName'");
         $this->assertNotNull($response->asHit(), "Expected a success but got: $response");
 
@@ -3681,12 +3744,32 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+    public function testSortedSetLengthByScoreWithBadMinScoreType_ReturnsError()
+    {
+        $sortedSetName = uniqid();
+        $minScore = "bad score";
+        $maxScore = 1.0;
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, $minScore, $maxScore);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetLengthByScoreWithBadMaxScoreType_ReturnsError()
+    {
+        $sortedSetName = uniqid();
+        $minScore = 1;
+        $maxScore = "bad score";
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, $minScore, $maxScore);
+        $this->assertNotNull($response->asError(), "Expected error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
     public function testSortedSetLengthByScoreWithMinScoreLargerThanMaxScore_ReturnsError()
     {
         $sortedSetName = uniqid();
         $minScore = 100.0;
         $maxScore = 1.0;
-        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, $minScore, true, $maxScore);
+        $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, $minScore, $maxScore);
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }

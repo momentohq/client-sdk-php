@@ -244,6 +244,7 @@ use function Momento\Utilities\validateSortedSetElements;
 use function Momento\Utilities\validateSortedSetName;
 use function Momento\Utilities\validateSortedSetOrder;
 use function Momento\Utilities\validateSortedSetRanks;
+use function Momento\Utilities\validateSortedSetScore;
 use function Momento\Utilities\validateSortedSetScores;
 use function Momento\Utilities\validateSortedSetValues;
 use function Momento\Utilities\validateTruncateSize;
@@ -1557,13 +1558,14 @@ class ScsDataClient implements LoggerAwareInterface
     /**
      * @return ResponseFuture<SortedSetPutElementResponse>
      */
-    public function sortedSetPutElement(string $cacheName, string $sortedSetName, string $value, float $score, ?CollectionTtl $ttl = null): ResponseFuture
+    public function sortedSetPutElement(string $cacheName, string $sortedSetName, string $value, $score, ?CollectionTtl $ttl = null): ResponseFuture
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateSortedSetName($sortedSetName);
             validateValueName($value);
+            validateSortedSetScore($score);
             $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             validateTtl($ttlMillis);
             $element = new _SortedSetElement([
@@ -1653,7 +1655,7 @@ class ScsDataClient implements LoggerAwareInterface
     /**
      * @return ResponseFuture<SortedSetLengthByScoreResponse>
      */
-    public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true): ResponseFuture
+    public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, $minScore = null, $maxScore = null, bool $inclusiveMin = true, bool $inclusiveMax = true): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
@@ -1710,13 +1712,14 @@ class ScsDataClient implements LoggerAwareInterface
         );
     }
 
-    public function sortedSetIncrementScore(string $cacheName, string $sortedSetName, string $value, float $amount, ?CollectionTtl $ttl): ResponseFuture
+    public function sortedSetIncrementScore(string $cacheName, string $sortedSetName, string $value, $amount, ?CollectionTtl $ttl): ResponseFuture
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
             validateSortedSetName($sortedSetName);
             validateValueName($value);
+            validateSortedSetScore($amount);
             $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
             validateTtl($ttlMillis);
 
@@ -1819,7 +1822,7 @@ class ScsDataClient implements LoggerAwareInterface
     /**
      * @return ResponseFuture<SortedSetFetchResponse>
      */
-    public function sortedSetFetchByScore(string $cacheName, string $sortedSetName, ?float $minScore = null, bool $inclusiveMin = true, ?float $maxScore = null, bool $inclusiveMax = true, int $order = SORT_ASC, ?int $offset = null, ?int $count = null): ResponseFuture
+    public function sortedSetFetchByScore(string $cacheName, string $sortedSetName, $minScore = null, $maxScore = null, bool $inclusiveMin = true, bool $inclusiveMax = true, int $order = SORT_ASC, ?int $offset = null, ?int $count = null): ResponseFuture
     {
         try {
             validateCacheName($cacheName);
