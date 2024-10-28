@@ -69,8 +69,7 @@ jobs:
       max-parallel: 1
       fail-fast: true
       matrix:
-        php-version: ['7.4', '8.4']
-        #php-version: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4'] # TODO: Uncomment to test all PHP versions
+        php-version: ['7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
     runs-on: ubuntu-24.04
 
     env:
