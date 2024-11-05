@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.15.0](https://github.com/momentohq/client-sdk-php/compare/v1.14.0...v1.15.0) (2024-11-05)
+
+
+### Features
+
+* add ReadConcern config ([#246](https://github.com/momentohq/client-sdk-php/issues/246)) ([d263e18](https://github.com/momentohq/client-sdk-php/commit/d263e182931823063f703e4b0345950ec5772275))
+* add sorted-set examples ([#241](https://github.com/momentohq/client-sdk-php/issues/241)) ([1906221](https://github.com/momentohq/client-sdk-php/commit/19062216f82656d24c79c0f0386cf5009a7797b9))
+
+
+### Miscellaneous
+
+* add named argument sorted-set example ([#244](https://github.com/momentohq/client-sdk-php/issues/244)) ([96412ba](https://github.com/momentohq/client-sdk-php/commit/96412bad6426ebed0db210ec4e768c79b0f29692))
+
 ## [1.14.0](https://github.com/momentohq/client-sdk-php/compare/v1.13.0...v1.14.0) (2024-10-25)
 
 
