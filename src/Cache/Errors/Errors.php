@@ -224,7 +224,65 @@ class InvalidArgumentError extends SdkError
 class LimitExceededError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::LIMIT_EXCEEDED_ERROR;
-    public string $messageWrapper = 'Request rate, bandwidth, or object size exceeded the limits for this account.  To resolve this error, reduce your request rate, or contact us at support@momentohq.com to request a limit increase';
+    public string $messageWrapper = LimitExceededMessageWrapper::UNKNOWN_LIMIT_EXCEEDED;
+
+    public function __construct(
+        string $message, int $code = 0, ?\Throwable $previous = null, ?array $metadata = null
+    )
+    {
+        parent::__construct($message, $code, $previous);
+        $this->setMessageWrapper($message, $metadata);
+    }
+
+    private function setMessageWrapper(string $message, ?array $metadata = null) {
+        // If provided, we use the `err` metadata value to determine the most
+        // appropriate error message to set.
+        if (array_key_exists("err", $metadata)) {
+            $errCause = $metadata["err"][0];
+            if (!is_null($errCause)) {
+                $this->messageWrapper = LimitExceededMessageWrapper::$errorCauseToLimitExceededMessage[$errCause];
+                return;
+            }
+        }
+
+        // If `err` metadata is unavailable, try to use the error details field
+        // to set an appropriate error message.
+        if (str_contains($message, "subscribers")) {
+            $this->messageWrapper = LimitExceededMessageWrapper::TOPIC_SUBSCRIPTIONS_LIMIT_EXCEEDED;
+        } elseif (str_contains($message, "operations")) {
+            $this->messageWrapper = LimitExceededMessageWrapper::OPERATIONS_RATE_LIMIT_EXCEEDED;
+        } elseif (str_contains($message, "throughput")) {
+            $this->messageWrapper = LimitExceededMessageWrapper::THROUGHPUT_RATE_LIMIT_EXCEEDED;
+        } elseif (str_contains($message, "request limit")) {
+            $this->messageWrapper = LimitExceededMessageWrapper::REQUEST_SIZE_LIMIT_EXCEEDED;
+        } elseif (str_contains($message, "item size")) {
+            $this->messageWrapper = LimitExceededMessageWrapper::ITEM_SIZE_LIMIT_EXCEEDED;
+        } elseif (str_contains($message, "element size")) {
+            $this->messageWrapper = LimitExceededMessageWrapper::ELEMENT_SIZE_LIMIT_EXCEEDED;
+        } else {
+            // If all else fails, set a generic "limit exceeded" message
+            $this->messageWrapper = LimitExceededMessageWrapper::UNKNOWN_LIMIT_EXCEEDED;
+        }
+    }
+}
+
+abstract class LimitExceededMessageWrapper {
+    public const TOPIC_SUBSCRIPTIONS_LIMIT_EXCEEDED = "Topic subscriptions limit exceeded for this account";
+    public const OPERATIONS_RATE_LIMIT_EXCEEDED = "Request rate limit exceeded for this account";
+    public const THROUGHPUT_RATE_LIMIT_EXCEEDED = "Bandwidth limit exceeded for this account";
+    public const REQUEST_SIZE_LIMIT_EXCEEDED = "Request size limit exceeded for this account";
+    public const ITEM_SIZE_LIMIT_EXCEEDED = "Item size limit exceeded for this account";
+    public const ELEMENT_SIZE_LIMIT_EXCEEDED = "Element size limit exceeded for this account";
+    public const UNKNOWN_LIMIT_EXCEEDED = "Limit exceeded for this account";
+
+    public static array $errorCauseToLimitExceededMessage = [
+        "topic_subscriptions_limit_exceeded" => LimitExceededMessageWrapper::TOPIC_SUBSCRIPTIONS_LIMIT_EXCEEDED,
+        "operations_rate_limit_exceeded" => LimitExceededMessageWrapper::OPERATIONS_RATE_LIMIT_EXCEEDED,
+        "throughput_rate_limit_exceeded" => LimitExceededMessageWrapper::THROUGHPUT_RATE_LIMIT_EXCEEDED,
+        "request_size_limit_exceeded" => LimitExceededMessageWrapper::REQUEST_SIZE_LIMIT_EXCEEDED,
+        "item_size_limit_exceeded" => LimitExceededMessageWrapper::ITEM_SIZE_LIMIT_EXCEEDED,
+        "element_size_limit_exceeded" => LimitExceededMessageWrapper::ELEMENT_SIZE_LIMIT_EXCEEDED,
+    ];
 }
 
 /**
