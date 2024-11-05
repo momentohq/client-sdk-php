@@ -65,7 +65,7 @@ class _ErrorConverter
             } else {
                 $class = self::$rpcToError[$status];
             }
-            return new $class($details, $status, null, $metadata);
+            return new $class($details, $status, null, $grpcStatus->metadata);
         }
 
         return new UnknownError(
