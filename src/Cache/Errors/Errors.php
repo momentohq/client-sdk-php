@@ -247,17 +247,18 @@ class LimitExceededError extends SdkError
 
         // If `err` metadata is unavailable, try to use the error details field
         // to set an appropriate error message.
-        if (str_contains($message, "subscribers")) {
+        $lowerCasedMessage = strtolower($message);
+        if (str_contains($lowerCasedMessage, "subscribers")) {
             $this->messageWrapper = LimitExceededMessageWrapper::TOPIC_SUBSCRIPTIONS_LIMIT_EXCEEDED;
-        } elseif (str_contains($message, "operations")) {
+        } elseif (str_contains($lowerCasedMessage, "operations")) {
             $this->messageWrapper = LimitExceededMessageWrapper::OPERATIONS_RATE_LIMIT_EXCEEDED;
-        } elseif (str_contains($message, "throughput")) {
+        } elseif (str_contains($lowerCasedMessage, "throughput")) {
             $this->messageWrapper = LimitExceededMessageWrapper::THROUGHPUT_RATE_LIMIT_EXCEEDED;
-        } elseif (str_contains($message, "request limit")) {
+        } elseif (str_contains($lowerCasedMessage, "request limit")) {
             $this->messageWrapper = LimitExceededMessageWrapper::REQUEST_SIZE_LIMIT_EXCEEDED;
-        } elseif (str_contains($message, "item size")) {
+        } elseif (str_contains($lowerCasedMessage, "item size")) {
             $this->messageWrapper = LimitExceededMessageWrapper::ITEM_SIZE_LIMIT_EXCEEDED;
-        } elseif (str_contains($message, "element size")) {
+        } elseif (str_contains($lowerCasedMessage, "element size")) {
             $this->messageWrapper = LimitExceededMessageWrapper::ELEMENT_SIZE_LIMIT_EXCEEDED;
         } else {
             // If all else fails, set a generic "limit exceeded" message
