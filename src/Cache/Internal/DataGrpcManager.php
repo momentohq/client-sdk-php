@@ -10,6 +10,7 @@ use Grpc\Interceptor;
 use Momento\Auth\ICredentialProvider;
 use Momento\Cache\Interceptors\AgentInterceptor;
 use Momento\Cache\Interceptors\AuthorizationInterceptor;
+use Momento\Cache\Interceptors\ReadConcernInterceptor;
 use Momento\Config\IConfiguration;
 
 class DataGrpcManager
@@ -35,6 +36,7 @@ class DataGrpcManager
         $interceptors = [
             new AuthorizationInterceptor($authProvider->getAuthToken()),
             new AgentInterceptor("cache"),
+            new ReadConcernInterceptor($configuration->getReadConcern()),
         ];
         $interceptedChannel = Interceptor::intercept($this->channel, $interceptors);
 

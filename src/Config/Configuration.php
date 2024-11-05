@@ -15,12 +15,14 @@ class Configuration implements IConfiguration
 
     private ?ILoggerFactory $loggerFactory;
     private ?ITransportStrategy $transportStrategy;
+    private string $readConcern;
     protected static int $maxIdleMillis = 4 * 60 * 1000;
 
-    public function __construct(?ILoggerFactory $loggerFactory, ?ITransportStrategy $transportStrategy)
+    public function __construct(?ILoggerFactory $loggerFactory, ?ITransportStrategy $transportStrategy, ?string $readConcern = null)
     {
         $this->loggerFactory = $loggerFactory ?? new NullLoggerFactory();
         $this->transportStrategy = $transportStrategy;
+        $this->readConcern = $readConcern ?? ReadConcern::BALANCED;
     }
 
     /**
@@ -36,6 +38,14 @@ class Configuration implements IConfiguration
     public function getTransportStrategy(): ITransportStrategy
     {
         return $this->transportStrategy;
+    }
+
+    /**
+     * @return string The currently active read consistency configuration
+     */
+    public function getReadConcern(): string
+    {
+        return $this->readConcern;
     }
 
     /**
@@ -58,5 +68,16 @@ class Configuration implements IConfiguration
     public function withClientTimeout(int $clientTimeoutSecs): IConfiguration
     {
         return new Configuration($this->loggerFactory, $this->transportStrategy->withClientTimeout($clientTimeoutSecs));
+    }
+
+    /**
+     * Creates a new instance of the Configuration object, updated to use the specified read consistency.
+     *
+     * @param ReadConcern $readConcern The read consistency configuration to use.
+     * @return IConfiguration Configuration object with specified read concern.
+     */
+    public function withReadConcern(string $readConcern): IConfiguration
+    {
+        return new Configuration($this->loggerFactory, $this->transportStrategy, $readConcern);
     }
 }

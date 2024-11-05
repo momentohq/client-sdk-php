@@ -14,6 +14,7 @@ use Momento\Cache\CacheClient;
 use Momento\Config\Configuration;
 use Momento\Config\Configurations;
 use Momento\Config\IConfiguration;
+use Momento\Config\ReadConcern;
 use Momento\Config\Transport\StaticGrpcConfiguration;
 use Momento\Config\Transport\StaticTransportStrategy;
 use Momento\Logging\NullLoggerFactory;
@@ -34,7 +35,7 @@ class CacheClientTest extends TestCase
 
     public function setUp(): void
     {
-        $this->configuration = Configurations\Laptop::latest();
+        $this->configuration = Configurations\Laptop::latest()->withReadConcern(ReadConcern::CONSISTENT);
         $this->authProvider = new EnvMomentoTokenProvider("MOMENTO_API_KEY");
         $this->client = new CacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
         $this->TEST_CACHE_NAME = uniqid('php-integration-tests-');
@@ -68,6 +69,15 @@ class CacheClientTest extends TestCase
         $grpcConfig = new StaticGrpcConfiguration($deadline);
         $transportStrategy = new StaticTransportStrategy($grpcConfig, $loggerFactory);
         return new Configuration($loggerFactory, $transportStrategy);
+    }
+
+    public function testCreateConfigurationWithReadConcern()
+    {
+        $balancedConfig = $this->configuration->withReadConcern(ReadConcern::BALANCED);
+        $this->assertEquals($balancedConfig->getReadConcern(), ReadConcern::BALANCED);
+
+        $consistentConfig = $this->configuration->withReadConcern(ReadConcern::CONSISTENT);
+        $this->assertEquals($consistentConfig->getReadConcern(), ReadConcern::CONSISTENT);
     }
 
     public function testCreateAndCloseClient() {

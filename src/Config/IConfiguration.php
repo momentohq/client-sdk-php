@@ -16,11 +16,15 @@ interface IConfiguration
      */
     public function getLoggerFactory(): ILoggerFactory;
 
-
     /**
      * @return ITransportStrategy The currently active transport strategy
      */
     public function getTransportStrategy(): ITransportStrategy;
+
+    /**
+     * @return int The currently active read consistency configuration
+     */
+    public function getReadConcern(): string;
 
     /**
      * Creates a new instance of the Configuration object, updated to use the specified transport strategy.
@@ -37,4 +41,12 @@ interface IConfiguration
      * @return IConfiguration Configuration object with specified client timeout
      */
     public function withClientTimeout(int $clientTimeoutSecs): IConfiguration;
+
+    /**
+     * Creates a new instance of the Configuration object, updated to use the specified read consistency.
+     *
+     * @param ReadConcern $readConcern The read consistency configuration to use.
+     * @return IConfiguration Configuration object with specified read concern.
+     */
+    public function withReadConcern(string $readConcern): IConfiguration;
 }
