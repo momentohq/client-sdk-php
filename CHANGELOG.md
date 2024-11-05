@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/momentohq/client-sdk-php/compare/v1.15.0...v1.15.1) (2024-11-05)
+
+
+### Miscellaneous
+
+* improve resource exhausted error message ([#247](https://github.com/momentohq/client-sdk-php/issues/247)) ([c29417e](https://github.com/momentohq/client-sdk-php/commit/c29417ee8f746147cfce145ece9112343c43f4ca))
+
 ## [1.15.0](https://github.com/momentohq/client-sdk-php/compare/v1.14.0...v1.15.0) (2024-11-05)
 
 
