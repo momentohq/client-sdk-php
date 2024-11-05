@@ -10,7 +10,7 @@ class AgentInterceptor extends Interceptor
     private bool $isFirstRequest = true;
     private string $agent;
     private string $runtimeVersion;
-    private string $sdkVersion = "1.14.0"; // x-release-please-version
+    private string $sdkVersion = "1.15.0"; // x-release-please-version
 
 
     public function __construct(string $clientType)
