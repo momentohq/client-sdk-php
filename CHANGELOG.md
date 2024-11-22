@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.16.0](https://github.com/momentohq/client-sdk-php/compare/v1.15.1...v1.16.0) (2024-11-22)
+
+
+### Features
+
+* add dev-container documentation ([#248](https://github.com/momentohq/client-sdk-php/issues/248)) ([2394b93](https://github.com/momentohq/client-sdk-php/commit/2394b93a7196a873ff6bd698bbc5ee3a661ccf39))
+
+
+### Miscellaneous
+
+* add Lambda configuration with values ported from nodejs ([#251](https://github.com/momentohq/client-sdk-php/issues/251)) ([6c9c373](https://github.com/momentohq/client-sdk-php/commit/6c9c373f7abc23e89a1a9ce8a1c4c66a8b374550))
+* fix license copyright info ([#252](https://github.com/momentohq/client-sdk-php/issues/252)) ([74bd347](https://github.com/momentohq/client-sdk-php/commit/74bd347114bc7e1eed6f25d2059c511b4090926a))
+
 ## [1.15.1](https://github.com/momentohq/client-sdk-php/compare/v1.15.0...v1.15.1) (2024-11-05)
 
 
