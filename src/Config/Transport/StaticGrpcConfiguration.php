@@ -9,12 +9,39 @@ class StaticGrpcConfiguration implements IGrpcConfiguration
     private ?int $deadlineMilliseconds;
     private bool $forceNewChannel;
     private int $numGrpcChannels;
+    private ?int $keepAlivePermitWithoutCalls;
+    private ?int $keepAliveTimeoutMS;
+    private ?int $keepAliveTimeMS;
 
-    public function __construct(?int $deadlineMilliseconds = null, bool $forceNewChannel = false, int $numGrpcChannels = 1)
-    {
+    public function __construct(
+        ?int $deadlineMilliseconds = null,
+        bool $forceNewChannel = false,
+        int $numGrpcChannels = 1,
+        ?int $keepAlivePermitWithoutCalls = 0,
+        ?int $keepAliveTimeoutMS = null,
+        ?int $keepAliveTimeMS = null
+    ) {
         $this->deadlineMilliseconds = $deadlineMilliseconds;
         $this->forceNewChannel = $forceNewChannel;
         $this->numGrpcChannels = $numGrpcChannels;
+        $this->keepAlivePermitWithoutCalls = $keepAlivePermitWithoutCalls;
+        $this->keepAliveTimeoutMS = $keepAliveTimeoutMS;
+        $this->keepAliveTimeMS = $keepAliveTimeMS;
+    }
+
+    public function getKeepAlivePermitWithoutCalls(): ?int
+    {
+        return $this->keepAlivePermitWithoutCalls;
+    }
+
+    public function getKeepAliveTimeoutMS(): ?int
+    {
+        return $this->keepAliveTimeoutMS;
+    }
+
+    public function getKeepAliveTimeMS(): ?int
+    {
+        return $this->keepAliveTimeMS;
     }
 
     public function getDeadlineMilliseconds(): ?int

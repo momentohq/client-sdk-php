@@ -16,4 +16,11 @@ interface IGrpcConfiguration
     public function getNumGrpcChannels(): int;
 
     public function withNumGrpcChannels(int $numGrpcChannels): IGrpcConfiguration;
+
+    public function getKeepAlivePermitWithoutCalls(): ?int;
+
+    public function getKeepAliveTimeoutMS(): ?int;
+
+    public function getKeepAliveTimeMS(): ?int;
+
 }
