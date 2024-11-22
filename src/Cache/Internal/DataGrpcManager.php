@@ -32,6 +32,18 @@ class DataGrpcManager
         if ($forceNewChannel) {
             $channelArgs["force_new"] = $forceNewChannel;
         }
+        if ($configuration->getTransportStrategy()->getGrpcConfig()->getKeepAlivePermitWithoutCalls()) {
+            $channelArgs["grpc.keepalive_permit_without_calls"] =
+                $configuration->getTransportStrategy()->getGrpcConfig()->getKeepAlivePermitWithoutCalls();
+        }
+        if ($configuration->getTransportStrategy()->getGrpcConfig()->getKeepAliveTimeoutMS()) {
+            $channelArgs["grpc.keepalive_timeout_ms"] =
+                $configuration->getTransportStrategy()->getGrpcConfig()->getKeepAliveTimeoutMS();
+        }
+        if ($configuration->getTransportStrategy()->getGrpcConfig()->getKeepAliveTimeMS()) {
+            $channelArgs["grpc.keepalive_time_ms"] =
+                $configuration->getTransportStrategy()->getGrpcConfig()->getKeepAliveTimeMS();
+        }
         $this->channel = new Channel($endpoint, $channelArgs);
         $interceptors = [
             new AuthorizationInterceptor($authProvider->getAuthToken()),
