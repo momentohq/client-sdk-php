@@ -9,6 +9,12 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
+ * This response is for when a get request concludes successfully.
+ * These are some of the Errors and their corresponding GRPC status codes.
+ * 1. Invalid argument was provided, value is missing -> grpc code = INVALID_ARGUMENT.  Metadata: "err" -> "momento_general_err"
+ * 2. Item does not exist. grpc code = NOT_FOUND. Metadata: "err" -> "item_not_found"
+ * 3. Store not found. grpc code = NOT_FOUND. Metadata: "err" -> "store_not_found"
+ *
  * Generated from protobuf message <code>store._StoreGetResponse</code>
  */
 class _StoreGetResponse extends \Google\Protobuf\Internal\Message

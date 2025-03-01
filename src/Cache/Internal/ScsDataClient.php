@@ -39,6 +39,9 @@ use Cache_client\_SortedSetIncrementRequest;
 use Cache_client\_SortedSetLengthByScoreRequest;
 use Cache_client\_SortedSetPutRequest;
 use Cache_client\_SortedSetRemoveRequest;
+use Cache_client\_SortedSetUnionStoreRequest;
+use Cache_client\_SortedSetUnionStoreRequest\AggregateFunction;
+use Cache_client\_SortedSetUnionStoreRequest\_Source;
 use Cache_client\_UpdateTtlRequest;
 use Cache_client\ECacheResult;
 use Common\_Unbounded;
@@ -217,11 +220,15 @@ use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementSuccess;
 use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementsError;
 use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementsResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementsSuccess;
+use Momento\Cache\CacheOperationTypes\SortedSetUnionStoreResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetUnionStoreSuccess;
+use Momento\Cache\CacheOperationTypes\SortedSetUnionStoreError;
 use Momento\Cache\CacheOperationTypes\UpdateTtlError;
 use Momento\Cache\CacheOperationTypes\UpdateTtlMiss;
 use Momento\Cache\CacheOperationTypes\UpdateTtlResponse;
 use Momento\Cache\CacheOperationTypes\UpdateTtlSet;
 use Momento\Cache\Errors\InternalServerError;
+use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Config\IConfiguration;
@@ -2026,6 +2033,67 @@ class ScsDataClient implements LoggerAwareInterface
                     return new SortedSetGetScoreError($value, $e);
                 } catch (Exception $e) {
                     return new SortedSetGetScoreError($value, new UnknownError($e->getMessage(), 0, $e));
+                }
+            }
+        );
+    }
+
+    /**
+     * @return ResponseFuture<SortedSetUnionStoreResponse>
+     */
+    public function sortedSetUnionStore(
+        string $cacheName,
+        string $destination,
+        array $sources,
+        ?int $aggregate = AggregateFunction::SUM,
+        ?CollectionTtl $ttl = null
+    ): ResponseFuture
+    {
+        try {
+            $collectionTtl = $this->returnCollectionTtl($ttl);
+            // The number of source sets is currently limited to 2
+            if (count($sources) > 2) {
+                throw new InvalidArgumentError("The number of source sets is currently limited to 2");
+            }
+            validateCacheName($cacheName);
+            validateSortedSetName($destination);
+
+            $grpcSources = [];
+            foreach ($sources as $source) {
+                validateSortedSetName($source['setName']);
+                $grpcSource = new _Source();
+                $grpcSource->setSetName($source['setName']);
+                $grpcSource->setWeight($source['weight']);
+                $grpcSources[] = $grpcSource;
+            }
+
+            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
+            validateTtl($ttlMillis);
+            $sortedSetUnionStoreRequest = new _SortedSetUnionStoreRequest();
+            $sortedSetUnionStoreRequest->setSetName($destination);
+            $sortedSetUnionStoreRequest->setTtlMilliseconds($collectionTtl->getRefreshTtl());
+            $sortedSetUnionStoreRequest->setSources($grpcSources);
+            $sortedSetUnionStoreRequest->setAggregate($aggregate);
+            $call = $this->grpcManager->client->SortedSetUnionStore(
+                $sortedSetUnionStoreRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout],
+            );
+        } catch (SdkError $e) {
+            return ResponseFuture::createResolved(new SortedSetUnionStoreError($e));
+        } catch (Exception $e) {
+            return ResponseFuture::createResolved(new SortedSetUnionStoreError(new UnknownError($e->getMessage(), 0, $e)));
+        }
+
+        return ResponseFuture::createPending(
+            function () use ($call): SortedSetUnionStoreResponse {
+                try {
+                    $response = $this->processCall($call);
+                    return new SortedSetUnionStoreSuccess($response);
+                } catch (SdkError $e) {
+                    return new SortedSetUnionStoreError($e);
+                } catch (Exception $e) {
+                    return new SortedSetUnionStoreError(new UnknownError($e->getMessage(), 0, $e));
                 }
             }
         );

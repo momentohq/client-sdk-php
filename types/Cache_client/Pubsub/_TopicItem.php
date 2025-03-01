@@ -16,14 +16,8 @@ use Google\Protobuf\Internal\GPBUtil;
 class _TopicItem extends \Google\Protobuf\Internal\Message
 {
     /**
-     * Topic sequence numbers are **best-effort** and **informational**.
-     * They are not transactional.
-     * They exist:
-     * * to help reconnect to an existing topic while trying to avoid missing items.
-     * * to facilitate richer monitoring and logging.
-     * * to provide a best-effort awareness of stream contiguity, or lack thereof,
-     *   in case you need to know.
-     * You can safely ignore them if none of that matters to you!
+     * Topic sequence numbers give an order of messages per-topic.
+     * All subscribers to a topic will receive messages in the same order, with the same sequence numbers.
      *
      * Generated from protobuf field <code>uint64 topic_sequence_number = 1;</code>
      */
@@ -40,6 +34,15 @@ class _TopicItem extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string publisher_id = 3;</code>
      */
     protected $publisher_id = '';
+    /**
+     * Sequence pages exist to determine which sequence number range a message belongs to. On a topic reset,
+     * the sequence numbers reset and a new sequence_page is given.
+     * For a given sequence_page, the next message in a topic is topic_sequence_number + 1.
+     * Later sequence pages are numbered greater than earlier pages, but they don't go one-by-one.
+     *
+     * Generated from protobuf field <code>uint64 sequence_page = 4;</code>
+     */
+    protected $sequence_page = 0;
 
     /**
      * Constructor.
@@ -48,18 +51,17 @@ class _TopicItem extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int|string $topic_sequence_number
-     *           Topic sequence numbers are **best-effort** and **informational**.
-     *           They are not transactional.
-     *           They exist:
-     *           * to help reconnect to an existing topic while trying to avoid missing items.
-     *           * to facilitate richer monitoring and logging.
-     *           * to provide a best-effort awareness of stream contiguity, or lack thereof,
-     *             in case you need to know.
-     *           You can safely ignore them if none of that matters to you!
+     *           Topic sequence numbers give an order of messages per-topic.
+     *           All subscribers to a topic will receive messages in the same order, with the same sequence numbers.
      *     @type \Cache_client\Pubsub\_TopicValue $value
      *           The value you previously published to this topic.
      *     @type string $publisher_id
      *           Authenticated id from Publisher's disposable token
+     *     @type int|string $sequence_page
+     *           Sequence pages exist to determine which sequence number range a message belongs to. On a topic reset,
+     *           the sequence numbers reset and a new sequence_page is given.
+     *           For a given sequence_page, the next message in a topic is topic_sequence_number + 1.
+     *           Later sequence pages are numbered greater than earlier pages, but they don't go one-by-one.
      * }
      */
     public function __construct($data = NULL) {
@@ -68,14 +70,8 @@ class _TopicItem extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Topic sequence numbers are **best-effort** and **informational**.
-     * They are not transactional.
-     * They exist:
-     * * to help reconnect to an existing topic while trying to avoid missing items.
-     * * to facilitate richer monitoring and logging.
-     * * to provide a best-effort awareness of stream contiguity, or lack thereof,
-     *   in case you need to know.
-     * You can safely ignore them if none of that matters to you!
+     * Topic sequence numbers give an order of messages per-topic.
+     * All subscribers to a topic will receive messages in the same order, with the same sequence numbers.
      *
      * Generated from protobuf field <code>uint64 topic_sequence_number = 1;</code>
      * @return int|string
@@ -86,14 +82,8 @@ class _TopicItem extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Topic sequence numbers are **best-effort** and **informational**.
-     * They are not transactional.
-     * They exist:
-     * * to help reconnect to an existing topic while trying to avoid missing items.
-     * * to facilitate richer monitoring and logging.
-     * * to provide a best-effort awareness of stream contiguity, or lack thereof,
-     *   in case you need to know.
-     * You can safely ignore them if none of that matters to you!
+     * Topic sequence numbers give an order of messages per-topic.
+     * All subscribers to a topic will receive messages in the same order, with the same sequence numbers.
      *
      * Generated from protobuf field <code>uint64 topic_sequence_number = 1;</code>
      * @param int|string $var
@@ -165,6 +155,38 @@ class _TopicItem extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->publisher_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Sequence pages exist to determine which sequence number range a message belongs to. On a topic reset,
+     * the sequence numbers reset and a new sequence_page is given.
+     * For a given sequence_page, the next message in a topic is topic_sequence_number + 1.
+     * Later sequence pages are numbered greater than earlier pages, but they don't go one-by-one.
+     *
+     * Generated from protobuf field <code>uint64 sequence_page = 4;</code>
+     * @return int|string
+     */
+    public function getSequencePage()
+    {
+        return $this->sequence_page;
+    }
+
+    /**
+     * Sequence pages exist to determine which sequence number range a message belongs to. On a topic reset,
+     * the sequence numbers reset and a new sequence_page is given.
+     * For a given sequence_page, the next message in a topic is topic_sequence_number + 1.
+     * Later sequence pages are numbered greater than earlier pages, but they don't go one-by-one.
+     *
+     * Generated from protobuf field <code>uint64 sequence_page = 4;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setSequencePage($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->sequence_page = $var;
 
         return $this;
     }

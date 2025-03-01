@@ -9,22 +9,24 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Generated from protobuf message <code>leaderboard._GetRankRequest</code>
+ * Generated from protobuf message <code>leaderboard._GetCompetitionRankRequest</code>
  */
-class _GetRankRequest extends \Google\Protobuf\Internal\Message
+class _GetCompetitionRankRequest extends \Google\Protobuf\Internal\Message
 {
     /**
-     * Generated from protobuf field <code>string leaderboard = 2;</code>
+     * Generated from protobuf field <code>string leaderboard = 1;</code>
      */
     protected $leaderboard = '';
     /**
-     * Generated from protobuf field <code>repeated uint32 ids = 3;</code>
+     * Generated from protobuf field <code>repeated uint32 ids = 2;</code>
      */
     private $ids;
     /**
-     * Generated from protobuf field <code>.leaderboard._Order order = 4;</code>
+     * If not specified, the order is descending.
+     *
+     * Generated from protobuf field <code>optional .leaderboard._Order order = 3;</code>
      */
-    protected $order = 0;
+    protected $order = null;
 
     /**
      * Constructor.
@@ -35,6 +37,7 @@ class _GetRankRequest extends \Google\Protobuf\Internal\Message
      *     @type string $leaderboard
      *     @type int[]|\Google\Protobuf\Internal\RepeatedField $ids
      *     @type int $order
+     *           If not specified, the order is descending.
      * }
      */
     public function __construct($data = NULL) {
@@ -43,7 +46,7 @@ class _GetRankRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string leaderboard = 2;</code>
+     * Generated from protobuf field <code>string leaderboard = 1;</code>
      * @return string
      */
     public function getLeaderboard()
@@ -52,7 +55,7 @@ class _GetRankRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string leaderboard = 2;</code>
+     * Generated from protobuf field <code>string leaderboard = 1;</code>
      * @param string $var
      * @return $this
      */
@@ -65,7 +68,7 @@ class _GetRankRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>repeated uint32 ids = 3;</code>
+     * Generated from protobuf field <code>repeated uint32 ids = 2;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getIds()
@@ -74,7 +77,7 @@ class _GetRankRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>repeated uint32 ids = 3;</code>
+     * Generated from protobuf field <code>repeated uint32 ids = 2;</code>
      * @param int[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
@@ -87,16 +90,30 @@ class _GetRankRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>.leaderboard._Order order = 4;</code>
+     * If not specified, the order is descending.
+     *
+     * Generated from protobuf field <code>optional .leaderboard._Order order = 3;</code>
      * @return int
      */
     public function getOrder()
     {
-        return $this->order;
+        return isset($this->order) ? $this->order : 0;
+    }
+
+    public function hasOrder()
+    {
+        return isset($this->order);
+    }
+
+    public function clearOrder()
+    {
+        unset($this->order);
     }
 
     /**
-     * Generated from protobuf field <code>.leaderboard._Order order = 4;</code>
+     * If not specified, the order is descending.
+     *
+     * Generated from protobuf field <code>optional .leaderboard._Order order = 3;</code>
      * @param int $var
      * @return $this
      */

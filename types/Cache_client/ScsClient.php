@@ -656,4 +656,25 @@ class ScsClient extends \Grpc\BaseStub {
         $metadata, $options);
     }
 
+    /**
+     * Computes the union of all the source sets and stores the result in itself. If the set does not
+     * exist, it is created with the given `ttl`. If it exists, it is overwritten with the result and 
+     * its ttl is set to the given `ttl`. If the set exists but the result of the union is empty, it is deleted.
+     * The union is computed by applying the corresponding weight multiplier to the score of all elements
+     * in each source set, and then using the aggregate function to combine the weighted scores for elements
+     * existing in multiple source sets.
+     * Returns the number of elements in the set after storing the result of the union.
+     * @param \Cache_client\_SortedSetUnionStoreRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SortedSetUnionStore(\Cache_client\_SortedSetUnionStoreRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SortedSetUnionStore',
+        $argument,
+        ['\Cache_client\_SortedSetUnionStoreResponse', 'decode'],
+        $metadata, $options);
+    }
+
 }
