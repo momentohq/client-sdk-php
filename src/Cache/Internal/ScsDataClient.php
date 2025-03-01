@@ -2051,7 +2051,9 @@ class ScsDataClient implements LoggerAwareInterface
     {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
-            // The number of source sets is currently limited to 2
+            // The number of source sets is currently limited to 2. I'm just adding this validation and
+            // some validation of the contents of $sources here for now, but will move to _DataValidation
+            // eventually.
             if (count($sources) > 2) {
                 throw new InvalidArgumentError("The number of source sets is currently limited to 2");
             }
@@ -2060,7 +2062,13 @@ class ScsDataClient implements LoggerAwareInterface
 
             $grpcSources = [];
             foreach ($sources as $source) {
+                if (!array_key_exists('setName', $source) || !array_key_exists('weight', $source)) {
+                    throw new InvalidArgumentError("Each source must have a 'setName' and a 'weight'");
+                }
                 validateSortedSetName($source['setName']);
+                if (!is_float($source['weight'])) {
+                    throw new InvalidArgumentError("Each source must have a float 'weight'");
+                }
                 $grpcSource = new _Source();
                 $grpcSource->setSetName($source['setName']);
                 $grpcSource->setWeight($source['weight']);
