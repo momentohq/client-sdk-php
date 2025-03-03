@@ -23,7 +23,7 @@ class ControlGrpcManager
         $endpoint = $authProvider->getControlEndpoint();
         $channelArgs = [
             "credentials" => ChannelCredentials::createSsl(),
-            "grpc.service_config_disable_resolution" => "true", // Disable service config resolution to avoid TXT record lookup
+            "grpc.service_config_disable_resolution" => 1, // Disable service config resolution to avoid TXT record lookup
         ];
 
         if ($authProvider->getTrustedControlEndpointCertificateName()) {
