@@ -3784,6 +3784,43 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+    public function testSortedSetUnionStore_HappyPath()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "bar" => 4.0,
+            "baz" => 5.0,
+            "qux" => 6.0,
+        ];
+
+        $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName1, $elements1);
+        $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName2, $elements2);
+        $response = $this->client->sortedSetUnionStore(
+            $this->TEST_CACHE_NAME,
+            $sortedSetName3,
+            [["setName"=>$sortedSetName1, "weight"=>1], ["setName"=>$sortedSetName2, "weight"=>1]],
+            null,
+            new CollectionTtl(60)
+        );
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(6, $response->asSuccess()->length());
+
+        $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName3);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a hit but got: $response");
+        $this->assertEquals(6, $response->asSuccess()->length());
+    }
+
     public function testGetBatch_HappyPath()
     {
         $cacheName = $this->TEST_CACHE_NAME;
