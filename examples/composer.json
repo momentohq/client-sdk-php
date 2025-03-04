@@ -1,6 +1,6 @@
 {
   "require": {
-    "momentohq/client-sdk-php": "dev-sorted-set-union-store",
+    "momentohq/client-sdk-php": "1.14.0",
     "monolog/monolog": "^2.5"
   }
 }
