@@ -2325,9 +2325,9 @@ class CacheClient implements LoggerAwareInterface
     }
 
     /**
-     * Computes the union of all the source sets and stores the result in itself. If the set does not
+     * Computes the union of all the source sets and stores the result in the destination key. If the key does not
      * exist, it is created with the given `ttl`. If it exists, it is overwritten with the result and
-     * its ttl is set to the given `ttl`. If the set exists but the result of the union is empty, it is deleted.
+     * its ttl is set to the given `ttl`. If the key exists but the result of the union is empty, it is deleted.
      * The union is computed by applying the corresponding weight multiplier to the score of all elements
      * in each source set, and then using the aggregate function to combine the weighted scores for elements
      * existing in multiple source sets.
