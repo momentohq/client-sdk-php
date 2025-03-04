@@ -3803,6 +3803,15 @@ class CacheClientTest extends TestCase
             "hij" => 6.0,
         ];
 
+        $expectedElements = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+            "abc" => 4.0,
+            "def" => 5.0,
+            "hij" => 6.0,
+        ];
+
         $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName1, $elements1);
         $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName2, $elements2);
         $response = $this->client->sortedSetUnionStore(
@@ -3819,10 +3828,10 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
         $this->assertEquals(6, $response->asSuccess()->length());
 
-        $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName3);
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName3);
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a hit but got: $response");
-        $this->assertEquals(6, $response->asSuccess()->length());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals($expectedElements, $response->asHit()->valuesArray());
     }
 
     public function testGetBatch_HappyPath()
