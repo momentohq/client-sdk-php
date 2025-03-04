@@ -21,7 +21,11 @@ class ControlGrpcManager
     public function __construct(ICredentialProvider $authProvider)
     {
         $endpoint = $authProvider->getControlEndpoint();
-        $channelArgs = ["credentials" => ChannelCredentials::createSsl()];
+        $channelArgs = [
+            "credentials" => ChannelCredentials::createSsl(),
+            "grpc.service_config_disable_resolution" => 1, // Disable service config resolution to avoid TXT record lookup
+        ];
+
         if ($authProvider->getTrustedControlEndpointCertificateName()) {
             $channelArgs["grpc.ssl_target_name_override"] = $authProvider->getTrustedControlEndpointCertificateName();
         }

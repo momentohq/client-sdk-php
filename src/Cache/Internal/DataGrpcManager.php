@@ -21,7 +21,11 @@ class DataGrpcManager
     public function __construct(ICredentialProvider $authProvider, IConfiguration $configuration)
     {
         $endpoint = $authProvider->getCacheEndpoint();
-        $channelArgs = ["credentials" => ChannelCredentials::createSsl()];
+        $channelArgs = [
+            "credentials" => ChannelCredentials::createSsl(),
+            "grpc.service_config_disable_resolution" => 1, // Disable service config resolution to avoid TXT record lookup
+        ];
+
         if ($authProvider->getTrustedCacheEndpointCertificateName()) {
             $channelArgs["grpc.ssl_target_name_override"] = $authProvider->getTrustedCacheEndpointCertificateName();
         }
