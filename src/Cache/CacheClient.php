@@ -2318,10 +2318,10 @@ class CacheClient implements LoggerAwareInterface
         string $destination,
         array $sources,
         ?int $aggregate = SortedSetUnionStoreAggregateFunction::SUM,
-        ?CollectionTtl $ttl = null
+        ?int $ttlSeconds = null
     ): ResponseFuture
     {
-        return $this->getNextDataClient()->sortedSetUnionStore($cacheName, $destination, $sources, $aggregate, $ttl);
+        return $this->getNextDataClient()->sortedSetUnionStore($cacheName, $destination, $sources, $aggregate, $ttlSeconds);
     }
 
     /**
@@ -2339,7 +2339,8 @@ class CacheClient implements LoggerAwareInterface
      * multiplier applied to the score of each element in the set before aggregation. Negative and zero weights are allowed.
      * @param ?int $aggregate The aggregate function to use when combining scores of elements existing in multiple source sets.
      * The available functions are enumerated in the Momento\Requests\SortedSetUnionStoreAggregateFunction class.
-     * @param CollectionTtl|null $ttl Specifies if collection TTL is refreshed when updated and the TTL value to which it is set.
+     * @param int|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     *    Defaults to client TTL. If specified must be strictly positive.
      * @return SortedSetUnionStoreResponse Represents the result of the sorted set union store operation.
      *  This result is resolved to a type-safe object of one of the following types:<br>
      *  * SortedSetUnionStoreSuccess<br>
@@ -2358,10 +2359,10 @@ class CacheClient implements LoggerAwareInterface
         string $destination,
         array $sources,
         ?int $aggregate = SortedSetUnionStoreAggregateFunction::SUM,
-        ?CollectionTtl $ttl = null
+        ?int $ttlSeconds = null
     ): SortedSetUnionStoreResponse
     {
-        return $this->sortedSetUnionStoreAsync($cacheName, $destination, $sources, $aggregate, $ttl)->wait();
+        return $this->sortedSetUnionStoreAsync($cacheName, $destination, $sources, $aggregate, $ttlSeconds)->wait();
     }
 
     /**

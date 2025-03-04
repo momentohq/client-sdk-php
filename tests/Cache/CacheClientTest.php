@@ -19,6 +19,7 @@ use Momento\Config\Transport\StaticGrpcConfiguration;
 use Momento\Config\Transport\StaticTransportStrategy;
 use Momento\Logging\NullLoggerFactory;
 use Momento\Requests\CollectionTtl;
+use Momento\Requests\SortedSetUnionStoreAggregateFunction;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -3797,9 +3798,9 @@ class CacheClientTest extends TestCase
         ];
 
         $elements2 = [
-            "bar" => 4.0,
-            "baz" => 5.0,
-            "qux" => 6.0,
+            "abc" => 4.0,
+            "def" => 5.0,
+            "hij" => 6.0,
         ];
 
         $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName1, $elements1);
@@ -3807,9 +3808,12 @@ class CacheClientTest extends TestCase
         $response = $this->client->sortedSetUnionStore(
             $this->TEST_CACHE_NAME,
             $sortedSetName3,
-            [["setName"=>$sortedSetName1, "weight"=>1], ["setName"=>$sortedSetName2, "weight"=>1]],
-            null,
-            new CollectionTtl(60)
+            [
+                ["setName"=>$sortedSetName1, "weight"=>1],
+                ["setName"=>$sortedSetName2, "weight"=>1],
+            ],
+            SortedSetUnionStoreAggregateFunction::SUM,
+            60
         );
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");

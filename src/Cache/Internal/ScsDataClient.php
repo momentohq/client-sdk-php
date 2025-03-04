@@ -2046,11 +2046,10 @@ class ScsDataClient implements LoggerAwareInterface
         string $destination,
         array $sources,
         ?int $aggregate = AggregateFunction::SUM,
-        ?CollectionTtl $ttl = null
+        ?int $ttlSeconds = null
     ): ResponseFuture
     {
         try {
-            $collectionTtl = $this->returnCollectionTtl($ttl);
             // The number of source sets is currently limited to 2. I'm just adding this validation and
             // some validation of the contents of $sources here for now, but will move to _DataValidation
             // eventually.
@@ -2059,15 +2058,19 @@ class ScsDataClient implements LoggerAwareInterface
             }
             validateCacheName($cacheName);
             validateSortedSetName($destination);
+            $ttlMillis = $this->ttlToMillis($ttlSeconds);
 
             $grpcSources = [];
             foreach ($sources as $source) {
                 if (!array_key_exists('setName', $source) || !array_key_exists('weight', $source)) {
-                    throw new InvalidArgumentError("Each source must have a 'setName' and a 'weight'");
+                    throw new InvalidArgumentError("Each source must have 'setName' and 'weight' keys");
                 }
                 validateSortedSetName($source['setName']);
+                if (!is_numeric($source['weight'])) {
+                    throw new InvalidArgumentError("Each source must have a 'weight' key with a float value");
+                }
                 if (!is_float($source['weight'])) {
-                    throw new InvalidArgumentError("Each source must have a float 'weight'");
+                    $source['weight'] = (float)$source['weight'];
                 }
                 $grpcSource = new _Source();
                 $grpcSource->setSetName($source['setName']);
@@ -2075,11 +2078,11 @@ class ScsDataClient implements LoggerAwareInterface
                 $grpcSources[] = $grpcSource;
             }
 
-            $ttlMillis = $this->ttlToMillis($collectionTtl->getTtl());
+            $ttlMillis = $this->ttlToMillis($ttlMillis);
             validateTtl($ttlMillis);
             $sortedSetUnionStoreRequest = new _SortedSetUnionStoreRequest();
             $sortedSetUnionStoreRequest->setSetName($destination);
-            $sortedSetUnionStoreRequest->setTtlMilliseconds($collectionTtl->getRefreshTtl());
+            $sortedSetUnionStoreRequest->setTtlMilliseconds($ttlMillis);
             $sortedSetUnionStoreRequest->setSources($grpcSources);
             $sortedSetUnionStoreRequest->setAggregate($aggregate);
             $call = $this->grpcManager->client->SortedSetUnionStore(
