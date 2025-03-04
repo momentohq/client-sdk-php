@@ -142,4 +142,21 @@ class LeaderboardClient extends \Grpc\BaseStub {
         $metadata, $options);
     }
 
+    /**
+     * Get the competition ranks of a list of elements.
+     * Ranks start at 0. The default ordering is descending.
+     * i.e. elements with higher scores have lower ranks.
+     * @param \Leaderboard\_GetCompetitionRankRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function GetCompetitionRank(\Leaderboard\_GetCompetitionRankRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/leaderboard.Leaderboard/GetCompetitionRank',
+        $argument,
+        ['\Leaderboard\_GetCompetitionRankResponse', 'decode'],
+        $metadata, $options);
+    }
+
 }

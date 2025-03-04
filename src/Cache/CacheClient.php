@@ -56,6 +56,7 @@ use Momento\Cache\CacheOperationTypes\ListCachesResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetPutElementsResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementResponse;
 use Momento\Cache\CacheOperationTypes\SortedSetRemoveElementsResponse;
+use Momento\Cache\CacheOperationTypes\SortedSetUnionStoreResponse;
 use Momento\Cache\CacheOperationTypes\UpdateTtlResponse;
 use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Internal\IdleDataClientWrapper;
@@ -64,6 +65,7 @@ use Momento\Cache\Internal\ScsDataClient;
 use Momento\Config\IConfiguration;
 use Momento\Logging\ILoggerFactory;
 use Momento\Requests\CollectionTtl;
+use Momento\Requests\SortedSetUnionStoreAggregateFunction;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
@@ -2277,6 +2279,91 @@ class CacheClient implements LoggerAwareInterface
     public function sortedSetLengthByScore(string $cacheName, string $sortedSetName, $minScore = null, $maxScore = null, bool $inclusiveMin = true, bool $inclusiveMax = true): SortedSetLengthByScoreResponse
     {
         return $this->sortedSetLengthByScoreAsync($cacheName, $sortedSetName, $minScore, $maxScore, $inclusiveMin, $inclusiveMax)->wait();
+    }
+
+    /**
+     * Computes the union of all the source sets and stores the result in itself. If the set does not
+     * exist, it is created with the given `ttl`. If it exists, it is overwritten with the result and
+     * its ttl is set to the given `ttl`. If the set exists but the result of the union is empty, it is deleted.
+     * The union is computed by applying the corresponding weight multiplier to the score of all elements
+     * in each source set, and then using the aggregate function to combine the weighted scores for elements
+     * existing in multiple source sets.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted sets.
+     * @param string $destination The name of the sorted set to store the result in.
+     * @param list<array{setName: string, weight: float}> $sources
+     * The source sets to union as a list of arrays containing `setName` and `weight` keys. The weight key holds a multiplier
+     * applied to the score of each element in the set before aggregation. Negative and zero weights are allowed.
+     * @param ?int $aggregate The aggregate function to use when combining scores of elements existing in multiple source sets.
+     * The available functions are enumerated in the Momento\Requests\SortedSetUnionStoreAggregateFunction class.
+     * @param int|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     * Defaults to client TTL. If specified must be strictly positive.
+     * @return ResponseFuture<SortedSetUnionStoreResponse> A waitable future which will
+     * provide the result of the sorted set union store operation upon a blocking call to wait:<br />
+     * <code>$response = $responseFuture->wait();</code><br />
+     * The response represents the result of the sorted set union store operation.
+     * This result is resolved to a type-safe object of one of the following types:<br>
+     * * SortedSetUnionStoreSuccess<br>
+     * * SortedSetUnionStoreError<br>
+     * Pattern matching can be to operate on the appropriate subtype:<br>
+     * <code>
+     * if ($success = $response->asSuccess()) {
+     *   return $success->length();
+     * } elseif ($error = $response->asError())
+     *   // handle error condition
+     * }
+     * </code>
+     */
+    public function sortedSetUnionStoreAsync(
+        string $cacheName,
+        string $destination,
+        array $sources,
+        ?int $aggregate = SortedSetUnionStoreAggregateFunction::SUM,
+        ?int $ttlSeconds = null
+    ): ResponseFuture
+    {
+        return $this->getNextDataClient()->sortedSetUnionStore($cacheName, $destination, $sources, $aggregate, $ttlSeconds);
+    }
+
+    /**
+     * Computes the union of all the source sets and stores the result in the destination key. If the key does not
+     * exist, it is created with the given `ttl`. If it exists, it is overwritten with the result and
+     * its ttl is set to the given `ttl`. If the key exists but the result of the union is empty, it is deleted.
+     * The union is computed by applying the corresponding weight multiplier to the score of all elements
+     * in each source set, and then using the aggregate function to combine the weighted scores for elements
+     * existing in multiple source sets.
+     *
+     * @param string $cacheName Name of the cache that contains the sorted sets.
+     * @param string $destination The name of the sorted set to store the result in.
+     * @param list<array{setName: string, weight: float}> $sources
+     * The source sets to union as a list of arrays containing `setName` and `weight` keys. The weight key holds a
+     * multiplier applied to the score of each element in the set before aggregation. Negative and zero weights are allowed.
+     * @param ?int $aggregate The aggregate function to use when combining scores of elements existing in multiple source sets.
+     * The available functions are enumerated in the Momento\Requests\SortedSetUnionStoreAggregateFunction class.
+     * @param int|null $ttlSeconds TTL for the item in cache. This TTL takes precedence over the TTL used when initializing a cache client.
+     * Defaults to client TTL. If specified must be strictly positive.
+     * @return SortedSetUnionStoreResponse Represents the result of the sorted set union store operation.
+     *  This result is resolved to a type-safe object of one of the following types:<br>
+     *  * SortedSetUnionStoreSuccess<br>
+     *  * SortedSetUnionStoreError<br>
+     *  Pattern matching can be to operate on the appropriate subtype:<br>
+     *  <code>
+     *  if ($success = $response->asSuccess()) {
+     *    return $success->length();
+     *  } elseif ($error = $response->asError())
+     *    // handle error condition
+     *  }
+     *  </code>
+     */
+    public function sortedSetUnionStore(
+        string $cacheName,
+        string $destination,
+        array $sources,
+        ?int $aggregate = SortedSetUnionStoreAggregateFunction::SUM,
+        ?int $ttlSeconds = null
+    ): SortedSetUnionStoreResponse
+    {
+        return $this->sortedSetUnionStoreAsync($cacheName, $destination, $sources, $aggregate, $ttlSeconds)->wait();
     }
 
     /**

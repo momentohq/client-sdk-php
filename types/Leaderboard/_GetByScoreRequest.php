@@ -14,10 +14,6 @@ use Google\Protobuf\Internal\GPBUtil;
 class _GetByScoreRequest extends \Google\Protobuf\Internal\Message
 {
     /**
-     * Generated from protobuf field <code>string cache_name = 1;</code>
-     */
-    protected $cache_name = '';
-    /**
      * Generated from protobuf field <code>string leaderboard = 2;</code>
      */
     protected $leaderboard = '';
@@ -48,7 +44,6 @@ class _GetByScoreRequest extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type string $cache_name
      *     @type string $leaderboard
      *     @type \Leaderboard\_ScoreRange $score_range
      *     @type int $offset
@@ -61,28 +56,6 @@ class _GetByScoreRequest extends \Google\Protobuf\Internal\Message
     public function __construct($data = NULL) {
         \GPBMetadata\Leaderboard::initOnce();
         parent::__construct($data);
-    }
-
-    /**
-     * Generated from protobuf field <code>string cache_name = 1;</code>
-     * @return string
-     */
-    public function getCacheName()
-    {
-        return $this->cache_name;
-    }
-
-    /**
-     * Generated from protobuf field <code>string cache_name = 1;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setCacheName($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->cache_name = $var;
-
-        return $this;
     }
 
     /**

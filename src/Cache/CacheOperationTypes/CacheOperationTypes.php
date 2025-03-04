@@ -23,6 +23,7 @@ use Cache_client\_SetFetchResponse;
 use Cache_client\_SetLengthResponse;
 use Cache_client\_SortedSetFetchResponse;
 use Cache_client\_SortedSetLengthByScoreResponse;
+use Cache_client\_SortedSetUnionStoreResponse;
 use Cache_client\ECacheResult;
 use Closure;
 use Control_client\_ListCachesResponse;
@@ -3854,6 +3855,57 @@ class SortedSetRemoveElementsSuccess extends SortedSetRemoveElementsResponse
  * Contains information about an error returned from the request.
  */
 class SortedSetRemoveElementsError extends SortedSetRemoveElementsResponse
+{
+    use ErrorBody;
+}
+
+abstract class SortedSetUnionStoreResponse extends ResponseBase
+{
+    /**
+     * @return SortedSetUnionStoreSuccess|null Returns the success subtype if the request was successful and null otherwise.
+     */
+    public function asSuccess(): ?SortedSetUnionStoreSuccess
+    {
+        if ($this->isSuccess()) {
+            return $this;
+        }
+        return null;
+    }
+
+    /**
+     * @return SortedSetUnionStoreError|null Returns the error subtype if the request returned an error and null otherwise.
+     */
+    public function asError(): ?SortedSetUnionStoreError
+    {
+        if ($this->isError()) {
+            return $this;
+        }
+        return null;
+    }
+}
+
+class SortedSetUnionStoreSuccess extends SortedSetUnionStoreResponse
+{
+    private int $length;
+
+    public function __construct(_SortedSetUnionStoreResponse $response)
+    {
+        parent::__construct();
+        $this->length = $response->getLength();
+    }
+
+    public function length(): int
+    {
+        return $this->length;
+    }
+
+    public function __toString()
+    {
+        return parent::__toString() . ": $this->length elements";
+    }
+}
+
+class SortedSetUnionStoreError extends SortedSetUnionStoreResponse
 {
     use ErrorBody;
 }

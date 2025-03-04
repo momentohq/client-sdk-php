@@ -28,15 +28,26 @@ class _SubscriptionRequest extends \Google\Protobuf\Internal\Message
      */
     protected $topic = '';
     /**
-     * --> Providing this is not required. <--
      * If provided, attempt to reconnect to the topic and replay messages starting from
      * the provided sequence number. You may get a discontinuity if some (or all) of the
      * messages are not available.
+     * If provided at 1, you may receive some messages leading up to whatever the
+     * newest message is. The exact amount is unspecified and subject to change.
      * If not provided (or 0), the subscription will begin with the latest messages.
      *
      * Generated from protobuf field <code>uint64 resume_at_topic_sequence_number = 3;</code>
      */
     protected $resume_at_topic_sequence_number = 0;
+    /**
+     * Determined by the service when a topic is created. This clarifies the intent of
+     * a subscription, and ensures the right messages are sent for a given
+     * `resume_at_topic_sequence_number`.
+     * Include this in your Subscribe() calls when you are reconnecting. The right value
+     * is the last sequence_page you received.
+     *
+     * Generated from protobuf field <code>uint64 sequence_page = 4;</code>
+     */
+    protected $sequence_page = 0;
 
     /**
      * Constructor.
@@ -49,11 +60,18 @@ class _SubscriptionRequest extends \Google\Protobuf\Internal\Message
      *     @type string $topic
      *           The literal topic name to which you want to subscribe.
      *     @type int|string $resume_at_topic_sequence_number
-     *           --> Providing this is not required. <--
      *           If provided, attempt to reconnect to the topic and replay messages starting from
      *           the provided sequence number. You may get a discontinuity if some (or all) of the
      *           messages are not available.
+     *           If provided at 1, you may receive some messages leading up to whatever the
+     *           newest message is. The exact amount is unspecified and subject to change.
      *           If not provided (or 0), the subscription will begin with the latest messages.
+     *     @type int|string $sequence_page
+     *           Determined by the service when a topic is created. This clarifies the intent of
+     *           a subscription, and ensures the right messages are sent for a given
+     *           `resume_at_topic_sequence_number`.
+     *           Include this in your Subscribe() calls when you are reconnecting. The right value
+     *           is the last sequence_page you received.
      * }
      */
     public function __construct($data = NULL) {
@@ -114,10 +132,11 @@ class _SubscriptionRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * --> Providing this is not required. <--
      * If provided, attempt to reconnect to the topic and replay messages starting from
      * the provided sequence number. You may get a discontinuity if some (or all) of the
      * messages are not available.
+     * If provided at 1, you may receive some messages leading up to whatever the
+     * newest message is. The exact amount is unspecified and subject to change.
      * If not provided (or 0), the subscription will begin with the latest messages.
      *
      * Generated from protobuf field <code>uint64 resume_at_topic_sequence_number = 3;</code>
@@ -129,10 +148,11 @@ class _SubscriptionRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * --> Providing this is not required. <--
      * If provided, attempt to reconnect to the topic and replay messages starting from
      * the provided sequence number. You may get a discontinuity if some (or all) of the
      * messages are not available.
+     * If provided at 1, you may receive some messages leading up to whatever the
+     * newest message is. The exact amount is unspecified and subject to change.
      * If not provided (or 0), the subscription will begin with the latest messages.
      *
      * Generated from protobuf field <code>uint64 resume_at_topic_sequence_number = 3;</code>
@@ -143,6 +163,40 @@ class _SubscriptionRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkUint64($var);
         $this->resume_at_topic_sequence_number = $var;
+
+        return $this;
+    }
+
+    /**
+     * Determined by the service when a topic is created. This clarifies the intent of
+     * a subscription, and ensures the right messages are sent for a given
+     * `resume_at_topic_sequence_number`.
+     * Include this in your Subscribe() calls when you are reconnecting. The right value
+     * is the last sequence_page you received.
+     *
+     * Generated from protobuf field <code>uint64 sequence_page = 4;</code>
+     * @return int|string
+     */
+    public function getSequencePage()
+    {
+        return $this->sequence_page;
+    }
+
+    /**
+     * Determined by the service when a topic is created. This clarifies the intent of
+     * a subscription, and ensures the right messages are sent for a given
+     * `resume_at_topic_sequence_number`.
+     * Include this in your Subscribe() calls when you are reconnecting. The right value
+     * is the last sequence_page you received.
+     *
+     * Generated from protobuf field <code>uint64 sequence_page = 4;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setSequencePage($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->sequence_page = $var;
 
         return $this;
     }

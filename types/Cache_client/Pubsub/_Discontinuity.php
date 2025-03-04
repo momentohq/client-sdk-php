@@ -29,6 +29,15 @@ class _Discontinuity extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>uint64 new_topic_sequence = 2;</code>
      */
     protected $new_topic_sequence = 0;
+    /**
+     * The new topic sequence_page. If you had one before and this one is different, then your topic reset.
+     * If you didn't have one, then this is just telling you what the sequence page is expected to be.
+     * If you had one before, and this one is the same, then it's just telling you that you missed some messages
+     * in the topic. Probably your client is consuming messages a little too slowly in this case!
+     *
+     * Generated from protobuf field <code>uint64 new_sequence_page = 3;</code>
+     */
+    protected $new_sequence_page = 0;
 
     /**
      * Constructor.
@@ -40,6 +49,11 @@ class _Discontinuity extends \Google\Protobuf\Internal\Message
      *           The last topic value sequence number known to have been attempted (if known, 0 otherwise).
      *     @type int|string $new_topic_sequence
      *           The new topic sequence number after which TopicItems will ostensibly resume.
+     *     @type int|string $new_sequence_page
+     *           The new topic sequence_page. If you had one before and this one is different, then your topic reset.
+     *           If you didn't have one, then this is just telling you what the sequence page is expected to be.
+     *           If you had one before, and this one is the same, then it's just telling you that you missed some messages
+     *           in the topic. Probably your client is consuming messages a little too slowly in this case!
      * }
      */
     public function __construct($data = NULL) {
@@ -95,6 +109,38 @@ class _Discontinuity extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkUint64($var);
         $this->new_topic_sequence = $var;
+
+        return $this;
+    }
+
+    /**
+     * The new topic sequence_page. If you had one before and this one is different, then your topic reset.
+     * If you didn't have one, then this is just telling you what the sequence page is expected to be.
+     * If you had one before, and this one is the same, then it's just telling you that you missed some messages
+     * in the topic. Probably your client is consuming messages a little too slowly in this case!
+     *
+     * Generated from protobuf field <code>uint64 new_sequence_page = 3;</code>
+     * @return int|string
+     */
+    public function getNewSequencePage()
+    {
+        return $this->new_sequence_page;
+    }
+
+    /**
+     * The new topic sequence_page. If you had one before and this one is different, then your topic reset.
+     * If you didn't have one, then this is just telling you what the sequence page is expected to be.
+     * If you had one before, and this one is the same, then it's just telling you that you missed some messages
+     * in the topic. Probably your client is consuming messages a little too slowly in this case!
+     *
+     * Generated from protobuf field <code>uint64 new_sequence_page = 3;</code>
+     * @param int|string $var
+     * @return $this
+     */
+    public function setNewSequencePage($var)
+    {
+        GPBUtil::checkUint64($var);
+        $this->new_sequence_page = $var;
 
         return $this;
     }

@@ -19,6 +19,7 @@ use Momento\Config\Transport\StaticGrpcConfiguration;
 use Momento\Config\Transport\StaticTransportStrategy;
 use Momento\Logging\NullLoggerFactory;
 use Momento\Requests\CollectionTtl;
+use Momento\Requests\SortedSetUnionStoreAggregateFunction;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -3782,6 +3783,55 @@ class CacheClientTest extends TestCase
         $response = $this->client->sortedSetLengthByScore($this->TEST_CACHE_NAME, $sortedSetName, $minScore, $maxScore);
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetUnionStore_HappyPath()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "abc" => 4.0,
+            "def" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+            "abc" => 4.0,
+            "def" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName1, $elements1);
+        $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName2, $elements2);
+        $response = $this->client->sortedSetUnionStore(
+            $this->TEST_CACHE_NAME,
+            $sortedSetName3,
+            [
+                ["setName"=>$sortedSetName1, "weight"=>1],
+                ["setName"=>$sortedSetName2, "weight"=>1],
+            ],
+            SortedSetUnionStoreAggregateFunction::SUM,
+            60
+        );
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(6, $response->asSuccess()->length());
+
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName3);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals($expectedElements, $response->asHit()->valuesArray());
     }
 
     public function testGetBatch_HappyPath()
