@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/momentohq/client-sdk-php/compare/v1.16.0...v1.17.0) (2025-03-04)
+
+
+### Features
+
+* adding SortedSetUnionStore operation ([#253](https://github.com/momentohq/client-sdk-php/issues/253)) ([f0e1483](https://github.com/momentohq/client-sdk-php/commit/f0e1483f7449363cec5e93721912a12111991405))
+
 ## [1.16.0](https://github.com/momentohq/client-sdk-php/compare/v1.15.1...v1.16.0) (2024-11-22)
 
 
