@@ -233,6 +233,7 @@ use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Config\IConfiguration;
 use Momento\Requests\CollectionTtl;
+use Momento\Requests\SortedSetUnionStoreAggregateFunction;
 use Momento\Utilities\_ErrorConverter;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -2045,7 +2046,7 @@ class ScsDataClient implements LoggerAwareInterface
         string $cacheName,
         string $destination,
         array $sources,
-        ?int $aggregate = AggregateFunction::SUM,
+        ?int $aggregate = SortedSetUnionStoreAggregateFunction::SUM,
         ?int $ttlSeconds = null
     ): ResponseFuture
     {
