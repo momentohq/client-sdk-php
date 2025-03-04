@@ -3785,6 +3785,31 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+    public function unionSets($sets, $dest, $weights, $aggregate, $expected)
+    {
+        $sources = [];
+        foreach ($sets as $setName => $elements) {
+            $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $setName, $elements);
+            $sources[] = ["setName"=>$setName, "weight"=>$weights[$setName]];
+        }
+        $response = $this->client->sortedSetUnionStore(
+            $this->TEST_CACHE_NAME,
+            $dest,
+            $sources,
+            $aggregate,
+            60
+        );
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(count($expected), $response->asSuccess()->length());
+
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $dest);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals($expected, $response->asHit()->valuesArray());
+
+    }
+
     public function testSortedSetUnionStore_HappyPath()
     {
         $sortedSetName1 = uniqid();
@@ -3811,27 +3836,220 @@ class CacheClientTest extends TestCase
             "def" => 5.0,
             "hij" => 6.0,
         ];
-
-        $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName1, $elements1);
-        $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName2, $elements2);
-        $response = $this->client->sortedSetUnionStore(
-            $this->TEST_CACHE_NAME,
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
             $sortedSetName3,
             [
-                ["setName"=>$sortedSetName1, "weight"=>1],
-                ["setName"=>$sortedSetName2, "weight"=>1],
+                $sortedSetName1 => 1,
+                $sortedSetName2 => 1,
             ],
             SortedSetUnionStoreAggregateFunction::SUM,
-            60
+            $expectedElements
         );
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertEquals(6, $response->asSuccess()->length());
+    }
 
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName3);
-        $this->assertNull($response->asError());
-        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($expectedElements, $response->asHit()->valuesArray());
+    public function testSortedSetUnionStore_OverlapWithSum()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 14.0,
+            "bar" => 19.0,
+            "baz" => 6.0,
+            "hij" => 18.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 2,
+                $sortedSetName2 => 3,
+            ],
+            SortedSetUnionStoreAggregateFunction::SUM,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_OverlapWithMin()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 2.0,
+            "bar" => 4.0,
+            "baz" => 6.0,
+            "hij" => 18.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 2,
+                $sortedSetName2 => 3,
+            ],
+            SortedSetUnionStoreAggregateFunction::MIN,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_OverlapWithMax()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 12.0,
+            "bar" => 15.0,
+            "baz" => 6.0,
+            "hij" => 18.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 2,
+                $sortedSetName2 => 3,
+            ],
+            SortedSetUnionStoreAggregateFunction::MAX,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_ZeroWeight()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "abc" => 4.0,
+            "def" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 0.0,
+            "bar" => 0.0,
+            "baz" => 0.0,
+            "abc" => 0.0,
+            "def" => 0.0,
+            "hij" => 0.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 0,
+                $sortedSetName2 => 0,
+            ],
+            SortedSetUnionStoreAggregateFunction::MAX,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_ZeroWeightWithOverlap()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "baz" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 0.0,
+            "bar" => 0.0,
+            "baz" => 0.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 0,
+                $sortedSetName2 => 0,
+            ],
+            SortedSetUnionStoreAggregateFunction::MAX,
+            $expectedElements
+        );
     }
 
     public function testGetBatch_HappyPath()
