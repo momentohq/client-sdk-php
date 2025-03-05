@@ -47,7 +47,8 @@ class CacheClientTest extends TestCase
         }
     }
 
-    public function tearDown() : void {
+    public function tearDown(): void
+    {
         $deleteResponse = $this->client->deleteCache($this->TEST_CACHE_NAME);
         if ($deleteError = $deleteResponse->asError()) {
             throw $deleteError->innerException();
@@ -81,7 +82,8 @@ class CacheClientTest extends TestCase
         $this->assertEquals($consistentConfig->getReadConcern(), ReadConcern::CONSISTENT);
     }
 
-    public function testCreateAndCloseClient() {
+    public function testCreateAndCloseClient()
+    {
         $client = new CacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
         $response = $client->listCaches();
         $this->assertNull($response->asError());
@@ -961,7 +963,8 @@ class CacheClientTest extends TestCase
     }
 
     // Keys Exist tests
-    public function testKeysExist() {
+    public function testKeysExist()
+    {
         $keysToSet = ["key1", "key2", "key3"];
         foreach ($keysToSet as $key) {
             $response = $this->client->set($this->TEST_CACHE_NAME, $key, "hi");
@@ -971,11 +974,17 @@ class CacheClientTest extends TestCase
         $keysToTestAllHits = $keysToSet;
         $keysToTestAllMisses = ["nope1", "nope2", "nope3"];
         $keysToTestMixed = array_merge($keysToTestAllHits, $keysToTestAllMisses);
-        $expectAllHits = array_map(function() { return true; }, $keysToTestAllHits);
+        $expectAllHits = array_map(function () {
+            return true;
+        }, $keysToTestAllHits);
         $expectAllHitsDict = array_combine($keysToTestAllHits, $expectAllHits);
-        $expectAllMisses = array_map(function() { return false; }, $keysToTestAllMisses);
+        $expectAllMisses = array_map(function () {
+            return false;
+        }, $keysToTestAllMisses);
         $expectAllMissesDict = array_combine($keysToTestAllMisses, $expectAllMisses);
-        $expectMixed = array_map(function($v) { return str_starts_with($v, "key"); }, $keysToTestMixed);
+        $expectMixed = array_map(function ($v) {
+            return str_starts_with($v, "key");
+        }, $keysToTestMixed);
         $expectMixedDict = array_combine($keysToTestMixed, $expectMixed);
 
         $response = $this->client->keysExist($this->TEST_CACHE_NAME, $keysToTestAllHits);
@@ -997,7 +1006,8 @@ class CacheClientTest extends TestCase
         $this->assertEquals($response->asSuccess()->existsDictionary(), $expectMixedDict);
     }
 
-    public function testKeyExists() {
+    public function testKeyExists()
+    {
         $keysToSet = ["key1", "key2", "key3"];
         foreach ($keysToSet as $key) {
             $response = $this->client->set($this->TEST_CACHE_NAME, $key, "hi");
@@ -1029,7 +1039,8 @@ class CacheClientTest extends TestCase
         $this->assertEquals(10, $response->asSuccess()->value());
     }
 
-    public function testIncrementCreatesKey() {
+    public function testIncrementCreatesKey()
+    {
         $key = uniqid();
         $response = $this->client->increment($this->TEST_CACHE_NAME, $key);
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
@@ -1056,7 +1067,8 @@ class CacheClientTest extends TestCase
         $this->assertEquals(1, $response->asSuccess()->value());
     }
 
-    public function testIncrementChangeTtl() {
+    public function testIncrementChangeTtl()
+    {
         $key = uniqid();
         $response = $this->client->set($this->TEST_CACHE_NAME, $key, "5");
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
@@ -1897,7 +1909,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
 
-        $items = [""=> "value", "key"=>"anothervalue"];
+        $items = ["" => "value", "key" => "anothervalue"];
         $response = $this->client->dictionarySetFields($this->TEST_CACHE_NAME, $dictionaryName, $items, CollectionTtl::fromCacheTtl()->withNoRefreshTtlOnUpdates());
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
@@ -2988,7 +3000,7 @@ class CacheClientTest extends TestCase
         $this->assertNotNull($response->asMiss(), "Expected a miss but got: $response");
     }
 
-  public function testSortedSetIncrementScore_InvalidArguments()
+    public function testSortedSetIncrementScore_InvalidArguments()
     {
         $sortedSetName = uniqid();
 
@@ -3374,7 +3386,7 @@ class CacheClientTest extends TestCase
     public function testSortedSetFetchByScoreWithBadMaxScoreType_ReturnsError()
     {
         $sortedSetName = uniqid();
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.0,  "bad score");
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName, 1.0, "bad score");
         $this->assertNotNull($response->asError(), "Expected error but got: $response");
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
@@ -3785,6 +3797,36 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
+    public function unionSets($sets, $dest, $weights, $aggregate, $expected, $returnResponse = false)
+    {
+        $sources = [];
+        foreach ($sets as $setName => $elements) {
+            $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $setName, $elements);
+            $sources[] = ["setName" => $setName, "weight" => $weights[$setName]];
+        }
+        $response = $this->client->sortedSetUnionStore(
+            $this->TEST_CACHE_NAME,
+            $dest,
+            $sources,
+            $aggregate,
+            60
+        );
+
+        if ($returnResponse) {
+            return $response;
+        }
+
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
+        $this->assertEquals(count($expected), $response->asSuccess()->length());
+
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $dest);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
+        $this->assertEquals($expected, $response->asHit()->valuesArray());
+
+    }
+
     public function testSortedSetUnionStore_HappyPath()
     {
         $sortedSetName1 = uniqid();
@@ -3811,27 +3853,420 @@ class CacheClientTest extends TestCase
             "def" => 5.0,
             "hij" => 6.0,
         ];
-
-        $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName1, $elements1);
-        $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $sortedSetName2, $elements2);
-        $response = $this->client->sortedSetUnionStore(
-            $this->TEST_CACHE_NAME,
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
             $sortedSetName3,
             [
-                ["setName"=>$sortedSetName1, "weight"=>1],
-                ["setName"=>$sortedSetName2, "weight"=>1],
+                $sortedSetName1 => 1,
+                $sortedSetName2 => 1,
             ],
             SortedSetUnionStoreAggregateFunction::SUM,
-            60
+            $expectedElements
         );
+    }
+
+    public function testSortedSetUnionStore_OverlapWithSum()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 14.0,
+            "bar" => 19.0,
+            "baz" => 6.0,
+            "hij" => 18.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 2,
+                $sortedSetName2 => 3,
+            ],
+            SortedSetUnionStoreAggregateFunction::SUM,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_OverlapWithMin()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 2.0,
+            "bar" => 4.0,
+            "baz" => 6.0,
+            "hij" => 18.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 2,
+                $sortedSetName2 => 3,
+            ],
+            SortedSetUnionStoreAggregateFunction::MIN,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_OverlapWithMax()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 12.0,
+            "bar" => 15.0,
+            "baz" => 6.0,
+            "hij" => 18.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 2,
+                $sortedSetName2 => 3,
+            ],
+            SortedSetUnionStoreAggregateFunction::MAX,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_ZeroWeight()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "abc" => 4.0,
+            "def" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 0.0,
+            "bar" => 0.0,
+            "baz" => 0.0,
+            "abc" => 0.0,
+            "def" => 0.0,
+            "hij" => 0.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 0,
+                $sortedSetName2 => 0,
+            ],
+            SortedSetUnionStoreAggregateFunction::MAX,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_ZeroWeightWithOverlap()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "baz" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => 0.0,
+            "bar" => 0.0,
+            "baz" => 0.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 0,
+                $sortedSetName2 => 0,
+            ],
+            SortedSetUnionStoreAggregateFunction::MAX,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_NegativeWeight()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "abc" => 4.0,
+            "def" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => -1.0,
+            "bar" => -2.0,
+            "baz" => -3.0,
+            "abc" => 4.0,
+            "def" => 5.0,
+            "hij" => 6.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => -1,
+                $sortedSetName2 => 1,
+            ],
+            SortedSetUnionStoreAggregateFunction::MAX,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_NegativeWeightWithOverlap()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "baz" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => -3.0,
+            "bar" => -3.0,
+            "baz" => -3.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 1,
+                $sortedSetName2 => -1,
+            ],
+            SortedSetUnionStoreAggregateFunction::SUM,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_NullAggregateFunction()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "baz" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => -3.0,
+            "bar" => -3.0,
+            "baz" => -3.0,
+        ];
+
+        $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => 1,
+                $sortedSetName2 => -1,
+            ],
+            null,
+            $expectedElements
+        );
+    }
+
+    public function testSortedSetUnionStore_InvalidWeights()
+    {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $sortedSetName3 = uniqid();
+
+        $elements1 = [
+            "foo" => 1.0,
+            "bar" => 2.0,
+            "baz" => 3.0,
+        ];
+
+        $elements2 = [
+            "foo" => 4.0,
+            "bar" => 5.0,
+            "baz" => 6.0,
+        ];
+
+        $expectedElements = [
+            "foo" => -3.0,
+            "bar" => -8.0,
+            "baz" => -15.0,
+        ];
+
+        $response = $this->unionSets(
+            [
+                $sortedSetName1 => $elements1,
+                $sortedSetName2 => $elements2,
+            ],
+            $sortedSetName3,
+            [
+                $sortedSetName1 => "hello",
+                $sortedSetName2 => "world",
+            ],
+            null,
+            $expectedElements,
+            true
+        );
+        $this->assertNull($response->asSuccess());
+        $this->assertNotNull($response->asError(), "Expected an error but got: $response");
+        $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
+    }
+
+    public function testSortedSetUnionStore_EmptyUnionClobbersExistingDestKey() {
+        $sortedSetName1 = uniqid();
+        $sortedSetName2 = uniqid();
+        $destination = uniqid();
+
+        $sets = [
+            $sortedSetName1 => [],
+            $sortedSetName2 => [],
+        ];
+
+        // populate destination set but do NOT populate source sets
+        $response = $this->client->sortedSetPutElements($this->TEST_CACHE_NAME, $destination, ["foo" => 1.0]);
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asSuccess(), "Expected a success but got: $response");
-        $this->assertEquals(6, $response->asSuccess()->length());
 
-        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $sortedSetName3);
+        $sources = [];
+        foreach ($sets as $setName => $elements) {
+            $sources[] = ["setName" => $setName, "weight" => 1];
+        }
+        // call union store on nonexistent sets
+        $response = $this->client->sortedSetUnionStore(
+            $this->TEST_CACHE_NAME,
+            $destination,
+            $sources,
+            null,
+            60
+        );
+
         $this->assertNull($response->asError());
-        $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
-        $this->assertEquals($expectedElements, $response->asHit()->valuesArray());
+        $this->assertNotNull($response->asSuccess(), "Expected success but got: $response");
+        $this->assertEquals(0, $response->asSuccess()->length());
+
+        $response = $this->client->sortedSetFetchByScore($this->TEST_CACHE_NAME, $destination);
+        $this->assertNull($response->asError());
+        $this->assertNotNull($response->asMiss(), "Expected miss but got: $response");
     }
 
     public function testGetBatch_HappyPath()
