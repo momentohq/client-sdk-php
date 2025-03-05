@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.1](https://github.com/momentohq/client-sdk-php/compare/v1.17.0...v1.17.1) (2025-03-05)
+
+
+### Bug Fixes
+
+* disable dynamic DNS service config ([#254](https://github.com/momentohq/client-sdk-php/issues/254)) ([ba47637](https://github.com/momentohq/client-sdk-php/commit/ba47637651bd9426e481d38558d1bbf1b06447e4))
+
 ## [1.17.0](https://github.com/momentohq/client-sdk-php/compare/v1.16.0...v1.17.0) (2025-03-04)
 
 
