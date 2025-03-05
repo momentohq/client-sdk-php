@@ -2046,7 +2046,7 @@ class ScsDataClient implements LoggerAwareInterface
         string $cacheName,
         string $destination,
         array $sources,
-        ?int $aggregate = SortedSetUnionStoreAggregateFunction::SUM,
+        ?int $aggregate = null,
         ?int $ttlSeconds = null
     ): ResponseFuture
     {
@@ -2060,7 +2060,9 @@ class ScsDataClient implements LoggerAwareInterface
             validateCacheName($cacheName);
             validateSortedSetName($destination);
             $ttlMillis = $this->ttlToMillis($ttlSeconds);
-
+            if ($aggregate === null) {
+                $aggregate = SortedSetUnionStoreAggregateFunction::SUM;
+            }
             $grpcSources = [];
             foreach ($sources as $source) {
                 if (!array_key_exists('setName', $source) || !array_key_exists('weight', $source)) {
