@@ -31,6 +31,20 @@ class ScsClient extends \Grpc\BaseStub {
     }
 
     /**
+     * @param \Cache_client\_GetWithHashRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function GetWithHash(\Cache_client\_GetWithHashRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/GetWithHash',
+        $argument,
+        ['\Cache_client\_GetWithHashResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
      * @param \Cache_client\_GetBatchRequest $argument input argument
      * @param array $metadata metadata
      * @param array $options call options
@@ -83,6 +97,23 @@ class ScsClient extends \Grpc\BaseStub {
         return $this->_simpleRequest('/cache_client.Scs/SetIf',
         $argument,
         ['\Cache_client\_SetIfResponse', 'decode'],
+        $metadata, $options);
+    }
+
+    /**
+     * Conditionally set the item value based on comparing the hashes computed on the item values
+     * instead of comparing the entire values. This is an alternative to SetIf that saves bandwidth
+     * by removing the need to send the entire value to compare against.
+     * @param \Cache_client\_SetIfHashRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Grpc\UnaryCall
+     */
+    public function SetIfHash(\Cache_client\_SetIfHashRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/cache_client.Scs/SetIfHash',
+        $argument,
+        ['\Cache_client\_SetIfHashResponse', 'decode'],
         $metadata, $options);
     }
 

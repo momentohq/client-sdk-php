@@ -27,10 +27,6 @@ abstract class MomentoErrorCode
      */
     public const CACHE_NOT_FOUND_ERROR = "NOT_FOUND_ERROR";
     /**
-     * Store with specified name doesn't exist
-     */
-    public const STORE_NOT_FOUND_ERROR = "STORE_NOT_FOUND_ERROR";
-    /**
      * Item with specified name doesn't exist
      */
     public const ITEM_NOT_FOUND_ERROR = "ITEM_NOT_FOUND_ERROR";
@@ -303,15 +299,6 @@ class CacheNotFoundError extends SdkError
 {
     public string $errorCode = MomentoErrorCode::CACHE_NOT_FOUND_ERROR;
     public string $messageWrapper = 'A cache with the specified name does not exist.  To resolve this error, make sure you have created the cache before attempting to use it';
-}
-
-/**
- * Store with specified name doesn't exist
- */
-class StoreNotFoundError extends SdkError
-{
-    public string $errorCode = MomentoErrorCode::STORE_NOT_FOUND_ERROR;
-    public string $messageWrapper = 'A store with the specified name does not exist.  To resolve this error, make sure you have created the store before attempting to use it';
 }
 
 /**

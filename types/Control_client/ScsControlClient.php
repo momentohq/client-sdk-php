@@ -156,46 +156,4 @@ class ScsControlClient extends \Grpc\BaseStub {
         $metadata, $options);
     }
 
-    /**
-     * @param \Control_client\_CreateStoreRequest $argument input argument
-     * @param array $metadata metadata
-     * @param array $options call options
-     * @return \Grpc\UnaryCall
-     */
-    public function CreateStore(\Control_client\_CreateStoreRequest $argument,
-      $metadata = [], $options = []) {
-        return $this->_simpleRequest('/control_client.ScsControl/CreateStore',
-        $argument,
-        ['\Control_client\_CreateStoreResponse', 'decode'],
-        $metadata, $options);
-    }
-
-    /**
-     * @param \Control_client\_DeleteStoreRequest $argument input argument
-     * @param array $metadata metadata
-     * @param array $options call options
-     * @return \Grpc\UnaryCall
-     */
-    public function DeleteStore(\Control_client\_DeleteStoreRequest $argument,
-      $metadata = [], $options = []) {
-        return $this->_simpleRequest('/control_client.ScsControl/DeleteStore',
-        $argument,
-        ['\Control_client\_DeleteStoreResponse', 'decode'],
-        $metadata, $options);
-    }
-
-    /**
-     * @param \Control_client\_ListStoresRequest $argument input argument
-     * @param array $metadata metadata
-     * @param array $options call options
-     * @return \Grpc\UnaryCall
-     */
-    public function ListStores(\Control_client\_ListStoresRequest $argument,
-      $metadata = [], $options = []) {
-        return $this->_simpleRequest('/control_client.ScsControl/ListStores',
-        $argument,
-        ['\Control_client\_ListStoresResponse', 'decode'],
-        $metadata, $options);
-    }
-
 }
