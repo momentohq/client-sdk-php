@@ -8,6 +8,8 @@ use Momento\Logging\ILoggerFactory;
 
 /**
  * Contract for SDK configurables. A configuration must have a logger factory and a transport strategy.
+ *
+ * This interface may change as options are added to the configuration.
  */
 interface IConfiguration
 {
@@ -22,7 +24,7 @@ interface IConfiguration
     public function getTransportStrategy(): ITransportStrategy;
 
     /**
-     * @return int The currently active read consistency configuration
+     * @return string The currently active read consistency configuration
      */
     public function getReadConcern(): string;
 
