@@ -38,7 +38,6 @@ class MomentoTokenProviderTest extends TestCase
         $this->assertNotNull($authProvider->getAuthToken());
         $this->assertNotNull($authProvider->getControlEndpoint());
         $this->assertNotNull($authProvider->getCacheEndpoint());
-        $this->assertNotNull($authProvider->getStorageEndpoint());
         $this->assertNull($authProvider->getTrustedControlEndpointCertificateName());
         $this->assertNull($authProvider->getTrustedCacheEndpointCertificateName());
     }
@@ -49,7 +48,6 @@ class MomentoTokenProviderTest extends TestCase
         $this->assertNotNull($authProvider->getAuthToken());
         $this->assertNotNull($authProvider->getControlEndpoint());
         $this->assertNotNull($authProvider->getCacheEndpoint());
-        $this->assertNotNull($authProvider->getStorageEndpoint());
         $this->assertNull($authProvider->getTrustedControlEndpointCertificateName());
         $this->assertNull($authProvider->getTrustedCacheEndpointCertificateName());
     }
@@ -60,7 +58,6 @@ class MomentoTokenProviderTest extends TestCase
         $this->assertNotNull($authProvider->getAuthToken());
         $this->assertNotNull($authProvider->getControlEndpoint());
         $this->assertNotNull($authProvider->getCacheEndpoint());
-        $this->assertNotNull($authProvider->getStorageEndpoint());
         $this->assertNull($authProvider->getTrustedControlEndpointCertificateName());
         $this->assertNull($authProvider->getTrustedCacheEndpointCertificateName());
     }
@@ -71,25 +68,23 @@ class MomentoTokenProviderTest extends TestCase
         $this->assertNotNull($authProvider->getAuthToken());
         $this->assertNotNull($authProvider->getControlEndpoint());
         $this->assertNotNull($authProvider->getCacheEndpoint());
-        $this->assertNotNull($authProvider->getStorageEndpoint());
         $this->assertNull($authProvider->getTrustedControlEndpointCertificateName());
         $this->assertNull($authProvider->getTrustedCacheEndpointCertificateName());
     }
 
     public function testEnvVarToken_ProxySetup_HappyPath()
     {
-        $authProvider = new EnvMomentoTokenProvider(self::AUTH_TOKEN_NAME, "ctl", "cache", "storage", "ctlTrustedCert", "cacheTrustedCert");
+        $authProvider = new EnvMomentoTokenProvider(self::AUTH_TOKEN_NAME, "ctl", "cache", "ctlTrustedCert", "cacheTrustedCert");
         $this->assertNotNull($authProvider->getAuthToken());
         $this->assertEquals("ctl", $authProvider->getControlEndpoint());
         $this->assertEquals("cache", $authProvider->getCacheEndpoint());
-        $this->assertEquals("storage", $authProvider->getStorageEndpoint());
         $this->assertEquals("ctlTrustedCert", $authProvider->getTrustedControlEndpointCertificateName());
         $this->assertEquals("cacheTrustedCert", $authProvider->getTrustedCacheEndpointCertificateName());
     }
 
     public function testEnvVarToken_ProxySetup_MissingArg()
     {
-        $args = ["ctl", "cache", "storage", "ctlTrustedCert", "cacheTrustedCert"];
+        $args = ["ctl", "cache", "ctlTrustedCert", "cacheTrustedCert"];
         for ($i = 0; $i < count($args); $i++) {
             $argsCopy = $args;
             $argsCopy[$i] = null;

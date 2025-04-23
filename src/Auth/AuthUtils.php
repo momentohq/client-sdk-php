@@ -33,7 +33,6 @@ class AuthUtils
         $payload = new \stdClass();
         $payload->c = "cache.{$tokenData->endpoint}";
         $payload->cp = "control.{$tokenData->endpoint}";
-        $payload->storage = "storage.{$tokenData->endpoint}";
         $payload->authToken = $tokenData->api_key;
         return $payload;
     }
@@ -48,7 +47,6 @@ class AuthUtils
         try {
             $payload = $exploded[1];
             $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($payload));
-            $payload->storage = null;
             $payload->authToken = $authToken;
         } catch (\Exception $e) {
             self::throwBadAuthToken();

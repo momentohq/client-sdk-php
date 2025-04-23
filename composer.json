@@ -40,7 +40,6 @@
         ],
         "classmap": [
             "src/Cache/CacheOperationTypes/CacheOperationTypes.php",
-            "src/Storage/StorageOperationTypes/StorageOperationTypes.php",
             "src/Cache/Errors/Errors.php"
         ]
     },

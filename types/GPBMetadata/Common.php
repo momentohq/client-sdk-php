@@ -16,7 +16,7 @@ class Common
         }
         $pool->internalAddGeneratedFile(
             '
-¬
+ç
 common.protocommon"	
 Present",
 PresentAndNotEqual
@@ -30,7 +30,16 @@ class Common
 value_to_check ("
 
 _Unbounded"
-_EmptyBY
+_Empty"/
+PresentAndNotHashEqual
+hash_to_check (",
+PresentAndHashEqual
+hash_to_check ("*
+AbsentOrHashEqual
+hash_to_check ("-
+AbsentOrNotHashEqual
+hash_to_check ("
+UnconditionalBY
 grpc.commonPZ0github.com/momentohq/client-sdk-go;client_sdk_go™Momento.Protos.Commonbproto3'
         , true);
 

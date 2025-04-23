@@ -14,7 +14,6 @@ class StringMomentoTokenProvider extends CredentialProvider
     protected string  $authToken;
     protected ?string $controlEndpoint = null;
     protected ?string $cacheEndpoint = null;
-    protected ?string $storageEndpoint = null;
     protected ?string $trustedControlEndpointCertificateName = null;
     protected ?string $trustedCacheEndpointCertificateName = null;
 
@@ -22,10 +21,6 @@ class StringMomentoTokenProvider extends CredentialProvider
         string  $authToken,
         ?string $controlEndpoint = null,
         ?string $cacheEndpoint = null,
-        // TODO: adding this arg would be a breaking change for anyone currently passing in
-        //  endpointCertificateName arguments. I am pretty sure that is 0 people, but wanted
-        //  to call it out.
-        ?string $storageEndpoint = null,
         ?string $trustedControlEndpointCertificateName = null,
         ?string $trustedCacheEndpointCertificateName = null
     )
@@ -43,7 +38,6 @@ class StringMomentoTokenProvider extends CredentialProvider
         $this->authToken = $payload->authToken;
         $this->controlEndpoint = $controlEndpoint ?? $payload->cp;
         $this->cacheEndpoint = $cacheEndpoint ?? $payload->c;
-        $this->storageEndpoint = $storageEndpoint ?? $payload->storage;
         $this->trustedControlEndpointCertificateName = $trustedControlEndpointCertificateName;
         $this->trustedCacheEndpointCertificateName = $trustedCacheEndpointCertificateName;
     }
@@ -70,14 +64,6 @@ class StringMomentoTokenProvider extends CredentialProvider
     public function getControlEndpoint(): string
     {
         return $this->controlEndpoint;
-    }
-
-    /**
-     * @return string|null The host which the Momento client will connect to for Momento storage operations.
-     */
-    public function getStorageEndpoint(): ?string
-    {
-        return $this->storageEndpoint;
     }
 
     /**

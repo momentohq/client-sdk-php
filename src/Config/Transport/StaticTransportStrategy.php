@@ -32,30 +32,30 @@ class StaticTransportStrategy implements ITransportStrategy
         return $this->maxIdleMillis;
     }
 
-    public function withLoggerFactory(ILoggerFactory $loggerFactory): StaticStorageTransportStrategy
+    public function withLoggerFactory(ILoggerFactory $loggerFactory): StaticTransportStrategy
     {
-        return new StaticStorageTransportStrategy(
+        return new StaticTransportStrategy(
             $this->grpcConfig, $loggerFactory, $this->maxIdleMillis
         );
     }
 
-    public function withGrpcConfig(IGrpcConfiguration $grpcConfig): StaticStorageTransportStrategy
+    public function withGrpcConfig(IGrpcConfiguration $grpcConfig): StaticTransportStrategy
     {
-        return new StaticStorageTransportStrategy(
+        return new StaticTransportStrategy(
             $grpcConfig, $this->loggerFactory, $this->maxIdleMillis
         );
     }
 
-    public function withMaxIdleMillis(int $maxIdleMillis): StaticStorageTransportStrategy
+    public function withMaxIdleMillis(int $maxIdleMillis): StaticTransportStrategy
     {
-        return new StaticStorageTransportStrategy(
+        return new StaticTransportStrategy(
             $this->grpcConfig, $this->loggerFactory, $maxIdleMillis
         );
     }
 
-    public function withClientTimeout(int $clientTimeout): StaticStorageTransportStrategy
+    public function withClientTimeout(int $clientTimeout): StaticTransportStrategy
     {
-        return new StaticStorageTransportStrategy(
+        return new StaticTransportStrategy(
             $this->grpcConfig->withDeadlineMilliseconds($clientTimeout),
             $this->loggerFactory,
             $this->maxIdleMillis

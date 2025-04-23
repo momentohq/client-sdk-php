@@ -122,5 +122,4 @@ jobs:
           php ./list-example.php
           php ./set-example.php
           php ./doc-examples-php-apis.php
-          php ./storage-example.php
           php ./psr16-example.php

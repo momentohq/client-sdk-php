@@ -18,7 +18,6 @@ use Momento\Cache\Errors\NotFoundError;
 use Momento\Cache\Errors\PermissionError;
 use Momento\Cache\Errors\SdkError;
 use Momento\Cache\Errors\ServerUnavailableError;
-use Momento\Cache\Errors\StoreNotFoundError;
 use Momento\Cache\Errors\TimeoutError;
 use Momento\Cache\Errors\UnknownError;
 use Momento\Cache\Errors\UnknownServiceError;
@@ -51,12 +50,10 @@ class _ErrorConverter
         $details = $grpcStatus->details;
         if (array_key_exists($status, self::$rpcToError)) {
             // If the status code is STATUS_NOT_FOUND, we need to check the details to determine if it was a
-            // cache, store, or item that was not found.
+            // cache or item that was not found.
             if ($status === Grpc\STATUS_NOT_FOUND) {
                 if (!array_key_exists("err", $grpcStatus->metadata)) {
                     $class = CacheNotFoundError::class;
-                } elseif ($grpcStatus->metadata["err"][0] == "store_not_found") {
-                    $class = StoreNotFoundError::class;
                 } elseif ($grpcStatus->metadata["err"][0] == "item_not_found") {
                     $class = ItemNotFoundError::class;
                 } else {
