@@ -56,7 +56,7 @@ class Configuration implements IConfiguration
      */
     public function withTransportStrategy(ITransportStrategy $transportStrategy): IConfiguration
     {
-        return new Configuration($this->loggerFactory, $transportStrategy);
+        return new Configuration($this->loggerFactory, $transportStrategy, $this->readConcern);
     }
 
     /**
@@ -67,7 +67,7 @@ class Configuration implements IConfiguration
      */
     public function withClientTimeout(int $clientTimeoutSecs): IConfiguration
     {
-        return new Configuration($this->loggerFactory, $this->transportStrategy->withClientTimeout($clientTimeoutSecs));
+        return new Configuration($this->loggerFactory, $this->transportStrategy->withClientTimeout($clientTimeoutSecs), $this->readConcern);
     }
 
     /**

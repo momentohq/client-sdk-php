@@ -5,6 +5,11 @@ namespace Momento\Config\Transport;
 
 use Momento\Logging\ILoggerFactory;
 
+/**
+ * Contract for transport layer configurables.
+ *
+ * This interface may change as options are added to the configuration.
+ */
 interface ITransportStrategy
 {
     public function getGrpcConfig(): ?IGrpcConfiguration;
