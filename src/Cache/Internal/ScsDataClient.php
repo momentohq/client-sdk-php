@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Momento\Cache\Internal;
@@ -338,6 +339,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setRequest->setCacheKey($key);
             $setRequest->setCacheBody($value);
             $setRequest->setTtlMilliseconds($ttlMillis);
+            $this->logger->debug(sprintf("set %s %s %u", $key, $value, $ttlMillis));
             $call = $this->grpcManager->client->Set(
                 $setRequest,
                 ["cache" => [$cacheName]],
@@ -374,6 +376,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateNullOrEmpty($key, "Key");
             $getRequest = new _GetRequest();
             $getRequest->setCacheKey($key);
+            $this->logger->debug("get $key");
             $call = $this->grpcManager->client->Get(
                 $getRequest,
                 ["cache" => [$cacheName]],
@@ -424,6 +427,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setIfPresentRequest->setCacheBody($value);
             $setIfPresentRequest->setTtlMilliseconds($ttlMillis);
             $setIfPresentRequest->setPresent(new Present());
+            $this->logger->debug(sprintf("setIfPresent %s %s %u", $key, $value, $ttlMillis));
             $call = $this->grpcManager->client->SetIf(
                 $setIfPresentRequest,
                 ["cache" => [$cacheName]],
@@ -452,7 +456,6 @@ class ScsDataClient implements LoggerAwareInterface
                 }
             }
         );
-
     }
 
     /**
@@ -475,6 +478,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setIfPresentRequest->setTtlMilliseconds($ttlMillis);
             $setIfPresentRequest->setPresentAndNotEqual(new PresentAndNotEqual());
             $setIfPresentRequest->getPresentAndNotEqual()->setValueToCheck($notEqual);
+            $this->logger->debug(sprintf("setIfPresentAndNotEqual %s %s %s %u", $key, $value, $notEqual, $ttlMillis));
             $call = $this->grpcManager->client->SetIf(
                 $setIfPresentRequest,
                 ["cache" => [$cacheName]],
@@ -503,7 +507,6 @@ class ScsDataClient implements LoggerAwareInterface
                 }
             }
         );
-
     }
 
     /**
@@ -524,6 +527,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setIfAbsentRequest->setCacheBody($value);
             $setIfAbsentRequest->setTtlMilliseconds($ttlMillis);
             $setIfAbsentRequest->setAbsent(new Absent());
+            $this->logger->debug(sprintf("setIfAbsent %s %s %u", $key, $value, $ttlMillis));
             $call = $this->grpcManager->client->SetIf(
                 $setIfAbsentRequest,
                 ["cache" => [$cacheName]],
@@ -574,6 +578,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setIfAbsentRequest->setTtlMilliseconds($ttlMillis);
             $setIfAbsentRequest->setAbsentOrEqual(new AbsentOrEqual());
             $setIfAbsentRequest->getAbsentOrEqual()->setValueToCheck($equal);
+            $this->logger->debug(sprintf("setIfAbsentOrEqual %s %s %s %u", $key, $value, $equal, $ttlMillis));
             $call = $this->grpcManager->client->SetIf(
                 $setIfAbsentRequest,
                 ["cache" => [$cacheName]],
@@ -624,6 +629,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setIfAbsentRequest->setTtlMilliseconds($ttlMillis);
             $setIfAbsentRequest->setEqual(new Equal());
             $setIfAbsentRequest->getEqual()->setValueToCheck($equal);
+            $this->logger->debug(sprintf("setIfEqual %s %s %s %u", $key, $value, $equal, $ttlMillis));
             $call = $this->grpcManager->client->SetIf(
                 $setIfAbsentRequest,
                 ["cache" => [$cacheName]],
@@ -674,6 +680,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setIfAbsentRequest->setTtlMilliseconds($ttlMillis);
             $setIfAbsentRequest->setNotEqual(new NotEqual());
             $setIfAbsentRequest->getNotEqual()->setValueToCheck($equal);
+            $this->logger->debug(sprintf("setIfNotEqual %s %s %s %u", $key, $value, $equal, $ttlMillis));
             $call = $this->grpcManager->client->SetIf(
                 $setIfAbsentRequest,
                 ["cache" => [$cacheName]],
@@ -725,6 +732,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setIfNotExistsRequest->setCacheKey($key);
             $setIfNotExistsRequest->setCacheBody($value);
             $setIfNotExistsRequest->setTtlMilliseconds($ttlMillis);
+            $this->logger->debug(sprintf("setIfNotExists %s %s %u", $key, $value, $ttlMillis));
             $call = $this->grpcManager->client->SetIf(
                 $setIfNotExistsRequest,
                 ["cache" => [$cacheName]],
@@ -765,6 +773,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateNullOrEmpty($key, "Key");
             $deleteRequest = new _DeleteRequest();
             $deleteRequest->setCacheKey($key);
+            $this->logger->debug("delete $key");
             $call = $this->grpcManager->client->Delete(
                 $deleteRequest,
                 ["cache" => [$cacheName]],
@@ -801,6 +810,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateKeys($keys);
             $keysExistRequest = new _KeysExistRequest();
             $keysExistRequest->setCacheKeys($keys);
+            $this->logger->debug("keysExist");
             $call = $this->grpcManager->client->KeysExist(
                 $keysExistRequest,
                 ["cache" => [$cacheName]],
@@ -837,6 +847,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateKeys([$key]);
             $keysExistRequest = new _KeysExistRequest();
             $keysExistRequest->setCacheKeys([$key]);
+            $this->logger->debug("keyExists $key");
             $call = $this->grpcManager->client->KeysExist(
                 $keysExistRequest,
                 ["cache" => [$cacheName]],
@@ -878,6 +889,7 @@ class ScsDataClient implements LoggerAwareInterface
             $incrementRequest->setCacheKey($key);
             $incrementRequest->setAmount($amount);
             $incrementRequest->setTtlMilliseconds($ttlMillis);
+            $this->logger->debug(sprintf("increment %s %u %u", $key, $amount, $ttlMillis));
             $call = $this->grpcManager->client->Increment(
                 $incrementRequest,
                 ["cache" => [$cacheName]],
@@ -911,6 +923,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateListName($listName);
             $listFetchRequest = new _ListFetchRequest();
             $listFetchRequest->setListName($listName);
+            $this->logger->debug("listFetch $listName");
             $call = $this->grpcManager->client->ListFetch(
                 $listFetchRequest,
                 ["cache" => [$cacheName]],
@@ -929,9 +942,12 @@ class ScsDataClient implements LoggerAwareInterface
     }
 
     public function listPushFront(
-        string $cacheName, string $listName, string $value, ?int $truncateBackToSize = null, ?CollectionTtl $ttl = null
-    ): ListPushFrontResponse
-    {
+        string $cacheName,
+        string $listName,
+        string $value,
+        ?int $truncateBackToSize = null,
+        ?CollectionTtl $ttl = null
+    ): ListPushFrontResponse {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
@@ -946,6 +962,7 @@ class ScsDataClient implements LoggerAwareInterface
             if (!is_null($truncateBackToSize)) {
                 $listPushFrontRequest->setTruncateBackToSize($truncateBackToSize);
             }
+            $this->logger->debug(sprintf("listPushFront %s %s %u %u", $listName, $value, $truncateBackToSize, $ttlMillis));
             $call = $this->grpcManager->client->ListPushFront(
                 $listPushFrontRequest,
                 ["cache" => [$cacheName]],
@@ -961,9 +978,12 @@ class ScsDataClient implements LoggerAwareInterface
     }
 
     public function listPushBack(
-        string $cacheName, string $listName, string $value, ?int $truncateFrontToSize = null, ?CollectionTtl $ttl = null
-    ): ListPushBackResponse
-    {
+        string $cacheName,
+        string $listName,
+        string $value,
+        ?int $truncateFrontToSize = null,
+        ?CollectionTtl $ttl = null
+    ): ListPushBackResponse {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
@@ -978,6 +998,7 @@ class ScsDataClient implements LoggerAwareInterface
             if (!is_null($truncateFrontToSize)) {
                 $listPushBackRequest->setTruncateFrontToSize($truncateFrontToSize);
             }
+            $this->logger->debug(sprintf("listPushBack %s %s %u %u", $listName, $value, $truncateFrontToSize, $ttlMillis));
             $call = $this->grpcManager->client->ListPushBack(
                 $listPushBackRequest,
                 ["cache" => [$cacheName]],
@@ -999,6 +1020,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateListName($listName);
             $listPopFrontRequest = new _ListPopFrontRequest();
             $listPopFrontRequest->setListName($listName);
+            $this->logger->debug("listPopFront $listName");
             $call = $this->grpcManager->client->ListPopFront(
                 $listPopFrontRequest,
                 ["cache" => [$cacheName]],
@@ -1023,6 +1045,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateListName($listName);
             $listPopBackRequest = new _ListPopBackRequest();
             $listPopBackRequest->setListName($listName);
+            $this->logger->debug("listPopBack $listName");
             $call = $this->grpcManager->client->ListPopBack(
                 $listPopBackRequest,
                 ["cache" => [$cacheName]],
@@ -1048,6 +1071,7 @@ class ScsDataClient implements LoggerAwareInterface
             $listRemoveValueRequest = new _ListRemoveRequest();
             $listRemoveValueRequest->setListName($listName);
             $listRemoveValueRequest->setAllElementsWithValue($value);
+            $this->logger->debug("listRemoveValue $listName $value");
             $call = $this->grpcManager->client->ListRemove(
                 $listRemoveValueRequest,
                 ["cache" => [$cacheName]],
@@ -1069,8 +1093,11 @@ class ScsDataClient implements LoggerAwareInterface
             validateListName($listName);
             $listLengthRequest = new _ListLengthRequest();
             $listLengthRequest->setListName($listName);
+            $this->logger->debug("listLength $listName");
             $call = $this->grpcManager->client->ListLength(
-                $listLengthRequest, ["cache" => [$cacheName]], ["timeout" => $this->timeout]
+                $listLengthRequest,
+                ["cache" => [$cacheName]],
+                ["timeout" => $this->timeout]
             );
             $response = $this->processCall($call);
         } catch (SdkError $e) {
@@ -1096,6 +1123,7 @@ class ScsDataClient implements LoggerAwareInterface
             $dictionarySetFieldRequest->setItems([$this->toSingletonFieldValuePair($field, $value)]);
             $dictionarySetFieldRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $dictionarySetFieldRequest->setTtlMilliseconds($ttlMillis);
+            $this->logger->debug(sprintf("dictionarySetField %s %s %s %u", $dictionaryName, $field, $value, $ttlMillis));
             $call = $this->grpcManager->client->DictionarySet(
                 $dictionarySetFieldRequest,
                 ["cache" => [$cacheName]],
@@ -1127,6 +1155,7 @@ class ScsDataClient implements LoggerAwareInterface
             $dictionaryGetFieldRequest = new _DictionaryGetRequest();
             $dictionaryGetFieldRequest->setDictionaryName($dictionaryName);
             $dictionaryGetFieldRequest->setFields([$field]);
+            $this->logger->debug("dictionaryGetField $dictionaryName $field");
             $call = $this->grpcManager->client->DictionaryGet(
                 $dictionaryGetFieldRequest,
                 ["cache" => [$cacheName]],
@@ -1157,6 +1186,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateDictionaryName($dictionaryName);
             $dictionaryFetchRequest = new _DictionaryFetchRequest();
             $dictionaryFetchRequest->setDictionaryName($dictionaryName);
+            $this->logger->debug("dictionaryFetch $dictionaryName");
             $call = $this->grpcManager->client->DictionaryFetch(
                 $dictionaryFetchRequest,
                 ["cache" => [$cacheName]],
@@ -1194,6 +1224,7 @@ class ScsDataClient implements LoggerAwareInterface
             $dictionarySetFieldsRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $dictionarySetFieldsRequest->setItems($protoItems);
             $dictionarySetFieldsRequest->setTtlMilliseconds($ttlMillis);
+            $this->logger->debug("dictionarySetFields $dictionaryName $ttlMillis");
             $call = $this->grpcManager->client->DictionarySet(
                 $dictionarySetFieldsRequest,
                 ["cache" => [$cacheName]],
@@ -1217,6 +1248,7 @@ class ScsDataClient implements LoggerAwareInterface
             $dictionaryGetFieldsRequest = new _DictionaryGetRequest();
             $dictionaryGetFieldsRequest->setDictionaryName($dictionaryName);
             $dictionaryGetFieldsRequest->setFields($fields);
+            $this->logger->debug("dictionaryGetFields $dictionaryName");
             $call = $this->grpcManager->client->DictionaryGet(
                 $dictionaryGetFieldsRequest,
                 ["cache" => [$cacheName]],
@@ -1232,13 +1264,15 @@ class ScsDataClient implements LoggerAwareInterface
             return new DictionaryGetFieldsHit($dictionaryGetFieldsResponse, $fields);
         }
         return new DictionaryGetFieldsMiss();
-
     }
 
     public function dictionaryIncrement(
-        string $cacheName, string $dictionaryName, string $field, int $amount = 1, ?CollectionTtl $ttl = null
-    ): DictionaryIncrementResponse
-    {
+        string $cacheName,
+        string $dictionaryName,
+        string $field,
+        int $amount = 1,
+        ?CollectionTtl $ttl = null
+    ): DictionaryIncrementResponse {
         try {
             $collectionTtl = $this->returnCollectionTtl($ttl);
             validateCacheName($cacheName);
@@ -1253,6 +1287,7 @@ class ScsDataClient implements LoggerAwareInterface
                 ->setAmount($amount)
                 ->setRefreshTtl($collectionTtl->getRefreshTtl())
                 ->setTtlMilliseconds($ttlMillis);
+            $this->logger->debug(sprintf("dictionaryIncrement %s %s %u %u", $dictionaryName, $field, $amount, $ttlMillis));
             $call = $this->grpcManager->client->DictionaryIncrement(
                 $dictionaryIncrementRequest,
                 ["cache" => [$cacheName]],
@@ -1278,6 +1313,7 @@ class ScsDataClient implements LoggerAwareInterface
             $some->setFields([$field]);
             $dictionaryRemoveFieldRequest->setDictionaryName($dictionaryName);
             $dictionaryRemoveFieldRequest->setSome($some);
+            $this->logger->debug("dictionaryRemoveField $dictionaryName $field");
             $call = $this->grpcManager->client->DictionaryDelete(
                 $dictionaryRemoveFieldRequest,
                 ["cache" => [$cacheName]],
@@ -1303,6 +1339,7 @@ class ScsDataClient implements LoggerAwareInterface
             $some->setFields($fields);
             $dictionaryRemoveFieldsRequest->setDictionaryName($dictionaryName);
             $dictionaryRemoveFieldsRequest->setSome($some);
+            $this->logger->debug("dictionaryRemoveFields $dictionaryName");
             $call = $this->grpcManager->client->DictionaryDelete(
                 $dictionaryRemoveFieldsRequest,
                 ["cache" => [$cacheName]],
@@ -1334,6 +1371,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setAddElementRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $setAddElementRequest->setTtlMilliseconds($ttlMillis);
             $setAddElementRequest->setElements([$element]);
+            $this->logger->debug(sprintf("setAddElement %s %s %u", $setName, $element, $ttlMillis));
             $call = $this->grpcManager->client->SetUnion(
                 $setAddElementRequest,
                 ["cache" => [$cacheName]],
@@ -1378,6 +1416,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setAddElementsRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $setAddElementsRequest->setTtlMilliseconds($ttlMillis);
             $setAddElementsRequest->setElements($elements);
+            $this->logger->debug(sprintf("setAddElements %s %u", $setName, $ttlMillis));
             $call = $this->grpcManager->client->SetUnion(
                 $setAddElementsRequest,
                 ["cache" => [$cacheName]],
@@ -1417,6 +1456,7 @@ class ScsDataClient implements LoggerAwareInterface
             $setContainsElementsRequest = new _SetContainsRequest();
             $setContainsElementsRequest->setSetName($setName);
             $setContainsElementsRequest->setElements($elements);
+            $this->logger->debug("setContainsElements $setName");
             $call = $this->grpcManager->client->SetContains(
                 $setContainsElementsRequest,
                 ["cache" => [$cacheName]],
@@ -1456,6 +1496,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateSetName($setName);
             $setFetchRequest = new _SetFetchRequest();
             $setFetchRequest->setSetName($setName);
+            $this->logger->debug("setFetch $setName");
             $call = $this->grpcManager->client->SetFetch(
                 $setFetchRequest,
                 ["cache" => [$cacheName]],
@@ -1495,6 +1536,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateSetName($setName);
             $setLengthRequest = new _SetLengthRequest();
             $setLengthRequest->setSetName($setName);
+            $this->logger->debug("setLength $setName");
             $call = $this->grpcManager->client->SetLength(
                 $setLengthRequest,
                 ["cache" => [$cacheName]],
@@ -1537,6 +1579,7 @@ class ScsDataClient implements LoggerAwareInterface
             $set->setElements([$element]);
             $subtrahend->setSet($set);
             $setRemoveElementRequest->setSubtrahend($subtrahend);
+            $this->logger->debug("setRemoveElement $setName $element");
             $call = $this->grpcManager->client->SetDifference(
                 $setRemoveElementRequest,
                 ["cache" => [$cacheName]],
@@ -1585,6 +1628,7 @@ class ScsDataClient implements LoggerAwareInterface
             $sortedSetPutElementRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $sortedSetPutElementRequest->setTtlMilliseconds($ttlMillis);
             $sortedSetPutElementRequest->setElements([$element]);
+            $this->logger->debug(sprintf("sortedSetPutElement %s %s %f %u", $sortedSetName, $value, $score, $ttlMillis));
             $call = $this->grpcManager->client->SortedSetPut(
                 $sortedSetPutElementRequest,
                 ["cache" => [$cacheName]],
@@ -1634,6 +1678,7 @@ class ScsDataClient implements LoggerAwareInterface
             $sortedSetPutElementRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $sortedSetPutElementRequest->setTtlMilliseconds($ttlMillis);
             $sortedSetPutElementRequest->setElements($sortedSetElements);
+            $this->logger->debug(sprintf("sortedSetPutElements %s %u", $sortedSetName, $ttlMillis));
             $call = $this->grpcManager->client->SortedSetPut(
                 $sortedSetPutElementRequest,
                 ["cache" => [$cacheName]],
@@ -1691,6 +1736,7 @@ class ScsDataClient implements LoggerAwareInterface
                 $sortedSetLengthByScoreRequest->setUnboundedMax(new _Unbounded());
             }
 
+            $this->logger->debug(sprintf("sortedSetLengthByScore %s %f %f %u %u", $sortedSetName, $minScore, $maxScore, $inclusiveMin, $inclusiveMax));
             $call = $this->grpcManager->client->SortedSetLengthByScore(
                 $sortedSetLengthByScoreRequest,
                 ["cache" => [$cacheName]],
@@ -1737,7 +1783,7 @@ class ScsDataClient implements LoggerAwareInterface
             $sortedSetIncrementScoreRequest->setAmount($amount);
             $sortedSetIncrementScoreRequest->setRefreshTtl($collectionTtl->getRefreshTtl());
             $sortedSetIncrementScoreRequest->setTtlMilliseconds($ttlMillis);
-
+            $this->logger->debug(sprintf("sortedSetIncrementScore %s %s %f %u", $sortedSetName, $value, $amount, $ttlMillis));
             $call = $this->grpcManager->client->SortedSetIncrement(
                 $sortedSetIncrementScoreRequest,
                 ["cache" => [$cacheName]],
@@ -1797,7 +1843,7 @@ class ScsDataClient implements LoggerAwareInterface
             } else {
                 $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::ASCENDING);
             }
-
+            $this->logger->debug(sprintf("sortedSetFetchByRank %s %u %u %u", $sortedSetName, $startRank, $endRank, $order));
             $call = $this->grpcManager->client->SortedSetFetch(
                 $sortedSetFetchRequest,
                 ["cache" => [$cacheName]],
@@ -1881,7 +1927,7 @@ class ScsDataClient implements LoggerAwareInterface
             } else {
                 $sortedSetFetchRequest->setOrder(_SortedSetFetchRequest\Order::ASCENDING);
             }
-
+            $this->logger->debug(sprintf("sortedSetFetchByScore %s %f %f %u %u %u %u %u", $sortedSetName, $minScore, $maxScore, $inclusiveMin, $inclusiveMax, $order, $offset, $count));
             $call = $this->grpcManager->client->SortedSetFetch(
                 $sortedSetFetchRequest,
                 ["cache" => [$cacheName]],
@@ -1925,6 +1971,7 @@ class ScsDataClient implements LoggerAwareInterface
             $sortedSetRemoveElementRequest->setSome(new _SortedSetRemoveRequest\_Some());
             $sortedSetRemoveElementRequest->getSome()->setValues([$value]);
 
+            $this->logger->debug("sortedSetRemoveElement $sortedSetName $value");
             $call = $this->grpcManager->client->SortedSetRemove(
                 $sortedSetRemoveElementRequest,
                 ["cache" => [$cacheName]],
@@ -1949,7 +1996,6 @@ class ScsDataClient implements LoggerAwareInterface
                 }
             }
         );
-
     }
 
     public function sortedSetRemoveElements(string $cacheName, string $sortedSetName, array $values): ResponseFuture
@@ -1962,6 +2008,7 @@ class ScsDataClient implements LoggerAwareInterface
             $sortedSetRemoveElementsRequest->setSetName($sortedSetName);
             $sortedSetRemoveElementsRequest->setSome(new _SortedSetRemoveRequest\_Some());
             $sortedSetRemoveElementsRequest->getSome()->setValues($values);
+            $this->logger->debug("sortedSetRemoveElements $sortedSetName");
             $call = $this->grpcManager->client->SortedSetRemove(
                 $sortedSetRemoveElementsRequest,
                 ["cache" => [$cacheName]],
@@ -2000,6 +2047,7 @@ class ScsDataClient implements LoggerAwareInterface
             $sortedSetGetScoreRequest = new _SortedSetGetScoreRequest();
             $sortedSetGetScoreRequest->setSetName($sortedSetName);
             $sortedSetGetScoreRequest->setValues([$value]);
+            $this->logger->debug("sortedSetGetScore $sortedSetName $value");
             $call = $this->grpcManager->client->SortedSetGetScore(
                 $sortedSetGetScoreRequest,
                 ["cache" => [$cacheName]],
@@ -2048,8 +2096,7 @@ class ScsDataClient implements LoggerAwareInterface
         array $sources,
         ?int $aggregate = null,
         ?int $ttlSeconds = null
-    ): ResponseFuture
-    {
+    ): ResponseFuture {
         try {
             // The number of source sets is currently limited to 2. I'm just adding this validation and
             // some validation of the contents of $sources here for now, but will move to _DataValidation
@@ -2088,6 +2135,7 @@ class ScsDataClient implements LoggerAwareInterface
             $sortedSetUnionStoreRequest->setTtlMilliseconds($ttlMillis);
             $sortedSetUnionStoreRequest->setSources($grpcSources);
             $sortedSetUnionStoreRequest->setAggregate($aggregate);
+            $this->logger->debug(sprintf("sortedSetUnionStore %s %u %u", $destination, $aggregate, $ttlSeconds));
             $call = $this->grpcManager->client->SortedSetUnionStore(
                 $sortedSetUnionStoreRequest,
                 ["cache" => [$cacheName]],
@@ -2131,6 +2179,7 @@ class ScsDataClient implements LoggerAwareInterface
 
             $getBatchRequest = new _GetBatchRequest();
             $getBatchRequest->setItems($getRequests);
+            $this->logger->debug("getBatch $cacheName");
             $call = $this->grpcManager->client->GetBatch($getBatchRequest, ['cache' => [$cacheName]], ['timeout' => $this->timeout]);
         } catch (SdkError $e) {
             return ResponseFuture::createResolved(new GetBatchError($e));
@@ -2161,7 +2210,6 @@ class ScsDataClient implements LoggerAwareInterface
                 }
             }
         );
-
     }
 
     /**
@@ -2186,6 +2234,7 @@ class ScsDataClient implements LoggerAwareInterface
             }
             $setBatchRequest = new _SetBatchRequest();
             $setBatchRequest->setItems($setRequests);
+            $this->logger->debug(sprintf("setBatch %s %u", $cacheName, $ttlSeconds));
             $call = $this->grpcManager->client->SetBatch($setBatchRequest, ['cache' => [$cacheName]], ['timeout' => $this->timeout]);
         } catch (SdkError $e) {
             return ResponseFuture::createResolved(new SetBatchError($e));
@@ -2219,7 +2268,6 @@ class ScsDataClient implements LoggerAwareInterface
                 }
             }
         );
-
     }
 
     public function itemGetTtl(string $cacheName, string $key): ResponseFuture
@@ -2229,7 +2277,7 @@ class ScsDataClient implements LoggerAwareInterface
             validateKeys([$key]);
             $itemGetTtlRequest = new _ItemGetTtlRequest();
             $itemGetTtlRequest->setCacheKey($key);
-
+            $this->logger->debug("itemGetTtl $cacheName $key");
             $call = $this->grpcManager->client->ItemGetTtl(
                 $itemGetTtlRequest,
                 ["cache" => [$cacheName]],
@@ -2267,7 +2315,7 @@ class ScsDataClient implements LoggerAwareInterface
             $updateTtlRequest = new _UpdateTtlRequest();
             $updateTtlRequest->setCacheKey($key);
             $updateTtlRequest->setOverwriteToMilliseconds($ttlMilliseconds);
-
+            $this->logger->debug(sprintf("updateTtl %s %s %u", $cacheName, $key, $ttlMilliseconds));
             $call = $this->grpcManager->client->UpdateTtl(
                 $updateTtlRequest,
                 ["cache" => [$cacheName]],
@@ -2305,7 +2353,7 @@ class ScsDataClient implements LoggerAwareInterface
             $increaseTtlRequest = new _UpdateTtlRequest();
             $increaseTtlRequest->setCacheKey($key);
             $increaseTtlRequest->setIncreaseToMilliseconds($ttlMilliseconds);
-
+            $this->logger->debug(sprintf("increaseTtl %s %s %u", $cacheName, $key, $ttlMilliseconds));
             $call = $this->grpcManager->client->UpdateTtl(
                 $increaseTtlRequest,
                 ["cache" => [$cacheName]],
@@ -2345,7 +2393,7 @@ class ScsDataClient implements LoggerAwareInterface
             $decreaseTtlRequest = new _UpdateTtlRequest();
             $decreaseTtlRequest->setCacheKey($key);
             $decreaseTtlRequest->setDecreaseToMilliseconds($ttlMilliseconds);
-
+            $this->logger->debug(sprintf("decreaseTtl %s %s %u", $cacheName, $key, $ttlMilliseconds));
             $call = $this->grpcManager->client->UpdateTtl(
                 $decreaseTtlRequest,
                 ["cache" => [$cacheName]],
