@@ -1287,7 +1287,7 @@ class ScsDataClient implements LoggerAwareInterface
                 ->setAmount($amount)
                 ->setRefreshTtl($collectionTtl->getRefreshTtl())
                 ->setTtlMilliseconds($ttlMillis);
-            $this->logger->debug(sprintf("dictionarySetField %s %s %u %u", $dictionaryName, $field, $amount, $ttlMillis));
+            $this->logger->debug(sprintf("dictionaryIncrement %s %s %u %u", $dictionaryName, $field, $amount, $ttlMillis));
             $call = $this->grpcManager->client->DictionaryIncrement(
                 $dictionaryIncrementRequest,
                 ["cache" => [$cacheName]],
