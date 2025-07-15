@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.17.1](https://github.com/momentohq/client-sdk-php/compare/v1.17.0...v1.17.1) (2025-07-15)
+
+
+### Bug Fixes
+
+* correct small issues with the configurations. ([#258](https://github.com/momentohq/client-sdk-php/issues/258)) ([c26fca9](https://github.com/momentohq/client-sdk-php/commit/c26fca99b0523a325474892006a24c5a8c187e36))
+* disable dynamic DNS service config ([#254](https://github.com/momentohq/client-sdk-php/issues/254)) ([ba47637](https://github.com/momentohq/client-sdk-php/commit/ba47637651bd9426e481d38558d1bbf1b06447e4))
+
+
+### Miscellaneous
+
+* add debug logs for data client operations ([#260](https://github.com/momentohq/client-sdk-php/issues/260)) ([6e15e97](https://github.com/momentohq/client-sdk-php/commit/6e15e9794e967fe9445853ee13d9ae0720d72116))
+* adding more testing for sorted set union store ([#256](https://github.com/momentohq/client-sdk-php/issues/256)) ([4a516ae](https://github.com/momentohq/client-sdk-php/commit/4a516ae634630684362e9f2954adb6859630a9a1))
+* remove the storage client ([#259](https://github.com/momentohq/client-sdk-php/issues/259)) ([3d8f577](https://github.com/momentohq/client-sdk-php/commit/3d8f577f0feb3bc927e9574a4302600f90b97fe2))
+
 ## [1.17.0](https://github.com/momentohq/client-sdk-php/compare/v1.16.0...v1.17.0) (2025-03-04)
 
 
