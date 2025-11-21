@@ -56,4 +56,30 @@ abstract class CredentialProvider implements ICredentialProvider
     {
         return new EnvMomentoTokenProvider($envVariableName);
     }
+
+    /**
+     * Convenience method for constructing a CredentialProvider from an endpoint
+     * and a global api key stored as a string.
+     * @param string $authToken The global api key.
+     * @param string $endpoint The Momento service endpoint.
+     * @return GlobalKeyStringMomentoTokenProvider
+     * @throws InvalidArgumentError
+     */
+    public static function globalKeyFromString(string $authToken, string $endpoint): ICredentialProvider
+    {
+        return new GlobalKeyStringMomentoTokenProvider($authToken, $endpoint);
+    }
+
+    /**
+     * Convenience method for constructing a CredentialProvider from an endpoint
+     * and a global api key stored as an environment variable.
+     * @param string $envVariableName The name of the environment variable containing the global api key.
+     * @param string $endpoint The Momento service endpoint.
+     * @return GlobalKeyEnvMomentoTokenProvider
+     * @throws InvalidArgumentError
+     */
+    public static function globalKeyFromEnvironmentVariable(string $envVariableName, string $endpoint): ICredentialProvider
+    {
+        return new GlobalKeyEnvMomentoTokenProvider($envVariableName, $endpoint);
+    }
 }

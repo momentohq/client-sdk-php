@@ -5,6 +5,8 @@ namespace Momento\Tests\Cache;
 
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Auth\StringMomentoTokenProvider;
+use Momento\Auth\GlobalKeyEnvMomentoTokenProvider;
+use Momento\Auth\GlobalKeyStringMomentoTokenProvider;
 use Momento\Cache\Errors\InvalidArgumentError;
 use Momento\Cache\Errors\InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
@@ -20,6 +22,9 @@ class MomentoTokenProviderTest extends TestCase
 
     private string $authToken;
     const AUTH_TOKEN_NAME = 'MOMENTO_API_KEY';
+    const GLOBAL_KEY_ENV_VAR_NAME = 'MOMENTO_TEST_GLOBAL_API_KEY';
+    const TEST_GLOBAL_KEY_ENDPOINT = 'testEndpoint';
+    const TEST_GLOBAL_API_KEY = 'testToken';
 
     public function setUp(): void
     {
@@ -95,5 +100,56 @@ class MomentoTokenProviderTest extends TestCase
         }
     }
 
+    public function globalKeyTestEnvVarToken_EnvVarNotSet()
+    {
+        $authProvider = new GlobalKeyEnvMomentoTokenProvider(self::GLOBAL_KEY_ENV_VAR_NAME, self::TEST_GLOBAL_KEY_ENDPOINT);
+        $this->expectException(InvalidArgumentError::class);
+    }
+
+    public function globalKeyTestEnvVarToken_fromEnvVar_EnvVarNotSet()
+    {
+        $authProvider = GlobalKeyEnvMomentoTokenProvider::globalKeyFromEnvironmentVariable(self::GLOBAL_KEY_ENV_VAR_NAME, self::TEST_GLOBAL_KEY_ENDPOINT);
+        $this->expectException(InvalidArgumentError::class);
+    }
+
+    public function globalKeyTestEnvVarToken_EnvVarNameEmpty()
+    {
+        $authProvider = new GlobalKeyEnvMomentoTokenProvider('', self::TEST_GLOBAL_KEY_ENDPOINT);
+        $this->expectException(InvalidArgumentError::class);
+    }
+
+    public function globalKeyTestEnvVarToken_EndpointEmpty()
+    {
+        $authProvider = new GlobalKeyEnvMomentoTokenProvider(self::GLOBAL_KEY_ENV_VAR_NAME, '');
+        $this->expectException(InvalidArgumentError::class);
+    }
+
+    public function globalKeyTestStringToken_HappyPath()
+    {
+        $authProvider = new GlobalKeyStringMomentoTokenProvider(self::TEST_GLOBAL_API_KEY, self::TEST_GLOBAL_KEY_ENDPOINT);
+        $this->assertNotNull($authProvider->getAuthToken());
+        $this->assertNotNull($authProvider->getControlEndpoint());
+        $this->assertNotNull($authProvider->getCacheEndpoint());
+    }
+
+    public function globalKeyTestStringToken_fromString_HappyPath()
+    {
+        $authProvider = GlobalKeyStringMomentoTokenProvider::globalKeyFromString(self::TEST_GLOBAL_API_KEY, self::TEST_GLOBAL_KEY_ENDPOINT);
+        $this->assertNotNull($authProvider->getAuthToken());
+        $this->assertNotNull($authProvider->getControlEndpoint());
+        $this->assertNotNull($authProvider->getCacheEndpoint());
+    }
+
+    public function globalKeyTestStringToken_KeyEmpty()
+    {
+        $authProvider = new GlobalKeyStringMomentoTokenProvider('', self::TEST_GLOBAL_KEY_ENDPOINT);
+        $this->expectException(InvalidArgumentError::class);
+    }
+
+    public function globalKeyTestStringToken_EndpointEmpty()
+    {
+        $authProvider = new GlobalKeyStringMomentoTokenProvider(self::TEST_GLOBAL_API_KEY, '');
+        $this->expectException(InvalidArgumentError::class);
+    }
 }
 
