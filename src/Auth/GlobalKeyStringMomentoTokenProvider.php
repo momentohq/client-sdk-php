@@ -27,10 +27,10 @@ class GlobalKeyStringMomentoTokenProvider extends CredentialProvider
     )
     {
         if (isNullOrEmpty($authToken)) {
-            throw new InvalidArgumentError("String $authToken is empty or null.");
+            throw new InvalidArgumentError("Auth token is empty or null.");
         }
         if (isNullOrEmpty($endpoint)) {
-            throw new InvalidArgumentError("String $authToken is empty or null.");
+            throw new InvalidArgumentError("Endpoint is empty or null.");
         }
         if ($trustedControlEndpointCertificateName xor $trustedCacheEndpointCertificateName) {
             throw new InvalidArgumentError(

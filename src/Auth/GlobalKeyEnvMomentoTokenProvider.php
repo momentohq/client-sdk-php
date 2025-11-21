@@ -21,10 +21,10 @@ class GlobalKeyEnvMomentoTokenProvider extends GlobalKeyStringMomentoTokenProvid
     )
     {
         if (isNullOrEmpty($endpoint)) {
-            throw new InvalidArgumentError("String $endpoint is empty or null.");
+            throw new InvalidArgumentError("Endpoint is empty or null.");
         }
         if (isNullOrEmpty($envVariableName)) {
-            throw new InvalidArgumentError("String $envVariableName is empty or null.");
+            throw new InvalidArgumentError("Environment variable name is empty or null.");
         }
         if (isNullOrEmpty($_SERVER[$envVariableName] ?? null)) {
             throw new InvalidArgumentError("Environment variable $envVariableName is empty or null.");
