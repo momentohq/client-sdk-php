@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Momento\Auth;
@@ -20,11 +21,15 @@ class AuthUtils
         if (self::isBase64Encoded($authToken)) {
             return self::parseV1Token($authToken);
         } else {
+            if (self::isGlobalApiKey($authToken)) {
+                throw new InvalidArgumentError('Received a global API key. Are you using the correct key? Or did you mean to use `globalKeyFromString()` or `globalKeyFromEnvironmentVariable()` instead?');
+            }
             return self::parseJwtToken($authToken);
         }
     }
 
-    public static function parseV1Token(string $authToken): object {
+    public static function parseV1Token(string $authToken): object
+    {
         $decoded = base64_decode($authToken);
         $tokenData = json_decode($decoded);
         if (!$tokenData->endpoint || !$tokenData->api_key) {
@@ -58,7 +63,7 @@ class AuthUtils
         return $payload;
     }
 
-    private static function isBase64Encoded(string $s) : bool
+    public static function isBase64Encoded(string $s): bool
     {
         if ((bool) preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $s) === false) {
             return false;
@@ -72,5 +77,11 @@ class AuthUtils
             return false;
         }
         return base64_encode($decoded) === $s;
+    }
+
+    public static function isGlobalApiKey(string $authToken): bool
+    {
+        $claims = self::parseJwtToken($authToken);
+        return isset($claims->t) && $claims->t === 'g';
     }
 }

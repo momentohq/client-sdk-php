@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Momento\Tests\Cache;
@@ -8,7 +9,6 @@ use Momento\Auth\StringMomentoTokenProvider;
 use Momento\Auth\GlobalKeyEnvMomentoTokenProvider;
 use Momento\Auth\GlobalKeyStringMomentoTokenProvider;
 use Momento\Cache\Errors\InvalidArgumentError;
-use Momento\Cache\Errors\InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use TypeError;
@@ -24,7 +24,9 @@ class MomentoTokenProviderTest extends TestCase
     const AUTH_TOKEN_NAME = 'MOMENTO_API_KEY';
     const GLOBAL_KEY_ENV_VAR_NAME = 'MOMENTO_TEST_GLOBAL_API_KEY';
     const TEST_GLOBAL_KEY_ENDPOINT = 'testEndpoint';
-    const TEST_GLOBAL_API_KEY = 'testToken';
+    const TEST_GLOBAL_API_KEY = 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyIsImNwIjoiY29udHJvbC50ZXN0LmNvbSIsImMiOiJjYWNoZS50ZXN0LmNvbSJ9.T3ylW7iWLobcCsYQx92oImV2KgyBWmtFO-37uzw3qspSb18itIEH9zN49QFEm6joeIer_kXJ5R28ruF_JbUniA';
+    const TEST_V1_API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE2NzgzMDU4MTIsImV4cCI6NDg2NTUxNTQxMiwiYXVkIjoiIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSJ9.8Iy8q84Lsr-D3YCo_HP4d-xjHdT8UCIuvAYcxhFMyz8';
+    const TEST_PRE_V1_API_KEY = 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyQHRlc3QuY29tIiwiY3AiOiJjb250cm9sLnRlc3QuY29tIiwiYyI6ImNhY2hlLnRlc3QuY29tIn0.c0Z8Ipetl6raCNHSHs7Mpq3qtWkFy4aLvGhIFR4CoR0OnBdGbdjN-4E58bAabrSGhRA8-B2PHzgDd4JF4clAzg';
 
     public function setUp(): void
     {
@@ -55,6 +57,12 @@ class MomentoTokenProviderTest extends TestCase
         $this->assertNotNull($authProvider->getCacheEndpoint());
         $this->assertNull($authProvider->getTrustedControlEndpointCertificateName());
         $this->assertNull($authProvider->getTrustedCacheEndpointCertificateName());
+    }
+
+    public function testStringToken_GlobalApiKey()
+    {
+        $this->expectException(InvalidArgumentError::class);
+        $authProvider = new StringMomentoTokenProvider(self::TEST_GLOBAL_API_KEY);
     }
 
     public function testEnvVarToken_fromEnvVar_HappyPath()
@@ -95,9 +103,16 @@ class MomentoTokenProviderTest extends TestCase
             $argsCopy[$i] = null;
             $this->expectException(InvalidArgumentError::class);
             $authProvider = new EnvMomentoTokenProvider(
-                self::AUTH_TOKEN_NAME, ...$argsCopy
+                self::AUTH_TOKEN_NAME,
+                ...$argsCopy
             );
         }
+    }
+
+    public function testEnvVarToken_GlobalApiKey()
+    {
+        $this->expectException(InvalidArgumentError::class);
+        $authProvider = new EnvMomentoTokenProvider(self::TEST_GLOBAL_API_KEY);
     }
 
     public function globalKeyTestEnvVarToken_EnvVarNotSet()
@@ -151,5 +166,16 @@ class MomentoTokenProviderTest extends TestCase
         $authProvider = new GlobalKeyStringMomentoTokenProvider(self::TEST_GLOBAL_API_KEY, '');
         $this->expectException(InvalidArgumentError::class);
     }
-}
 
+    public function globalKeyTestStringToken_V1ApiKey()
+    {
+        $this->expectException(InvalidArgumentError::class);
+        $authProvider = new StringMomentoTokenProvider(self::TEST_V1_API_KEY);
+    }
+
+    public function globalKeyTestStringToken_PreV1ApiKey()
+    {
+        $this->expectException(InvalidArgumentError::class);
+        $authProvider = new StringMomentoTokenProvider(self::TEST_PRE_V1_API_KEY);
+    }
+}

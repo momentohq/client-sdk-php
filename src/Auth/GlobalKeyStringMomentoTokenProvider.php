@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Momento\Auth;
@@ -24,10 +25,15 @@ class GlobalKeyStringMomentoTokenProvider extends CredentialProvider
         ?string $cacheEndpoint = null,
         ?string $trustedControlEndpointCertificateName = null,
         ?string $trustedCacheEndpointCertificateName = null
-    )
-    {
+    ) {
         if (isNullOrEmpty($authToken)) {
             throw new InvalidArgumentError("Auth token is empty or null.");
+        }
+        if (AuthUtils::isBase64Encoded($authToken)) {
+            throw new InvalidArgumentError('Did not expect global API key to be base64 encoded. Are you using the correct key? Or did you mean to use `fromString()` instead?');
+        }
+        if (AuthUtils::isGlobalApiKey($authToken)) {
+            throw new InvalidArgumentError('Provided API key is not a valid global API key. Are you using the correct key? Or did you mean to use `fromString()` instead?');
         }
         if (isNullOrEmpty($endpoint)) {
             throw new InvalidArgumentError("Endpoint is empty or null.");
@@ -35,7 +41,7 @@ class GlobalKeyStringMomentoTokenProvider extends CredentialProvider
         if ($trustedControlEndpointCertificateName xor $trustedCacheEndpointCertificateName) {
             throw new InvalidArgumentError(
                 "If either of trustedCacheEndpointCertificateName or trustedControlEndpointCertificateName " .
-                "are provided, they must both be."
+                    "are provided, they must both be."
             );
         }
         $this->authToken = $authToken;

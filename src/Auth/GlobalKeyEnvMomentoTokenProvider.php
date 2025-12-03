@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Momento\Auth;
@@ -18,8 +19,7 @@ class GlobalKeyEnvMomentoTokenProvider extends GlobalKeyStringMomentoTokenProvid
         ?string $cacheEndpoint = null,
         ?string $trustedControlEndpointCertificateName = null,
         ?string $trustedCacheEndpointCertificateName = null
-    )
-    {
+    ) {
         if (isNullOrEmpty($endpoint)) {
             throw new InvalidArgumentError("Endpoint is empty or null.");
         }
@@ -29,7 +29,14 @@ class GlobalKeyEnvMomentoTokenProvider extends GlobalKeyStringMomentoTokenProvid
         if (isNullOrEmpty($_SERVER[$envVariableName] ?? null)) {
             throw new InvalidArgumentError("Environment variable $envVariableName is empty or null.");
         }
+
         $authToken = $_SERVER[$envVariableName];
+        if (AuthUtils::isBase64Encoded($authToken)) {
+            throw new InvalidArgumentError('Did not expect global API key to be base64 encoded. Are you using the correct key? Or did you mean to use `fromEnvironmentVariable()` instead?');
+        }
+        if (AuthUtils::isGlobalApiKey($authToken)) {
+            throw new InvalidArgumentError('Provided API key is not a valid global API key. Are you using the correct key? Or did you mean to use `fromEnvironmentVariable()` instead?');
+        }
         parent::__construct($authToken, $endpoint, $controlEndpoint, $cacheEndpoint, $trustedControlEndpointCertificateName, $trustedCacheEndpointCertificateName);
     }
 }
