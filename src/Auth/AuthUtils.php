@@ -21,8 +21,8 @@ class AuthUtils
         if (self::isBase64Encoded($authToken)) {
             return self::parseV1Token($authToken);
         } else {
-            if (self::isGlobalApiKey($authToken)) {
-                throw new InvalidArgumentError('Received a global API key. Are you using the correct key? Or did you mean to use `globalKeyFromString()` or `globalKeyFromEnvironmentVariable()` instead?');
+            if (self::isV2ApiKey($authToken)) {
+                throw new InvalidArgumentError('Received a v2 API key. Are you using the correct key? Or did you mean to use `fromApiKeyV2()` or `fromEnvVarV2()` instead?');
             }
             return self::parseJwtToken($authToken);
         }
@@ -79,8 +79,11 @@ class AuthUtils
         return base64_encode($decoded) === $s;
     }
 
-    public static function isGlobalApiKey(string $authToken): bool
+    public static function isV2ApiKey(string $authToken): bool
     {
+        if (self::isBase64Encoded($authToken)) {
+            return false;
+        }
         $claims = self::parseJwtToken($authToken);
         return isset($claims->t) && $claims->t === 'g';
     }
