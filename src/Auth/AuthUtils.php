@@ -22,7 +22,7 @@ class AuthUtils
             return self::parseV1Token($authToken);
         } else {
             if (self::isV2ApiKey($authToken)) {
-                throw new InvalidArgumentError('Received a v2 API key. Are you using the correct key? Or did you mean to use `fromApiKeyV2()` or `fromEnvVarV2()` instead?');
+                throw new InvalidArgumentError('Received a v2 API key. Are you using the correct key? Or did you mean to use `fromApiKeyV2()` or `fromEnvironmentVariablesV2()` instead?');
             }
             return self::parseJwtToken($authToken);
         }

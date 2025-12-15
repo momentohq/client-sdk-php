@@ -55,7 +55,7 @@ abstract class CredentialProvider implements ICredentialProvider
      * @return EnvMomentoTokenProvider
      * @throws InvalidArgumentError
      * 
-     * @deprecated since version 1.18.0, use fromEnvVarV2() instead.
+     * @deprecated since version 1.18.0, use fromEnvironmentVariablesV2() instead.
      */
     public static function fromEnvironmentVariable(string $envVariableName): ICredentialProvider
     {
@@ -77,15 +77,15 @@ abstract class CredentialProvider implements ICredentialProvider
 
     /**
      * Convenience method for constructing a CredentialProvider from a Momento service endpoint
-     * and a v2 api key stored as environment variables.
-     * @param string $apiKeyEnvVar The name of the environment variable containing the v2 api key.
-     * @param string $endpointEnvVar The name of the environment variable containing the Momento service endpoint.
-     * @return EnvVarV2TokenProvider
+     * and a v2 api key stored as environment variables MOMENTO_API_KEY and MOMENTO_ENDPOINT.
+     * @param string $apiKeyEnvVar Optionally provide an alternate environment variable containing the v2 api key.
+     * @param string $endpointEnvVar Optionally provide an alternate environment variable containing the Momento service endpoint.
+     * @return EnvMomentoV2TokenProvider
      * @throws InvalidArgumentError
      */
-    public static function fromEnvVarV2(string $apiKeyEnvVar, string $endpointEnvVar): ICredentialProvider
+    public static function fromEnvironmentVariablesV2(string $apiKeyEnvVar = "MOMENTO_API_KEY", string $endpointEnvVar = "MOMENTO_ENDPOINT"): ICredentialProvider
     {
-        return new EnvVarV2TokenProvider($apiKeyEnvVar, $endpointEnvVar);
+        return new EnvMomentoV2TokenProvider($apiKeyEnvVar, $endpointEnvVar);
     }
 
     /**

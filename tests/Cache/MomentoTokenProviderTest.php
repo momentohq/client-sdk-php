@@ -6,7 +6,7 @@ namespace Momento\Tests\Cache;
 
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Auth\StringMomentoTokenProvider;
-use Momento\Auth\EnvVarV2TokenProvider;
+use Momento\Auth\EnvMomentoV2TokenProvider;
 use Momento\Auth\ApiKeyV2TokenProvider;
 use Momento\Auth\DisposableTokenProvider;
 use Momento\Cache\Errors\InvalidArgumentError;
@@ -17,7 +17,7 @@ use TypeError;
 /**
  * @covers \Momento\Auth\EnvMomentoTokenProvider
  * @covers \Momento\Auth\StringMomentoTokenProvider
- * @covers \Momento\Auth\EnvVarV2TokenProvider
+ * @covers \Momento\Auth\EnvMomentoV2TokenProvider
  * @covers \Momento\Auth\ApiKeyV2TokenProvider
  * @covers \Momento\Auth\DisposableTokenProvider
  */
@@ -26,10 +26,10 @@ class MomentoTokenProviderTest extends TestCase
 
     private string $v1AuthToken;
     const AUTH_TOKEN_NAME = 'MOMENTO_API_KEY';
-    const V2_API_KEY_ENV_VAR = 'MOMENTO_TEST_V2_API_KEY';
+    const V2_API_KEY_ENV_VAR = 'MOMENTO_V2_API_KEY'; // cannot use default name in testing env var v2 method
     const TEST_ENDPOINT = 'testEndpoint';
-    const ENDPOINT_ENV_VAR = 'MOMENTO_TEST_ENDPOINT';
-    const TEST_V2_API_KEY = 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyIsImlkIjoic29tZS1pZCJ9.WRhKpdh7cFCXO7lAaVojtQAxK6mxMdBrvXTJL1xu94S0d6V1YSstOObRlAIMA7i_yIxO1mWEF3rlF5UNc77VXQ';
+    const ENDPOINT_ENV_VAR = 'MOMENTO_ENDPOINT';
+    const TEST_V2_API_KEY = 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyIsImp0aSI6InNvbWUtaWQifQ.GMr9nA6HE0ttB6llXct_2Sg5-fOKGFbJCdACZFgNbN1fhT6OPg_hVc8ThGzBrWC_RlsBpLA1nzqK3SOJDXYxAw';
     const TEST_V1_API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE2NzgzMDU4MTIsImV4cCI6NDg2NTUxNTQxMiwiYXVkIjoiIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSJ9.8Iy8q84Lsr-D3YCo_HP4d-xjHdT8UCIuvAYcxhFMyz8';
     const TEST_PRE_V1_API_KEY = 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyQHRlc3QuY29tIiwiY3AiOiJjb250cm9sLnRlc3QuY29tIiwiYyI6ImNhY2hlLnRlc3QuY29tIn0.c0Z8Ipetl6raCNHSHs7Mpq3qtWkFy4aLvGhIFR4CoR0OnBdGbdjN-4E58bAabrSGhRA8-B2PHzgDd4JF4clAzg';
 
@@ -43,6 +43,7 @@ class MomentoTokenProviderTest extends TestCase
 
         putenv(self::V2_API_KEY_ENV_VAR . '=' . self::TEST_V2_API_KEY);
         putenv(self::ENDPOINT_ENV_VAR . '=' . self::TEST_ENDPOINT);
+        putenv('ALTERNATE_MOMENTO_ENDPOINT' . '=' . self::TEST_ENDPOINT);
 
         $this->v1AuthToken = $_SERVER[self::AUTH_TOKEN_NAME];
     }
@@ -123,40 +124,52 @@ class MomentoTokenProviderTest extends TestCase
         $authProvider = new EnvMomentoTokenProvider(self::V2_API_KEY_ENV_VAR);
     }
 
-    public function testEnvVarV2TokenProvider_HappyPath()
+    public function testEnvMomentoV2TokenProvider_HappyPath()
     {
         $this->expectException(InvalidArgumentError::class);
-        $authProvider = new EnvVarV2TokenProvider(self::V2_API_KEY_ENV_VAR, self::ENDPOINT_ENV_VAR);
+        $authProvider = new EnvMomentoV2TokenProvider(self::V2_API_KEY_ENV_VAR, self::ENDPOINT_ENV_VAR);
     }
 
     public function testFromEnvVarV2_fromEnvVar_HappyPath()
     {
         $this->expectException(InvalidArgumentError::class);
-        $authProvider = EnvVarV2TokenProvider::fromEnvVarV2(self::V2_API_KEY_ENV_VAR, self::ENDPOINT_ENV_VAR);
+        $authProvider = EnvMomentoV2TokenProvider::fromEnvironmentVariablesV2(self::V2_API_KEY_ENV_VAR, self::ENDPOINT_ENV_VAR);
     }
 
-    public function testEnvVarV2TokenProvider_ApiKeyEnvVarNameEmpty()
+    public function testFromEnvVarV2_fromEnvVar_HappyPath_DefaultEndpoint()
     {
         $this->expectException(InvalidArgumentError::class);
-        $authProvider = new EnvVarV2TokenProvider('', self::ENDPOINT_ENV_VAR);
+        $authProvider = EnvMomentoV2TokenProvider::fromEnvironmentVariablesV2(self::V2_API_KEY_ENV_VAR);
     }
 
-    public function testEnvVarV2TokenProvider_EndpointEnvVarEmpty()
+    public function testFromEnvVarV2_fromEnvVar_HappyPath_AlternateEndpoint()
     {
         $this->expectException(InvalidArgumentError::class);
-        $authProvider = new EnvVarV2TokenProvider(self::V2_API_KEY_ENV_VAR, '');
+        $authProvider = EnvMomentoV2TokenProvider::fromEnvironmentVariablesV2(self::V2_API_KEY_ENV_VAR, 'ALTERNATE_MOMENTO_ENDPOINT');
     }
 
-    public function testEnvVarV2TokenProvider_NonexistentApiKeyEnvVarName()
+    public function testEnvMomentoV2TokenProvider_ApiKeyEnvVarNameEmpty()
     {
         $this->expectException(InvalidArgumentError::class);
-        $authProvider = new EnvVarV2TokenProvider('DOES_NOT_EXIST', self::ENDPOINT_ENV_VAR);
+        $authProvider = new EnvMomentoV2TokenProvider('', self::ENDPOINT_ENV_VAR);
     }
 
-    public function testEnvVarV2TokenProvider_NonexistentEndpointEnvVar()
+    public function testEnvMomentoV2TokenProvider_EndpointEnvVarEmpty()
     {
         $this->expectException(InvalidArgumentError::class);
-        $authProvider = new EnvVarV2TokenProvider(self::V2_API_KEY_ENV_VAR, 'DOES_NOT_EXIST');
+        $authProvider = new EnvMomentoV2TokenProvider(self::V2_API_KEY_ENV_VAR, '');
+    }
+
+    public function testEnvMomentoV2TokenProvider_NonexistentApiKeyEnvVarName()
+    {
+        $this->expectException(InvalidArgumentError::class);
+        $authProvider = new EnvMomentoV2TokenProvider('DOES_NOT_EXIST', self::ENDPOINT_ENV_VAR);
+    }
+
+    public function testEnvMomentoV2TokenProvider_NonexistentEndpointEnvVar()
+    {
+        $this->expectException(InvalidArgumentError::class);
+        $authProvider = new EnvMomentoV2TokenProvider(self::V2_API_KEY_ENV_VAR, 'DOES_NOT_EXIST');
     }
 
     public function testApiKeyV2TokenProvider_HappyPath()

@@ -10,11 +10,11 @@ use function Momento\Utilities\isNullOrEmpty;
 /**
  * Reads and parses a Momento auth token stored as an environment variable.
  */
-class EnvVarV2TokenProvider extends ApiKeyV2TokenProvider
+class EnvMomentoV2TokenProvider extends ApiKeyV2TokenProvider
 {
     public function __construct(
-        string  $apiKeyEnvVar,
-        string $endpointEnvVar,
+        string  $apiKeyEnvVar = "MOMENTO_API_KEY",
+        string $endpointEnvVar = "MOMENTO_ENDPOINT",
         ?string $controlEndpoint = null,
         ?string $cacheEndpoint = null,
         ?string $trustedControlEndpointCertificateName = null,

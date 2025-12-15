@@ -10,7 +10,7 @@ use function Momento\Utilities\isNullOrEmpty;
 /**
  * Reads and parses a Momento auth token stored as an environment variable.
  * 
- * @deprecated since version 1.18.0, use EnvVarV2TokenProvider instead.
+ * @deprecated since version 1.18.0, use EnvMomentoV2TokenProvider instead.
  */
 class EnvMomentoTokenProvider extends StringMomentoTokenProvider
 {
