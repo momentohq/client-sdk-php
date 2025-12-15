@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Momento\Auth;
@@ -8,6 +9,8 @@ use function Momento\Utilities\isNullOrEmpty;
 
 /**
  * Reads and parses a Momento auth token stored as an environment variable.
+ * 
+ * @deprecated since version 1.18.0, use EnvMomentoV2TokenProvider instead.
  */
 class EnvMomentoTokenProvider extends StringMomentoTokenProvider
 {
@@ -17,8 +20,7 @@ class EnvMomentoTokenProvider extends StringMomentoTokenProvider
         ?string $cacheEndpoint = null,
         ?string $trustedControlEndpointCertificateName = null,
         ?string $trustedCacheEndpointCertificateName = null
-    )
-    {
+    ) {
         if (isNullOrEmpty($_SERVER[$envVariableName] ?? null)) {
             throw new InvalidArgumentError("Environment variable $envVariableName is empty or null.");
         }

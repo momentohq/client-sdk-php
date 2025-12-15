@@ -8,11 +8,9 @@ use Momento\Cache\Errors\InvalidArgumentError;
 use function Momento\Utilities\isNullOrEmpty;
 
 /**
- * Reads and parses a Momento auth token stored as a string.
- * 
- * @deprecated since version 1.18.0, use ApiKeyV2TokenProvider or DisposableTokenProvider instead.
+ * Reads and parses a Momento disposable token stored as a string.
  */
-class StringMomentoTokenProvider extends CredentialProvider
+class DisposableTokenProvider extends CredentialProvider
 {
     protected string  $authToken;
     protected ?string $controlEndpoint = null;

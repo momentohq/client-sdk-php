@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Momento\Auth;
@@ -40,6 +41,8 @@ abstract class CredentialProvider implements ICredentialProvider
      * @param string $authToken The JWT token.
      * @return StringMomentoTokenProvider
      * @throws InvalidArgumentError
+     * 
+     * @deprecated since version 1.18.0, use fromApiKeyV2() or fromDisposableToken() instead.
      */
     public static function fromString(string $authToken): ICredentialProvider
     {
@@ -51,9 +54,48 @@ abstract class CredentialProvider implements ICredentialProvider
      * @param string $envVariableName Name of the environment variable that contains the JWT token.
      * @return EnvMomentoTokenProvider
      * @throws InvalidArgumentError
+     * 
+     * @deprecated since version 1.18.0, use fromEnvironmentVariablesV2() instead.
      */
     public static function fromEnvironmentVariable(string $envVariableName): ICredentialProvider
     {
         return new EnvMomentoTokenProvider($envVariableName);
+    }
+
+    /**
+     * Convenience method for constructing a CredentialProvider from an endpoint
+     * and a v2 api key provided as strings.
+     * @param string $apiKey The v2 api key.
+     * @param string $endpoint The Momento service endpoint.
+     * @return ApiKeyV2TokenProvider
+     * @throws InvalidArgumentError
+     */
+    public static function fromApiKeyV2(string $apiKey, string $endpoint): ICredentialProvider
+    {
+        return new ApiKeyV2TokenProvider($apiKey, $endpoint);
+    }
+
+    /**
+     * Convenience method for constructing a CredentialProvider from a Momento service endpoint
+     * and a v2 api key stored as environment variables MOMENTO_API_KEY and MOMENTO_ENDPOINT.
+     * @param string $apiKeyEnvVar Optionally provide an alternate environment variable containing the v2 api key.
+     * @param string $endpointEnvVar Optionally provide an alternate environment variable containing the Momento service endpoint.
+     * @return EnvMomentoV2TokenProvider
+     * @throws InvalidArgumentError
+     */
+    public static function fromEnvironmentVariablesV2(string $apiKeyEnvVar = "MOMENTO_API_KEY", string $endpointEnvVar = "MOMENTO_ENDPOINT"): ICredentialProvider
+    {
+        return new EnvMomentoV2TokenProvider($apiKeyEnvVar, $endpointEnvVar);
+    }
+
+    /**
+     * Convenience method for constructing a CredentialProvider from a disposable token.
+     * @param string $authToken The Momento disposable token.
+     * @return DisposableTokenProvider
+     * @throws InvalidArgumentError
+     */
+    public static function fromDisposableToken(string $authToken): ICredentialProvider
+    {
+        return new DisposableTokenProvider($authToken);
     }
 }

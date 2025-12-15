@@ -9,10 +9,8 @@ use function Momento\Utilities\isNullOrEmpty;
 
 /**
  * Reads and parses a Momento auth token stored as a string.
- * 
- * @deprecated since version 1.18.0, use ApiKeyV2TokenProvider or DisposableTokenProvider instead.
  */
-class StringMomentoTokenProvider extends CredentialProvider
+class ApiKeyV2TokenProvider extends CredentialProvider
 {
     protected string  $authToken;
     protected ?string $controlEndpoint = null;
@@ -22,13 +20,20 @@ class StringMomentoTokenProvider extends CredentialProvider
 
     public function __construct(
         string  $authToken,
+        string $endpoint,
         ?string $controlEndpoint = null,
         ?string $cacheEndpoint = null,
         ?string $trustedControlEndpointCertificateName = null,
         ?string $trustedCacheEndpointCertificateName = null
     ) {
         if (isNullOrEmpty($authToken)) {
-            throw new InvalidArgumentError("String $authToken is empty or null.");
+            throw new InvalidArgumentError("Api key is empty or null.");
+        }
+        if (!AuthUtils::isV2ApiKey($authToken)) {
+            throw new InvalidArgumentError('Received an invalid v2 API key. Are you using the correct key? Or did you mean to use `fromString()` with a legacy key instead?');
+        }
+        if (isNullOrEmpty($endpoint)) {
+            throw new InvalidArgumentError("Endpoint is empty or null.");
         }
         if ($trustedControlEndpointCertificateName xor $trustedCacheEndpointCertificateName) {
             throw new InvalidArgumentError(
@@ -36,10 +41,9 @@ class StringMomentoTokenProvider extends CredentialProvider
                     "are provided, they must both be."
             );
         }
-        $payload = AuthUtils::parseAuthToken($authToken);
-        $this->authToken = $payload->authToken;
-        $this->controlEndpoint = $controlEndpoint ?? $payload->cp;
-        $this->cacheEndpoint = $cacheEndpoint ?? $payload->c;
+        $this->authToken = $authToken;
+        $this->controlEndpoint = $controlEndpoint ?? "control." . $endpoint;
+        $this->cacheEndpoint = $cacheEndpoint ?? "cache." . $endpoint;
         $this->trustedControlEndpointCertificateName = $trustedControlEndpointCertificateName;
         $this->trustedCacheEndpointCertificateName = $trustedCacheEndpointCertificateName;
     }

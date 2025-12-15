@@ -13,5 +13,9 @@ lint:
 	@php vendor/bin/php-cs-fixer fix --diff --show-progress=none
 
 test:
+	@if [ -z "$$MOMENTO_API_KEY" ]; then \
+		echo "ERROR: MOMENTO_API_KEY environment variable is missing"; \
+		exit 1; \
+	fi
 	@echo "Running tests..."
 	@php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml
