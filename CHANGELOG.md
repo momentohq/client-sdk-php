@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.0](https://github.com/momentohq/client-sdk-php/compare/v1.17.1...v1.18.0) (2025-12-15)
+
+
+### Features
+
+* new credential provider methods for accepting v2 api keys ([#261](https://github.com/momentohq/client-sdk-php/issues/261)) ([80a74c7](https://github.com/momentohq/client-sdk-php/commit/80a74c7a62617be977b7edea4f5bc1c8ea94e72b))
+
 ## [1.17.1](https://github.com/momentohq/client-sdk-php/compare/v1.17.0...v1.17.1) (2025-07-15)
 
 
