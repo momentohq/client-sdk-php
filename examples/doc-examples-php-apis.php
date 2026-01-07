@@ -42,8 +42,8 @@ function example_API_CredentialProviderFromEnvVarV2()
     // Look for default env vars MOMENTO_API_KEY and MOMENTO_ENDPOINT
     CredentialProvider::fromEnvironmentVariablesV2();
 
-    // Use custom env var names
-    CredentialProvider::fromEnvironmentVariablesV2("MY_MOMENTO_API_KEY", "MY_MOMENTO_ENDPOINT");
+    // Or provide custom env var names:
+    // CredentialProvider::fromEnvironmentVariablesV2("MY_MOMENTO_API_KEY", "MY_MOMENTO_ENDPOINT");
 }
 
 
