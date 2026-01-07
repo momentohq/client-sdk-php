@@ -3,6 +3,7 @@
 ## Requirements
 
 - A Momento API key is required, you can generate one using the [Momento Console](https://console.gomomento.com/)
+- A Momento service endpoint is required. You can find a [list of them here](https://docs.momentohq.com/platform/regions)
 
 ### Running via local PHP
 
@@ -30,6 +31,7 @@ Set required environment variables:
 
 ```bash
 export MOMENTO_API_KEY=<YOUR_API_KEY>
+export MOMENTO_ENDPOINT=<endpoint>
 ```
 
 To run the simple set/get example:
@@ -79,7 +81,7 @@ results for each type of operation in `gets.txt` and `sets.txt` output files.
 
 ```bash
 # Run CLI load generator
-MOMENTO_API_KEY=<YOUR API KEY> php loadgen.php
+MOMENTO_API_KEY=<YOUR API KEY> MOMENTO_ENDPOINT=<endpoint> php loadgen.php
 ```
 
 The `index-loadgen.php` script is intended to be served by a web server to experiment

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Momento\Tests\Cache;
@@ -27,7 +28,6 @@ class Psr16ClientTest extends TestCase
     private Configuration $configuration;
     private CredentialProvider $authProvider;
     private Psr16CacheClient $client;
-    private string $cacheName;
 
     public function setUp(): void
     {
@@ -35,9 +35,11 @@ class Psr16ClientTest extends TestCase
         $grpcConfiguration = new StaticGrpcConfiguration(5000);
         $transportStrategy = new StaticTransportStrategy($grpcConfiguration);
         $this->configuration = new Configuration($loggerFactory, $transportStrategy);
-        $this->authProvider = new EnvMomentoTokenProvider("MOMENTO_API_KEY");
+        $this->authProvider = new EnvMomentoTokenProvider("V1_API_KEY");
         $this->client = new Psr16CacheClient(
-            $this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS
+            $this->configuration,
+            $this->authProvider,
+            $this->DEFAULT_TTL_SECONDS
         );
     }
 
@@ -108,12 +110,18 @@ class Psr16ClientTest extends TestCase
     {
         $testCacheName = uniqid("php-PSR16-name-test");
         $configuration = Laptop::latest();
-        $authProvider = new EnvMomentoTokenProvider("MOMENTO_API_KEY");
+        $authProvider = new EnvMomentoTokenProvider("V1_API_KEY");
         $client = new CacheClient(
-            $configuration, $authProvider, $this->DEFAULT_TTL_SECONDS
+            $configuration,
+            $authProvider,
+            $this->DEFAULT_TTL_SECONDS
         );
         $psrClient = new Psr16CacheClient(
-            $configuration, $authProvider, $this->DEFAULT_TTL_SECONDS, null, $testCacheName
+            $configuration,
+            $authProvider,
+            $this->DEFAULT_TTL_SECONDS,
+            null,
+            $testCacheName
         );
         $listResponse = $client->listCaches();
         $this->assertNull($listResponse->asError());
@@ -348,5 +356,4 @@ class Psr16ClientTest extends TestCase
         $this->assertNull($this->client->get($key1));
         $this->assertNull($this->client->get($key2));
     }
-
 }

@@ -25,10 +25,10 @@ class MomentoTokenProviderTest extends TestCase
 {
 
     private string $v1AuthToken;
-    const AUTH_TOKEN_NAME = 'MOMENTO_API_KEY';
+    const AUTH_TOKEN_NAME = 'V1_API_KEY';
     const V2_API_KEY_ENV_VAR = 'MOMENTO_V2_API_KEY'; // cannot use default name in testing env var v2 method
     const TEST_ENDPOINT = 'testEndpoint';
-    const ENDPOINT_ENV_VAR = 'MOMENTO_ENDPOINT';
+    const ENDPOINT_ENV_VAR = 'MOMENTO_TEST_ENDPOINT';
     const TEST_V2_API_KEY = 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyIsImp0aSI6InNvbWUtaWQifQ.GMr9nA6HE0ttB6llXct_2Sg5-fOKGFbJCdACZFgNbN1fhT6OPg_hVc8ThGzBrWC_RlsBpLA1nzqK3SOJDXYxAw';
     const TEST_V1_API_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE2NzgzMDU4MTIsImV4cCI6NDg2NTUxNTQxMiwiYXVkIjoiIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSJ9.8Iy8q84Lsr-D3YCo_HP4d-xjHdT8UCIuvAYcxhFMyz8';
     const TEST_PRE_V1_API_KEY = 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyQHRlc3QuY29tIiwiY3AiOiJjb250cm9sLnRlc3QuY29tIiwiYyI6ImNhY2hlLnRlc3QuY29tIn0.c0Z8Ipetl6raCNHSHs7Mpq3qtWkFy4aLvGhIFR4CoR0OnBdGbdjN-4E58bAabrSGhRA8-B2PHzgDd4JF4clAzg';

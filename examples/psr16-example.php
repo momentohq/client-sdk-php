@@ -14,7 +14,7 @@ $KEY = "MyKey";
 $VALUE = "MyValue";
 
 // Setup
-$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY");
+$authProvider = CredentialProvider::fromEnvironmentVariablesV2();
 $configuration = Laptop::latest(new StderrLoggerFactory());
 $client = new Psr16CacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);
 $logger = $configuration->getLoggerFactory()->getLogger("ex:");

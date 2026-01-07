@@ -17,5 +17,13 @@ test:
 		echo "ERROR: MOMENTO_API_KEY environment variable is missing"; \
 		exit 1; \
 	fi
+	@if [ -z "$$MOMENTO_ENDPOINT" ]; then \
+		echo "ERROR: MOMENTO_ENDPOINT environment variable is missing"; \
+		exit 1; \
+	fi
+	@if [ -z "$$V1_API_KEY" ]; then \
+		echo "ERROR: V1_API_KEY environment variable is missing"; \
+		exit 1; \
+	fi
 	@echo "Running tests..."
 	@php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml

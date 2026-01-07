@@ -31,7 +31,7 @@ called:
 ```php
 $myLogger = new My\Favorite\Logger("channel_name");
 $loggerFactory = new Momento\Logging\PassthroughLoggerFactory($myLogger);
-$authProvider = new EnvMomentoTokenProvider("MOMENTO_API_KEY");
+$authProvider = new EnvMomentoV2TokenProvider();
 // All logging internal to the Momento client will use this factory to gain
 // access to a reference to $myLogger.
 $configuration = Laptop::latest()->withLoggerFactory($loggerFactory);
