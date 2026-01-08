@@ -35,7 +35,7 @@ use Momento\Cache\CacheClient;
 use Momento\Config\Configurations\Laptop;
 
 $client = new CacheClient(
-    Laptop::latest(), CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY"), 60
+    Laptop::latest(), CredentialProvider::fromEnvironmentVariablesV2(), 60
 );
 $client->createCache("cache");
 $client->set("cache", "myKey", "myValue");
@@ -48,7 +48,10 @@ if ($hit = $response->asHit()) {
 
 ## Getting Started and Documentation
 
-To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
+To get started with Momento you will need:
+
+- A Momento API key is required, you can generate one using the [Momento Console](https://console.gomomento.com/)
+- A Momento service endpoint is required. You can find a [list of them here](https://docs.momentohq.com/platform/regions)
 
 Documentation is available on the [Momento Docs website](https://docs.momentohq.com).
 
