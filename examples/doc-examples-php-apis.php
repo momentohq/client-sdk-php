@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 require "vendor/autoload.php";
@@ -7,18 +8,57 @@ use Momento\Auth\CredentialProvider;
 use Momento\Cache\CacheClient;
 use Momento\Config\Configurations\Laptop;
 
+function retrieveApiKeyFromYourSecretsManager(): string
+{
+    // this is not a valid API key but conforms to the syntax requirements.
+    return
+        "eyJhcGlfa2V5IjogImV5SjBlWEFpT2lKS1YxUWlMQ0poYkdjaU9pSklVekkxTmlKOS5leUpwYzNNaU9pSlBibXhwYm1VZ1NsZFVJRUoxYVd4a1pYSWlMQ0pwWVhRaU9qRTJOemd6TURVNE1USXNJbVY0Y0NJNk5EZzJOVFV4TlRReE1pd2lZWFZrSWpvaUlpd2ljM1ZpSWpvaWFuSnZZMnRsZEVCbGVHRnRjR3hsTG1OdmJTSjkuOEl5OHE4NExzci1EM1lDb19IUDRkLXhqSGRUOFVDSXV2QVljeGhGTXl6OCIsICJlbmRwb2ludCI6ICJ0ZXN0Lm1vbWVudG9ocS5jb20ifQo=";
+}
+
+function retrieveApiKeyV2FromYourSecretsManager(): string
+{
+    // this is not a valid API key but conforms to the syntax requirements.
+    return
+        "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0IjoiZyIsImp0aSI6InNvbWUtaWQifQ.GMr9nA6HE0ttB6llXct_2Sg5-fOKGFbJCdACZFgNbN1fhT6OPg_hVc8ThGzBrWC_RlsBpLA1nzqK3SOJDXYxAw";
+}
+
 function example_API_InstantiateCacheClient()
 {
     new CacheClient(
         Laptop::latest(),
-        CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY"),
+        CredentialProvider::fromEnvironmentVariablesV2(),
         60
     );
 }
 
 function example_API_CredentialProviderFromEnvVar()
 {
-    CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY");
+    CredentialProvider::fromEnvironmentVariable("V1_API_KEY");
+}
+
+
+function example_API_CredentialProviderFromEnvVarV2()
+{
+    // Look for default env vars MOMENTO_API_KEY and MOMENTO_ENDPOINT
+    CredentialProvider::fromEnvironmentVariablesV2();
+
+    // Or provide custom env var names:
+    // CredentialProvider::fromEnvironmentVariablesV2("MY_MOMENTO_API_KEY", "MY_MOMENTO_ENDPOINT");
+}
+
+
+function example_API_CredentialProviderFromApiKeyV2()
+{
+    $api_key = retrieveApiKeyV2FromYourSecretsManager();
+    $endpoint = "cell-4-us-west-2-1.prod.a.momentohq.com";
+    CredentialProvider::fromApiKeyV2($api_key, $endpoint);
+}
+
+
+function example_API_CredentialProviderFromDisposableToken()
+{
+    $auth_token = retrieveApiKeyFromYourSecretsManager();
+    CredentialProvider::fromDisposableToken($auth_token);
 }
 
 function example_API_CreateCache(CacheClient $cache_client, string $cache_name)
@@ -57,7 +97,8 @@ function example_API_ListCaches(CacheClient $cache_client)
     }
 }
 
-function example_API_Set(CacheClient $cache_client, string $cache_name) {
+function example_API_Set(CacheClient $cache_client, string $cache_name)
+{
     $set_response = $cache_client->set($cache_name, "test-key", "test-value");
     if ($set_response->asSuccess()) {
         print("Key $cache_name stored successfully\n");
@@ -92,7 +133,7 @@ function setup()
 {
     $cache_client = new CacheClient(
         Laptop::latest(),
-        CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY"),
+        CredentialProvider::fromEnvironmentVariablesV2(),
         60
     );
     $cache_name = uniqid("php-examples-test-cache-");
@@ -107,11 +148,15 @@ function teardown($cache_client, $cache_name)
     $cache_client->deleteCache($cache_name);
 }
 
-function main() {
+function main()
+{
     [$cache_client, $cache_name] = setup();
 
     try {
         example_API_CredentialProviderFromEnvVar();
+        example_API_CredentialProviderFromApiKeyV2();
+        example_API_CredentialProviderFromDisposableToken();
+        example_API_CredentialProviderFromEnvVarV2();
 
         example_API_InstantiateCacheClient();
         example_API_CreateCache($cache_client, $cache_name);

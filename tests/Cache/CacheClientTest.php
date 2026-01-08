@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Momento\Tests\Cache;
@@ -37,7 +38,7 @@ class CacheClientTest extends TestCase
     public function setUp(): void
     {
         $this->configuration = Configurations\Laptop::latest()->withReadConcern(ReadConcern::CONSISTENT);
-        $this->authProvider = new EnvMomentoTokenProvider("MOMENTO_API_KEY");
+        $this->authProvider = new EnvMomentoTokenProvider("V1_API_KEY");
         $this->client = new CacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
         $this->TEST_CACHE_NAME = uniqid('php-integration-tests-');
         // Ensure test cache exists
@@ -3824,7 +3825,6 @@ class CacheClientTest extends TestCase
         $this->assertNull($response->asError());
         $this->assertNotNull($response->asHit(), "Expected a hit but got: $response");
         $this->assertEquals($expected, $response->asHit()->valuesArray());
-
     }
 
     public function testSortedSetUnionStore_HappyPath()
@@ -4232,7 +4232,8 @@ class CacheClientTest extends TestCase
         $this->assertEquals(MomentoErrorCode::INVALID_ARGUMENT_ERROR, $response->asError()->errorCode());
     }
 
-    public function testSortedSetUnionStore_EmptyUnionClobbersExistingDestKey() {
+    public function testSortedSetUnionStore_EmptyUnionClobbersExistingDestKey()
+    {
         $sortedSetName1 = uniqid();
         $sortedSetName2 = uniqid();
         $destination = uniqid();
@@ -4425,7 +4426,8 @@ class CacheClientTest extends TestCase
         $this->assertEquals($responses, $expectedValues);
     }
 
-    public function testItemGetTtl() {
+    public function testItemGetTtl()
+    {
         $cacheName = $this->TEST_CACHE_NAME;
         $key = uniqid();
         $value = uniqid();
@@ -4442,7 +4444,8 @@ class CacheClientTest extends TestCase
         $this->assertGreaterThan(0, $ttl);
     }
 
-    public function testItemGetTtlAsync() {
+    public function testItemGetTtlAsync()
+    {
         $cacheName = $this->TEST_CACHE_NAME;
         $key = uniqid();
         $value = uniqid();
@@ -4460,7 +4463,8 @@ class CacheClientTest extends TestCase
         $this->assertGreaterThan(0, $ttl);
     }
 
-    public function testUpdateTtl() {
+    public function testUpdateTtl()
+    {
         $cacheName = $this->TEST_CACHE_NAME;
         $key = uniqid();
         $value = uniqid();
@@ -4483,7 +4487,8 @@ class CacheClientTest extends TestCase
         $this->assertLessThan($newTtlMilliseconds, $remainingTtl);
     }
 
-    public function testUpdateTtlAsync() {
+    public function testUpdateTtlAsync()
+    {
         $cacheName = $this->TEST_CACHE_NAME;
         $key = uniqid();
         $value = uniqid();
@@ -4508,7 +4513,8 @@ class CacheClientTest extends TestCase
         $this->assertLessThan($newTtlMilliseconds, $remainingTtl);
     }
 
-    public function testIncreaseTtl() {
+    public function testIncreaseTtl()
+    {
         $cacheName = $this->TEST_CACHE_NAME;
         $key = uniqid();
         $value = uniqid();
@@ -4538,7 +4544,8 @@ class CacheClientTest extends TestCase
         $this->assertLessThan($increasedTtlMilliseconds, $remainingTtl);
     }
 
-    public function testIncreaseTtlAsync() {
+    public function testIncreaseTtlAsync()
+    {
         $cacheName = $this->TEST_CACHE_NAME;
         $key = uniqid();
         $value = uniqid();
@@ -4571,7 +4578,8 @@ class CacheClientTest extends TestCase
         $this->assertLessThan($increasedTtlMilliseconds, $remainingTtl);
     }
 
-    public function testDecreaseTtl() {
+    public function testDecreaseTtl()
+    {
         $cacheName = $this->TEST_CACHE_NAME;
         $key = uniqid();
         $value = uniqid();
@@ -4601,7 +4609,8 @@ class CacheClientTest extends TestCase
         $this->assertLessThanOrEqual($decreasedTtlMilliseconds, $remainingTtl);
     }
 
-    public function testDecreaseTtlAsync() {
+    public function testDecreaseTtlAsync()
+    {
         $cacheName = $this->TEST_CACHE_NAME;
         $key = uniqid();
         $value = uniqid();

@@ -8,7 +8,9 @@ jobs:
   test:
     runs-on: ubuntu-24.04
     env:
-      MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      V1_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      MOMENTO_API_KEY: ${{ secrets.ALPHA_API_KEY_V2 }}
+      MOMENTO_ENDPOINT: "cell-alpha-dev.preprod.a.momentohq.com"
 
     steps:
       - uses: actions/checkout@v4
@@ -41,8 +43,6 @@ jobs:
         run: php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml
 
       - name: Run examples
-        env:
-          MOMENTO_API_KEY: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
         working-directory: ./examples
         run: |
           composer install

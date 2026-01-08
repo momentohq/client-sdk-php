@@ -14,7 +14,10 @@ The Momento SDK for PHP package is available on packagist.org: [client-sdk-php](
 
 ## Getting Started and Documentation
 
-To get started with Momento you will need a Momento API key. You can get one from the [Momento Console](https://console.gomomento.com).
+To get started with Momento you will need:
+
+- A Momento API key is required, you can generate one using the [Momento Console](https://console.gomomento.com/)
+- A Momento service endpoint is required. You can find a [list of them here](https://docs.momentohq.com/platform/regions)
 
 Documentation is available on the [Momento Docs website](https://docs.momentohq.com).
 

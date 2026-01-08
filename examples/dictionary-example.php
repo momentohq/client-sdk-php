@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 require "vendor/autoload.php";
@@ -19,7 +20,7 @@ $VALUE = "MyValue";
 $ITEM_DEFAULT_TTL_SECONDS = 60;
 
 // Setup
-$authProvider = CredentialProvider::fromEnvironmentVariable("MOMENTO_API_KEY");
+$authProvider = CredentialProvider::fromEnvironmentVariablesV2();
 
 $configuration = Laptop::latest(new StderrLoggerFactory());
 $client = new CacheClient($configuration, $authProvider, $ITEM_DEFAULT_TTL_SECONDS);

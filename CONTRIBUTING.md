@@ -26,6 +26,7 @@ You will likely need to run this only once:
 
 ```bash
 export MOMENTO_API_KEY=<YOUR_API_KEY>
+export MOMENTO_ENDPOINT=<endpoint>
 ./dev-run-integration-tests.sh
 ```
 
