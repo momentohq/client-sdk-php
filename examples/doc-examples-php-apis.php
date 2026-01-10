@@ -39,11 +39,13 @@ function example_API_CredentialProviderFromEnvVar()
 
 function example_API_CredentialProviderFromEnvVarV2()
 {
-    // Look for default env vars MOMENTO_API_KEY and MOMENTO_ENDPOINT
-    CredentialProvider::fromEnvironmentVariablesV2();
+    CredentialProvider::fromEnvironmentVariablesV2("MOMENTO_API_KEY", "MOMENTO_ENDPOINT");
+}
 
-    // Or provide custom env var names:
-    // CredentialProvider::fromEnvironmentVariablesV2("MY_MOMENTO_API_KEY", "MY_MOMENTO_ENDPOINT");
+
+function example_API_CredentialProviderFromEnvVarV2Default()
+{
+    CredentialProvider::fromEnvironmentVariablesV2();
 }
 
 
@@ -157,6 +159,7 @@ function main()
         example_API_CredentialProviderFromApiKeyV2();
         example_API_CredentialProviderFromDisposableToken();
         example_API_CredentialProviderFromEnvVarV2();
+        example_API_CredentialProviderFromEnvVarV2Default();
 
         example_API_InstantiateCacheClient();
         example_API_CreateCache($cache_client, $cache_name);
