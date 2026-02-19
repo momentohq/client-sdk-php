@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.19.0](https://github.com/momentohq/client-sdk-php/compare/v1.18.0...v1.19.0) (2026-02-19)
+
+
+### Features
+
+* Remove firebase dependency ([#267](https://github.com/momentohq/client-sdk-php/issues/267)) ([5dc133e](https://github.com/momentohq/client-sdk-php/commit/5dc133e08da4ca8b658e17a18827f3d43d6d04ff))
+
+
+### Miscellaneous
+
+* add separate default env var v2 docs snippet ([#265](https://github.com/momentohq/client-sdk-php/issues/265)) ([a4b285d](https://github.com/momentohq/client-sdk-php/commit/a4b285dea990db3cdc97e8baa1d88be788e8541b))
+* update examples, tests, readmes, CI for api keys v2 ([#263](https://github.com/momentohq/client-sdk-php/issues/263)) ([5a12d1f](https://github.com/momentohq/client-sdk-php/commit/5a12d1fde77040fa41a1fb3a365230a542377f06))
+
 ## [1.18.0](https://github.com/momentohq/client-sdk-php/compare/v1.17.1...v1.18.0) (2025-12-15)
 
 
