@@ -113,13 +113,14 @@ jobs:
       - name: Run tests
         run: php vendor/phpunit/phpunit/phpunit --configuration phpunit.xml
 
-      - name: Run examples
-        working-directory: ./examples
-        run: |
-          composer install
-          php ./example.php
-          php ./dictionary-example.php
-          php ./list-example.php
-          php ./set-example.php
-          php ./doc-examples-php-apis.php
-          php ./psr16-example.php
+    # TODO: re-enable once firebase dep removed in next release
+    #   - name: Run examples
+    #     working-directory: ./examples
+    #     run: |
+    #       composer install
+    #       php ./example.php
+    #       php ./dictionary-example.php
+    #       php ./list-example.php
+    #       php ./set-example.php
+    #       php ./doc-examples-php-apis.php
+    #       php ./psr16-example.php
