@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Momento\Auth;
 
-use Firebase\JWT\JWT;
+use JsonException;
+use LogicException;
 use Momento\Cache\Errors\InvalidArgumentError;
 
 
@@ -14,6 +15,28 @@ class AuthUtils
     private static function throwBadAuthToken()
     {
         throw new InvalidArgumentError('Invalid Momento auth token.');
+    }
+
+    private static function urlsafeB64Decode(string $input): string
+    {
+        $remainder = strlen($input) % 4;
+
+        if ($remainder) {
+            $input .= str_repeat('=', 4 - $remainder);
+        }
+
+        return base64_decode(strtr($input, '-_', '+/'));
+    }
+
+    private static function jsonDecode(string $input): object
+    {
+        $obj = json_decode($input, false, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
+
+        if (!is_object($obj)) {
+            throw new LogicException('Expected JSON object');
+        }
+
+        return $obj;
     }
 
     public static function parseAuthToken(string $authToken): object
@@ -51,7 +74,7 @@ class AuthUtils
 
         try {
             $payload = $exploded[1];
-            $payload = JWT::jsonDecode(JWT::urlsafeB64Decode($payload));
+            $payload = self::jsonDecode(self::urlsafeB64Decode($payload));
             $payload->authToken = $authToken;
         } catch (\Exception $e) {
             self::throwBadAuthToken();
