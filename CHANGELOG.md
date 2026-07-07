@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.19.1](https://github.com/momentohq/client-sdk-php/compare/v1.19.0...v1.19.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* convert non-OK batch stream statuses into SDK errors ([#272](https://github.com/momentohq/client-sdk-php/issues/272)) ([086951c](https://github.com/momentohq/client-sdk-php/commit/086951cdea189031281d68e15ffaa73848c30add))
+
+
+### Miscellaneous
+
+* upgrade examples dep and restore examples checks in CI/CD ([#269](https://github.com/momentohq/client-sdk-php/issues/269)) ([ba19931](https://github.com/momentohq/client-sdk-php/commit/ba19931548564dd3a58233d45a8f9c112dccd2e5))
+
 ## [1.19.0](https://github.com/momentohq/client-sdk-php/compare/v1.18.0...v1.19.0) (2026-02-19)
 
 
