@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.2](https://github.com/momentohq/client-sdk-php/compare/v1.19.1...v1.19.2) (2026-08-13)
+
+
+### Miscellaneous
+
+* retire the machine-user release token ([#273](https://github.com/momentohq/client-sdk-php/issues/273)) ([1c004e2](https://github.com/momentohq/client-sdk-php/commit/1c004e2d7a058065b052a690ffb4a2ea7ae6513e))
+
 ## [1.19.1](https://github.com/momentohq/client-sdk-php/compare/v1.19.0...v1.19.1) (2026-07-07)
 
 
