@@ -13,9 +13,16 @@ jobs:
       MOMENTO_ENDPOINT: "cell-alpha-dev.preprod.a.momentohq.com"
 
     steps:
+      - name: Generate release bot token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.MOMENTO_RELEASE_APP_ID }}
+          private-key: ${{ secrets.MOMENTO_RELEASE_APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -59,7 +66,7 @@ jobs:
         name: Release Please
         id: release
         with:
-          token: ${{ secrets.MOMENTO_MACHINE_USER_GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           release-type: php
           package-name: momentohq/client-sdk-php
           extra-files: |
