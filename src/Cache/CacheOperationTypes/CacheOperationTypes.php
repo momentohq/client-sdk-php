@@ -83,15 +83,25 @@ trait ErrorBody
 class CacheInfo
 {
     private string $name;
+    private string $id;
 
     public function __construct($grpcListedCache)
     {
         $this->name = $grpcListedCache->getCacheName();
+        $this->id = $grpcListedCache->getCacheId();
     }
 
     public function name(): string
     {
         return $this->name;
+    }
+
+    /**
+     * Server-assigned cache id; empty if the server did not return one.
+     */
+    public function id(): string
+    {
+        return $this->id;
     }
 }
 

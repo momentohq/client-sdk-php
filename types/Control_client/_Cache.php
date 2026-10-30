@@ -25,6 +25,10 @@ class _Cache extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>.control_client._TopicLimits topic_limits = 3;</code>
      */
     protected $topic_limits = null;
+    /**
+     * Generated from protobuf field <code>string cache_id = 4;</code>
+     */
+    protected $cache_id = '';
 
     /**
      * Constructor.
@@ -35,6 +39,7 @@ class _Cache extends \Google\Protobuf\Internal\Message
      *     @type string $cache_name
      *     @type \Control_client\_CacheLimits $cache_limits
      *     @type \Control_client\_TopicLimits $topic_limits
+     *     @type string $cache_id
      * }
      */
     public function __construct($data = NULL) {
@@ -124,6 +129,28 @@ class _Cache extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Control_client\_TopicLimits::class);
         $this->topic_limits = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string cache_id = 4;</code>
+     * @return string
+     */
+    public function getCacheId()
+    {
+        return $this->cache_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>string cache_id = 4;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setCacheId($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->cache_id = $var;
 
         return $this;
     }
