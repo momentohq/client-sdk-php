@@ -10,11 +10,12 @@ use function Momento\Utilities\isNullOrEmpty;
 /**
  * Reads and parses a Momento auth token stored as a string.
  */
-class ApiKeyV2TokenProvider extends CredentialProvider
+class ApiKeyV2TokenProvider extends CredentialProvider implements ITokenCredentialProvider
 {
     protected string  $authToken;
     protected ?string $controlEndpoint = null;
     protected ?string $cacheEndpoint = null;
+    protected string $tokenEndpoint;
     protected ?string $trustedControlEndpointCertificateName = null;
     protected ?string $trustedCacheEndpointCertificateName = null;
 
@@ -44,6 +45,7 @@ class ApiKeyV2TokenProvider extends CredentialProvider
         $this->authToken = $authToken;
         $this->controlEndpoint = $controlEndpoint ?? "control." . $endpoint;
         $this->cacheEndpoint = $cacheEndpoint ?? "cache." . $endpoint;
+        $this->tokenEndpoint = "token." . $endpoint;
         $this->trustedControlEndpointCertificateName = $trustedControlEndpointCertificateName;
         $this->trustedCacheEndpointCertificateName = $trustedCacheEndpointCertificateName;
     }
@@ -70,6 +72,14 @@ class ApiKeyV2TokenProvider extends CredentialProvider
     public function getControlEndpoint(): string
     {
         return $this->controlEndpoint;
+    }
+
+    /**
+     * @return string The host which the Momento client will connect to for Momento token operations.
+     */
+    public function getTokenEndpoint(): string
+    {
+        return $this->tokenEndpoint;
     }
 
     /**
