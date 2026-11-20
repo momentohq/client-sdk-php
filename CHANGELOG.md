@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.20.0](https://github.com/momentohq/client-sdk-php/compare/v1.19.1...v1.20.0) (2026-10-30)
+
+
+### Features
+
+* expose cache id on CacheInfo ([#275](https://github.com/momentohq/client-sdk-php/issues/275)) ([8a3b4fa](https://github.com/momentohq/client-sdk-php/commit/8a3b4fa7dc51c505f987975d0bb07d1812dc1095))
+
+
+### Miscellaneous
+
+* retire the machine-user release token ([#273](https://github.com/momentohq/client-sdk-php/issues/273)) ([1c004e2](https://github.com/momentohq/client-sdk-php/commit/1c004e2d7a058065b052a690ffb4a2ea7ae6513e))
+
 ## [1.19.1](https://github.com/momentohq/client-sdk-php/compare/v1.19.0...v1.19.1) (2026-07-07)
 
 
