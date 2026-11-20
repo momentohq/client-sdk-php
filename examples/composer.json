@@ -2,5 +2,12 @@
   "require": {
     "momentohq/client-sdk-php": "^1.19.0",
     "monolog/monolog": "^2.5"
+  },
+  "config": {
+    "policy": {
+      "advisories": {
+        "ignore-id": ["PKSA-pwrg-9hf1-r8jr"]
+      }
+    }
   }
 }
