@@ -28,9 +28,14 @@ class Psr16ClientTest extends TestCase
     private Configuration $configuration;
     private CredentialProvider $authProvider;
     private Psr16CacheClient $client;
+    private string $keyPrefix;
 
     public function setUp(): void
     {
+        // Every test shares the "momento-psr16" cache, and CI runs several PHP versions
+        // against it at the same time. A random per-test prefix keeps one job's keys from
+        // clobbering another's.
+        $this->keyPrefix = bin2hex(random_bytes(8));
         $loggerFactory = new NullLoggerFactory();
         $grpcConfiguration = new StaticGrpcConfiguration(5000);
         $transportStrategy = new StaticTransportStrategy($grpcConfiguration);
@@ -48,6 +53,11 @@ class Psr16ClientTest extends TestCase
         parent::tearDown();
         $momento = new CacheClient($this->configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
         $momento->deleteCache("momento-psr16");
+    }
+
+    private function key(string $name): string
+    {
+        return "{$this->keyPrefix}-{$name}";
     }
 
     public function testDateIntervalToSeconds()
@@ -143,7 +153,7 @@ class Psr16ClientTest extends TestCase
      */
     public function testGetSetDelete_HappyPath_MultipleTypes($value)
     {
-        $key = "myKey";
+        $key = $this->key("myKey");
 
         $this->assertTrue($this->client->set($key, $value));
 
@@ -157,7 +167,7 @@ class Psr16ClientTest extends TestCase
     public function testGetSetDelete_HappyPath_Object()
     {
         $this->markTestSkipped("Exception payload exceeds item limit.");
-        $key = "myKey";
+        $key = $this->key("myKey");
         $exc = new \Exception("imaserializedexceptionobject!");
 
         $this->assertTrue($this->client->set($key, $exc));
@@ -171,7 +181,7 @@ class Psr16ClientTest extends TestCase
 
     public function testHas()
     {
-        $keys = ["abc", "def", "ghi", "jkl"];
+        $keys = array_map([$this, "key"], ["abc", "def", "ghi", "jkl"]);
         foreach ($keys as $key) {
             $this->assertTrue($this->client->set($key, "myValue"));
         }
@@ -193,9 +203,9 @@ class Psr16ClientTest extends TestCase
     public function testGetMultiple_HappyPath()
     {
         $items = [
-            "key1" => 1,
-            "key2" => 2,
-            "key3" => 3
+            $this->key("key1") => 1,
+            $this->key("key2") => 2,
+            $this->key("key3") => 3
         ];
         foreach ($items as $k => $v) {
             $this->assertTrue($this->client->set($k, $v));
@@ -207,9 +217,9 @@ class Psr16ClientTest extends TestCase
     public function testSetMultiple_HappyPath()
     {
         $items = [
-            "key1" => 1,
-            "key2" => 2,
-            "key3" => 3
+            $this->key("key1") => 1,
+            $this->key("key2") => 2,
+            $this->key("key3") => 3
         ];
         $this->assertTrue($this->client->setMultiple($items));
         $values = [];
@@ -222,9 +232,9 @@ class Psr16ClientTest extends TestCase
     public function testDeleteMultiple_HappyPath()
     {
         $items = [
-            "key1" => 1,
-            "key2" => 2,
-            "key3" => 3
+            $this->key("key1") => 1,
+            $this->key("key2") => 2,
+            $this->key("key3") => 3
         ];
         $this->assertTrue($this->client->setMultiple($items));
         $values = [];
@@ -241,9 +251,9 @@ class Psr16ClientTest extends TestCase
     public function testDeleteMany_Subset_HappyPath()
     {
         $items = [
-            "key1" => 1,
-            "key2" => 2,
-            "key3" => 3
+            $this->key("key1") => 1,
+            $this->key("key2") => 2,
+            $this->key("key3") => 3
         ];
         $this->assertTrue($this->client->setMultiple($items));
         $values = [];
@@ -251,10 +261,10 @@ class Psr16ClientTest extends TestCase
             $this->assertTrue((bool)$values[$k] = $this->client->get($k, $v));
         }
         $this->assertSame($items, $values);
-        $this->assertTrue($this->client->deleteMultiple(["key1", "key2"]));
-        $this->assertFalse($this->client->has("key1"));
-        $this->assertFalse($this->client->has("key2"));
-        $this->assertTrue($this->client->has("key3"));
+        $this->assertTrue($this->client->deleteMultiple([$this->key("key1"), $this->key("key2")]));
+        $this->assertFalse($this->client->has($this->key("key1")));
+        $this->assertFalse($this->client->has($this->key("key2")));
+        $this->assertTrue($this->client->has($this->key("key3")));
     }
 
     public function testAllRequiredCharsAreSupported()
@@ -290,7 +300,7 @@ class Psr16ClientTest extends TestCase
 
     public function testGetMultiple_BadKeys()
     {
-        $keys = ["notthere", "nopestillnothing", "verywellhidden"];
+        $keys = array_map([$this, "key"], ["notthere", "nopestillnothing", "verywellhidden"]);
         $results = $this->client->getMultiple($keys);
         foreach ($results as $key => $value) {
             $this->assertNull($value);
@@ -299,7 +309,7 @@ class Psr16ClientTest extends TestCase
 
     public function testNegativeIntegerTtl()
     {
-        $key = "myKey";
+        $key = $this->key("myKey");
         $this->assertTrue($this->client->set($key, "value", 600));
         $this->assertTrue($this->client->has($key));
         $this->assertTrue($this->client->set($key, "value", 0));
@@ -308,7 +318,7 @@ class Psr16ClientTest extends TestCase
 
     public function testNegativeDateInterval()
     {
-        $key = "myKey";
+        $key = $this->key("myKey");
         $di = new \DateInterval("PT1H");
         $di->invert = 1;
         $this->assertTrue($this->client->set($key, "value", 600));
@@ -319,7 +329,7 @@ class Psr16ClientTest extends TestCase
 
     public function testNullTll()
     {
-        $key = "myKey";
+        $key = $this->key("myKey");
         $this->assertTrue($this->client->set($key, "value", null));
         $this->assertTrue($this->client->has($key));
     }
