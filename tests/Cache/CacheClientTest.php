@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Momento\Tests\Cache;
 
+use Momento\Auth\ApiKeyV2TokenProvider;
 use Momento\Auth\AuthUtils;
 use Momento\Auth\EnvMomentoTokenProvider;
 use Momento\Cache\CacheOperationTypes\DictionaryGetFieldHit;
@@ -414,11 +415,29 @@ class CacheClientTest extends TestCase
 
     public function testGetTimeout()
     {
-        $configuration = $this->getConfigurationWithDeadline(1);
-        $client = new CacheClient($configuration, $this->authProvider, $this->DEFAULT_TTL_SECONDS);
-        $response = $client->get($this->TEST_CACHE_NAME, "key");
-        $this->assertNotNull($response->asError(), "Expected error but got: $response");
-        $this->assertEquals(MomentoErrorCode::TIMEOUT_ERROR, $response->asError()->errorCode());
+        // Point the client at a local socket that accepts TCP connections but never
+        // responds, so the TLS handshake can't complete and the request always hits
+        // its deadline. Racing a tiny deadline against the real service was flaky:
+        // the server sometimes answered within 1ms.
+        $server = stream_socket_server("tcp://127.0.0.1:0", $errno, $errstr);
+        $this->assertNotFalse($server, "Could not open local socket: $errstr");
+        try {
+            $endpoint = stream_socket_get_name($server, false);
+            $authProvider = new ApiKeyV2TokenProvider(
+                MomentoTokenProviderTest::TEST_V2_API_KEY,
+                $endpoint,
+                $endpoint,
+                $endpoint
+            );
+            $configuration = $this->getConfigurationWithDeadline(100);
+            $client = new CacheClient($configuration, $authProvider, $this->DEFAULT_TTL_SECONDS);
+            $response = $client->get($this->TEST_CACHE_NAME, "key");
+            $this->assertNotNull($response->asError(), "Expected error but got: $response");
+            $this->assertEquals(MomentoErrorCode::TIMEOUT_ERROR, $response->asError()->errorCode());
+            $client->close();
+        } finally {
+            fclose($server);
+        }
     }
 
     // SetIfPresent tests
