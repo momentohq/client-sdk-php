@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.21.0](https://github.com/momentohq/client-sdk-php/compare/v1.20.0...v1.21.0) (2026-11-23)
+
+
+### Features
+
+* Add disposable token generation ([#277](https://github.com/momentohq/client-sdk-php/issues/277)) ([aba4eab](https://github.com/momentohq/client-sdk-php/commit/aba4eabe819370a4a4c1239ff04e4e59934244f0))
+* Add topic publishing ([#281](https://github.com/momentohq/client-sdk-php/issues/281)) ([b9ef83d](https://github.com/momentohq/client-sdk-php/commit/b9ef83d1da38dabefdd2bfb57bc07beae8ecd578))
+
+
+### Bug Fixes
+
+* improve tests and allow examples to run with old sdk versions ([#279](https://github.com/momentohq/client-sdk-php/issues/279)) ([f8d6b4c](https://github.com/momentohq/client-sdk-php/commit/f8d6b4cbb8843bc0b1756bfa5a2b39f2f3f2894e))
+
 ## [1.20.0](https://github.com/momentohq/client-sdk-php/compare/v1.19.1...v1.20.0) (2026-10-30)
 
 
